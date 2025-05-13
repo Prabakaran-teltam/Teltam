@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Teltam | Sign up</title>
+  <link href="{% static 'assets/img/fav_icon.png' %}" rel="icon">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="{% static "assets/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/bootstrap-icons/bootstrap-icons.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/aos/aos.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/glightbox/css/glightbox.min.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/swiper/swiper-bundle.min.css" %}" rel="stylesheet">
+  <link href="{% static "assets/css/main.css" %}" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="index-page">
+    <main class="main">
+<section id="register" class="register section light-background">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="row g-4 g-lg-5">
+        <div class="col-lg-5">
+          <img  src="{% static "assets/img/fav3.png" %}"  alt="Hero Image" class="img-fluid mt-5">
+        </div>
+        <div class="col-lg-7">
+          <div class="card contact-form" data-aos="fade-up" data-aos-delay="300" style="border-radius: 15px;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);">
+            <br>
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Sign up to Teltam</h2>
+                <p>Fill out the sign up form to create an account with us.</p>
+            </div>
+            <form method="POST" action="" class="container" data-aos="fade-up" data-aos-delay="200">
+              {% csrf_token %}
+              <div class="row gy-4">
+                <div class="col-md-6">
+                  <input type="text" name="username" class="form-control" placeholder="Your Username" required="">
+                  {% if form.errors.username %}
+                    <label class="text-danger">{{form.errors.username}}</label>
+                  {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <input type="email" class="form-control" name="email" placeholder="Your Email" required="">
+                  {% if form.errors.email %}
+                    <label class="text-danger">{{form.errors.email}}</label>
+                  {% endif %}
+                </div>
+ 
+                <div class="col-md-6 form-outline position-relative">
+                  <input type="password" class="form-control" name="password1" id="password1" placeholder="Password" required="">
+                  <span id="togglePassword1" style="position: absolute; right: 25px; top: 10px; cursor: pointer;color:rgb(82,119,173)">
+                    <i class="fas fa-eye" onclick="togglePasswordVisibility('password1', 'togglePassword1')"></i>
+                  </span>
+                  {% if form.errors.password1 %}
+                    <label class="text-danger">{{form.errors.password1}}</label>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6 form-outline position-relative">
+                  <input type="password" class="form-control" name="password2" id="password2" placeholder="Repeat your password" required="">
+
+                  <span id="togglePassword2" style="position: absolute; right: 25px; top: 10px; cursor: pointer;color:rgb(82,119,173)">
+                    <i class="fas fa-eye" onclick="togglePasswordVisibility('password2', 'togglePassword2')"></i>
+                  </span>
+                  {% if form.errors.password2 %}
+                    <label class="text-danger">{{form.errors.password2}}</label>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                  <input type="text" name="phone" class="form-control" placeholder="Phone Number"
+         pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
+                  {% if form.errors.phone %}
+                    <label class="text-danger">{{form.errors.phone}}</label>
+                  {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                  <select name="gender" class="form-control">
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                  </select>
+                  {% if form.errors.gender %}
+                    <label class="text-danger">{{form.errors.gender}}</label>
+                  {% endif %}
+                </div>
+                
+                <div class="col-md-12">
+                  <textarea name="address" class="form-control" placeholder="Address"></textarea>
+                  {% if form.errors.address %}
+                    <label class="text-danger">{{form.errors.address}}</label>
+                  {% endif %}
+                </div>
+            
+                <div class="col-12">
+                  <div class="form-check d-flex justify-content-center">
+                    <label class="form-check-label" for="form2Example3">
+                      Already have an account? <a href="{% url 'login' %}">Sign In</a>
+                    </label>
+                  </div>
+                </div>
+            
+                <div class="col-12 text-center">
+                  <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+                
+              </div>
+              <br>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% include "message.html" %}
+</main>
+<script>
+  function togglePasswordVisibility(passwordId) {
+    var passwordField = document.getElementById(passwordId);
+    var icon = document.getElementById('toggle-' + passwordId);
+
+    // Toggle password visibility
+    if (passwordField.type === "password") {
+      passwordField.type = "text";
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    } else {
+      passwordField.type = "password";
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    }
+  }
+</script>
+
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+<script src="{% static "assets/vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+<script src="{% static "assets/vendor/php-email-form/validate.js" %}"></script>
+<script src="{% static "assets/vendor/aos/aos.js" %}"></script>
+<script src="{% static "assets/vendor/glightbox/js/glightbox.min.js" %}"></script>
+<script src="{% static "assets/vendor/swiper/swiper-bundle.min.js" %}"></script>
+<script src="{% static "assets/vendor/purecounter/purecounter_vanilla.js" %}"></script>
+<script src="{% static "assets/js/main.js" %}"></script>
+</body>
+</html>

@@ -1,0 +1,714 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link href="{% static "assets/css/review.css" %}" rel="stylesheet">
+<style>
+:root {
+  --colorPrimaryNormal: #00b3bb;
+  --colorPrimaryDark: #00979f;
+  --colorPrimaryGlare: #00cdd7;
+  --colorPrimaryHalf: #80d9dd;
+  --colorPrimaryQuarter: #bfecee;
+  --colorPrimaryEighth: #dff5f7;
+  --colorPrimaryPale: #f3f5f7;
+  --colorPrimarySeparator: #f3f5f7;
+  --colorPrimaryOutline: #dff5f7;
+  --colorButtonNormal: #00b3bb;
+  --colorButtonHover: #00cdd7;
+  --colorLinkNormal: #00979f;
+  --colorLinkHover: #00cdd7;
+}
+
+.star-rating i {
+  font-size: 2rem;
+  color: #ddd;
+  cursor: pointer;
+}
+.star-rating i.selected {
+  color: gold;
+}
+.contact-form input,
+.contact-form textarea {
+  margin-bottom: 1rem;
+}
+
+.page-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.upload_dropZone {
+  color: #0f3c4b;
+  background-color: var(--colorPrimaryPale, #c8dadf);
+  outline: 2px dashed var(--colorPrimaryHalf, #c1ddef);
+  outline-offset: -12px;
+  transition:
+    outline-offset 0.2s ease-out,
+    outline-color 0.3s ease-in-out,
+    background-color 0.2s ease-out;
+}
+
+.upload_dropZone.highlight {
+  outline-offset: -4px;
+  outline-color: var(--colorPrimaryNormal, #0576bd);
+  background-color: var(--colorPrimaryEighth, #c8dadf);
+}
+
+.upload_svg {
+  fill: var(--colorPrimaryNormal, #0576bd);
+}
+
+.btn-upload {
+  color: #fff;
+  background-color: var(--colorPrimaryNormal);
+}
+
+.btn-upload:hover,
+.btn-upload:focus {
+  color: #fff;
+  background-color: var(--colorPrimaryGlare);
+}
+
+/* File name display styles */
+.file-name-display {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  display: inline-block;
+  border: 1px solid #dee2e6;
+}
+ 
+@media (max-width: 768px) {
+  .upload_dropZone {
+    padding: 1rem !important;
+  }
+  
+  .file-name-display {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn {
+    margin-bottom: 0.5rem;
+    white-space: normal;
+  }
+  
+  .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  select.form-control {
+    margin-bottom: 1rem;
+  }
+}
+</style>
+
+<div class="page-overlay" id="page-overlay">
+  <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="text-light mt-3">Please wait while we process the image...</p>
+</div>
+{% if not output_data %}
+<section id="contact" class="contact section light-background">
+  <br><br><br><br>
+
+  <div class="container section-title" data-aos="fade-up">
+    <h2>Translater&nbsp;<i class="bi bi-translate fs-3"></i></h2>
+    <p>Upload Image or PDF to Get Word Meanings & Transliteration</p>
+  </div>
+
+  <div class="container" data-aos="fade-up" data-aos-delay="100" >
+    <div class="row g-4 g-lg-5">
+      <div class="col-lg-1"></div>
+      <div class="col-lg-10">
+        <div class="contact-form" style="border-radius: 15px;box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);">
+          <form method="POST" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+            <div class="row gy-4">
+              {% if not file_uploaded %}
+              <fieldset style="text-align: center;" class="upload_dropZone mb-3 p-4 ">
+                <legend class="visually-hidden ">Image uploader</legend>
+
+                <svg class="upload_svg " width="60" height="60" aria-hidden="true">
+                  <use href="#icon-imageUpload"></use>
+                </svg>
+                <p class="small my-2">Drag &amp; Drop Image's or PDF inside dashed region<br><i>or</i></p>
+                <label class="btn btn-upload mb-3" for="upload_image_background">Browse your files</label>
+                <p class="small my-2">Supported file types: <i>.jpg, .jpeg, .png, .pdf</i></p>
+                <input id="upload_image_background" name="file" data-post-name="image_background" class="invisible" type="file" accept=".jpg, .jpeg, .png, .pdf" required />
+              
+                <div class="upload_gallery d-flex flex-wrap justify-content-center gap-3 mb-0"></div>
+
+              </fieldset>     
+
+              <svg style="display:none">
+                <defs>
+                  <symbol id="icon-imageUpload" clip-rule="evenodd" viewBox="0 0 96 96">
+                    <path d="M47 6a21 21 0 0 0-12.3 3.8c-2.7 2.1-4.4 5-4.7 7.1-5.8 1.2-10.3 5.6-10.3 10.6 0 6 5.8 11 13 11h12.6V22.7l-7.1 6.8c-.4.3-.9.5-1.4.5-1 0-2-.8-2-1.7 0-.4.3-.9.6-1.2l10.3-8.8c.3-.4.8-.6 1.3-.6.6 0 1 .2 1.4.6l10.2 8.8c.4.3.6.8.6 1.2 0 1-.9 1.7-2 1.7-.5 0-1-.2-1.3-.5l-7.2-6.8v15.6h14.4c6.1 0 11.2-4.1 11.2-9.4 0-5-4-8.8-9.5-9.4C63.8 11.8 56 5.8 47 6Zm-1.7 42.7V38.4h3.4v10.3c0 .8-.7 1.5-1.7 1.5s-1.7-.7-1.7-1.5Z M27 49c-4 0-7 2-7 6v29c0 3 3 6 6 6h42c3 0 6-3 6-6V55c0-4-3-6-7-6H28Zm41 3c1 0 3 1 3 3v19l-13-6a2 2 0 0 0-2 0L44 79l-10-5a2 2 0 0 0-2 0l-9 7V55c0-2 2-3 4-3h41Z M40 62c0 2-2 4-5 4s-5-2-5-4 2-4 5-4 5 2 5 4Z"/>
+                  </symbol>
+                </defs>
+              </svg>
+                <div class="col-md-6 col-12">
+                  <select class="form-control" name="source_language" required>
+                    <option value="" disabled selected>Select Source Language</option>
+                    <!--<option value="auto">Auto Detect</option>-->
+                    <option value="hindi">Hindi</option>
+                    <option value="telugu">Telugu</option>
+                    <option value="tamil">Tamil</option>
+                    <option value="malayalam">Malayalam</option>
+                    <option value="kannada">Kannada</option>
+                  </select>
+                </div>
+                <div class="col-md-6 col-12">
+                  <select class="form-control" name="target_language" required>
+                    <option value="" disabled selected>Select Target Language</option>
+                    <option value="hindi">Hindi</option>
+                    <option value="telugu">Telugu</option>
+                    <option value="tamil">Tamil</option>
+                    <option value="malayalam">Malayalam</option>
+                    <option value="kannada">Kannada</option>
+                  </select>
+                </div>
+              {% else %}
+                <div class="col-12 text-center">
+                  <p class="text-success">File uploaded successfully!</p>
+                </div>
+              {% endif %}
+              <div class="col-12 text-center mt-3">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-cloud-arrow-up"></i>&nbsp;&nbsp;Upload & Convert
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                  <i class="bi bi-x-circle"></i>&nbsp;&nbsp;Clear Input
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+{% if output_data %}
+<section id="Translater" class="features section light-background">
+
+  <div class="container section-title" data-aos="fade-up">
+    <br><br><br>
+    <h2>Translated Texts</h2>
+    <p>Extracted words count : {{word_count}}</p>
+  </div>
+  <div class="container">
+    <div class="d-flex justify-content-center">
+      <ul class="nav nav-tabs" data-aos="fade-up" data-aos-delay="100">
+        <li class="nav-item">
+          <a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1">
+            <h4>Tabular Format</h4>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2">
+            <h4>Paragraph Format</h4>
+          </a> 
+        </li>
+      </ul>
+    </div>
+
+    <div class="tab-content" data-aos="fade-up" data-aos-delay="200">
+      <div class="tab-pane fade active show" id="features-tab-1">
+        <div class="row">
+          <div class="col-md-1"></div>
+          <div class="col-md-12">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped" border="1">
+                <tr>
+                  <th>Input Word</th>
+                  <th>{{target_lang}} Pronunciation</th>
+                  <th>{{target_lang}} Meaning</th>
+                  <th>English Pronunciation</th>
+                  <th>English Meaning</th>
+                </tr>
+                {% for row in output_data %}
+                <tr>
+                  {% for col in row %}
+                  <td>{{ col }}</td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="features-tab-2">
+        <div class="container mt-4">
+          <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+              <div class="translated-content">
+                {% for row in output_data %}
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <h5 class="card-title fw-bold">Extracted Text: {{ row.0 }}</h5>
+                    <p class="card-text mb-1"><span class="fw-medium">{{ target_lang }} Pronunciation:</span> {{ row.1 }}</p>
+                    <p class="card-text"><span class="fw-medium">{{ target_lang }} Meaning:</span> {{ row.2 }}</p>
+                    <p class="card-text mb-1"><span class="fw-medium">English Pronunciation:</span> {{ row.3 }}</p>
+                    <p class="card-text"><span class="fw-medium">English Meaning:</span> {{ row.4 }}</p>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-md-1"></div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+</section>
+
+
+<section id="contact" class="contact section light-background">
+
+  <div class="container section-title" data-aos="fade-up">
+    <h2>How was your experience?</h2>
+    <p>Your feedback helps us improve our service</p>
+  </div>
+  
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
+    <div class="row">
+      <div class="col-lg-3">
+      </div>
+      <div class="col-lg-6">
+        <div class="contact-form" data-aos="fade-up" data-aos-delay="300">
+          <form method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="200">
+            {% csrf_token %}
+            <div class="row">
+
+              <div class="rating-container">
+                <div class="stars">
+                  <span class="star" data-value="1">★</span>
+                  <span class="star" data-value="2">★</span>
+                  <span class="star" data-value="3">★</span>
+                  <span class="star" data-value="4">★</span>
+                  <span class="star" data-value="5">★</span>
+                </div>
+                <div class="rating-text"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+              </div>
+
+              <!-- Review Text -->
+              <div class="form-group">
+                <label for="review">Your Review</label>
+                <textarea id="review" name="review_text" rows="6" placeholder="Tell us about your experience..." required></textarea>
+              </div>
+
+              <!-- Hidden Fields -->
+              <input type="hidden" id="star_rating" name="star_rating">
+              <input type="hidden" id="emoji_mood" name="emoji_mood">
+          
+              <!-- Submit -->
+              <div class="col-12 text-center">
+                <div class="loading" style="display:none;">Loading</div>
+                <div style="display:none;"></div>
+                
+                <button type="submit" id="submitBtn" style="display:block;" class="submit-btn">Submit Review</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endif %}
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Get form and relevant elements
+  const form = document.getElementById('upload-form');
+  const dropZone = document.querySelector('.upload_dropZone');
+  const fileInput = document.getElementById('upload_image_background');
+  const gallery = document.querySelector('.upload_gallery');
+  const overlay = document.getElementById('page-overlay');
+  
+  // Create a file input element to store dropped files (this is the key fix)
+  let transferInput = document.createElement('input');
+  transferInput.type = 'file';
+  transferInput.accept = fileInput.accept;
+  transferInput.style.display = 'none';
+  transferInput.name = fileInput.name;
+  document.body.appendChild(transferInput);
+
+  // Function to prevent default events
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  // Function to highlight the drop zone
+  function highlight() {
+    dropZone.classList.add('highlight');
+  }
+
+  // Function to remove highlight
+  function unhighlight() {
+    dropZone.classList.remove('highlight');
+  }
+
+  // Function to handle dropped files
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    
+    // Display file names
+    displayFiles(files);
+    
+    // THIS IS THE KEY FIX: Create a new FileList and attach it to our form
+    if (files.length > 0) {
+      // Create a data transfer for the actual file input in the form
+      // and append the dropped files to it
+      const dataTransfer = new DataTransfer();
+      for (let i = 0; i < files.length; i++) {
+        dataTransfer.items.add(files[i]);
+      }
+      
+      // Set the files to our real form input element
+      fileInput.files = dataTransfer.files;
+    }
+  }
+
+  // Function to handle file selection from the input
+  function handleChange() {
+    if (fileInput.files && fileInput.files.length > 0) {
+      displayFiles(fileInput.files);
+    }
+  }
+
+  // Function to display file names
+  function displayFiles(files) {
+    gallery.innerHTML = '';
+    
+    if (!files || files.length === 0) return;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Create file display element
+      const fileDisplay = document.createElement('div');
+      fileDisplay.className = 'file-name-display';
+      
+      // Add icon based on file type
+      const icon = document.createElement('i');
+      if (file.type === 'application/pdf') {
+        icon.className = 'bi bi-file-pdf text-danger';
+      } else if (file.type.startsWith('image/')) {
+        icon.className = 'bi bi-file-image text-primary';
+      } else {
+        icon.className = 'bi bi-file';
+      }
+      
+      fileDisplay.appendChild(icon);
+      
+      const fileName = document.createElement('span');
+      fileName.textContent = ' ' + file.name;
+      fileDisplay.appendChild(fileName);
+      
+      gallery.appendChild(fileDisplay);
+    }
+  }
+
+  // Add event listeners for drag and drop
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+  });
+  
+  // Add highlighting events
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, highlight, false);
+  });
+  
+  // Add unhighlighting events
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, unhighlight, false);
+  });
+  
+  // Add drop handler
+  dropZone.addEventListener('drop', handleDrop, false);
+  
+  // Add file input change handler
+  fileInput.addEventListener('change', handleChange, false);
+  
+  // Clear form function (exposed globally)
+  window.clearForm = function() {
+    form.reset();
+    gallery.innerHTML = '';
+  };
+  
+  // Form submit handler - show overlay
+  if (form) {
+    form.addEventListener('submit', function() {
+      overlay.style.display = 'flex';
+    });
+  }
+  
+  // Hide overlay if output data exists
+  {% if output_data %}
+    overlay.style.display = 'none';
+  {% endif %}
+  
+  // Mobile responsiveness
+  function adjustForMobile() {
+    if (window.innerWidth <= 768) {
+      dropZone.classList.add('p-2');
+    } else {
+      dropZone.classList.remove('p-2');
+    }
+  }
+  
+  // Initial adjustment
+  adjustForMobile();
+  
+  // Resize event
+  window.addEventListener('resize', adjustForMobile);
+});
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Star rating functionality
+      const stars = document.querySelectorAll('.star');
+      const ratingText = document.querySelector('.rating-text');
+      const ratingTexts = [
+          "",
+          "Poor - Needs significant improvement",
+          "Fair - Below expectations",
+          "Good - Meets expectations",
+          "Very Good - Exceeds expectations",
+          "Excellent - Outstanding experience"
+      ];
+      let currentRating = 0;
+      
+      stars.forEach(star => {
+          star.addEventListener('mouseover', function() {
+              const value = this.getAttribute('data-value');
+              highlightStars(value);
+              ratingText.textContent = ratingTexts[value];
+          });
+          
+          star.addEventListener('mouseout', function() {
+              highlightStars(currentRating);
+              ratingText.textContent = ratingTexts[currentRating];
+          });
+          
+          star.addEventListener('click', function() {
+              currentRating = this.getAttribute('data-value');
+              highlightStars(currentRating);
+              ratingText.textContent = ratingTexts[currentRating];
+          });
+      });
+      
+      function highlightStars(count) {
+          stars.forEach(star => {
+              const value = star.getAttribute('data-value');
+              if (value <= count) {
+                  star.classList.add('active');
+              } else {
+                  star.classList.remove('active');
+              }
+          });
+      }
+      // Emoji feedback functionality
+      const emojiOptions = document.querySelectorAll('.emoji-option');
+      
+      emojiOptions.forEach(option => {
+          option.addEventListener('click', function() {
+              emojiOptions.forEach(opt => opt.classList.remove('selected'));
+              this.classList.add('selected');
+              
+              // Map moods to star ratings
+              const mood = this.getAttribute('data-mood');
+              let moodRating;
+              
+              switch(mood) {
+                  case 'bad':
+                      moodRating = 2;
+                      break;
+                  case 'neutral':
+                      moodRating = 3;
+                      break;
+                  case 'good':
+                      moodRating = 4;
+                      break;
+                  case 'excellent':
+                      moodRating = 5;
+                      break;
+                  default:
+                      moodRating = 0;
+              }
+              
+              currentRating = moodRating;
+              highlightStars(moodRating);
+              ratingText.textContent = ratingTexts[moodRating];
+          });
+      });
+      
+      // Form submission
+      const reviewForm = document.getElementById('review-form');
+      const reviewContent = document.querySelector('.review-content');
+      const thanksMessage = document.querySelector('.thanks-message');
+      
+      reviewForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          if (currentRating === 0) {
+              alert('Please select a rating before submitting your review.');
+              return;
+          }
+          
+          // Here you would typically send the data to your server
+          const formData = {
+              rating: currentRating,
+              name: document.getElementById('name').value,
+              email: document.getElementById('email').value,
+              review: document.getElementById('review').value
+          };
+          
+          console.log('Review submitted:', formData);
+          
+          // Show thank you message
+          reviewContent.style.display = 'none';
+          thanksMessage.style.display = 'block';
+      });
+      
+      // Close buttons
+      const closeBtn = document.querySelector('.close-btn');
+      const closeThanks = document.querySelector('.close-thanks');
+      
+      closeBtn.addEventListener('click', function() {
+          document.querySelector('.review-popup').style.display = 'none';
+      });
+      
+      closeThanks.addEventListener('click', function() {
+          document.querySelector('.review-popup').style.display = 'none';
+      });
+  });
+</script>
+
+
+<script>
+  // This review post code
+  // Star selection
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function () {
+      const rating = this.getAttribute('data-value');
+      document.getElementById('star_rating').value = rating;
+
+      // Visual feedback
+      document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+      for (let i = 0; i < rating; i++) {
+        document.querySelectorAll('.star')[i].classList.add('selected');
+      }
+      document.querySelector('.rating-text').innerText = `${rating} star${rating > 1 ? 's' : ''}`;
+    });
+  });
+
+
+  // Emoji selection
+  document.querySelectorAll('.emoji-option').forEach(option => {
+    option.addEventListener('click', function () {
+      const mood = this.getAttribute('data-mood');
+      document.getElementById('emoji_mood').value = mood;
+
+      // Highlight selection
+      document.querySelectorAll('.emoji-option').forEach(e => e.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+
+  // AJAX form submission
+  document.querySelector('.php-email-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const name = document.querySelector('#name').value;
+    const reviewText = document.querySelector('#review').value;
+    const starRating = document.querySelector('#star_rating').value;
+    const emojiMood = document.querySelector('#emoji_mood').value;
+
+    document.querySelector('.loading').style.display = 'block';
+
+    fetch("{% url 'submit_review' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken,
+      },
+      body: new URLSearchParams({
+        name: name,
+        review_text: reviewText,
+        star_rating: starRating,
+        emoji_mood: emojiMood,
+      })
+    })
+    .then(response => {
+      document.querySelector('.loading').style.display = 'none';
+      if (response.ok) {
+        
+        document.querySelector('.submit-btn').style.display = 'none';
+        Swal.fire({
+          title: "Thanks for!",
+          text: "Your Review Has Been Submitted!",
+          icon: "success"
+        });
+        document.querySelector('.error-message').style.display = 'none';
+        document.querySelector('.php-email-form').reset();
+        document.getElementById('star_rating').value = '';
+        document.getElementById('emoji_mood').value = '';
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+        document.querySelectorAll('.emoji-option').forEach(e => e.classList.remove('selected'));
+        document.querySelector('.rating-text').innerText = '';
+      } else {
+        return response.json().then(data => {
+          throw new Error(data.error || 'Submission failed.');
+        });
+      }
+    })
+    .catch(error => {
+      document.querySelector('.loading').style.display = 'none';
+      document.querySelector('.error-message').innerText = error.message;
+      document.querySelector('.error-message').style.display = 'block';
+    });
+  });
+</script>
+
+{% endblock content %}

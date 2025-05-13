@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your OTP Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f7;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .header {
+            background-color: #007bff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header img {
+            height: 50px;
+        }
+        .content {
+            padding: 30px;
+            text-align: center;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Teltam.in</h1>
+        </div>
+        <div class="content">
+            <h2>One-Time Password (OTP)</h2>
+            <p>Use the following OTP to complete your verification on <strong>Taltam.in</strong>:</p>
+            <div class="otp-code">{{ otp }}</div>
+            <p>This OTP is valid for the next 10 minutes. Do not share it with anyone.</p>
+        </div>
+        <div class="footer">
+            &copy; 2025 Taltam.in | All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

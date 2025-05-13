@@ -1,0 +1,59 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+<script>
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        },
+        customClass: {
+            popup: 'custom-toast-position'  
+        }
+    });
+    
+    {% for message in messages %}
+        {% if message.tags == "success" %}
+            Toast.fire({
+                icon: "success",
+                title: "{{ message }}",
+                iconColor: "#28a745"
+            });
+        {% elif message.tags == "error" %}
+            Toast.fire({
+                icon: "error",
+                title: "{{ message }}"
+            });
+        {% elif message.tags == "warning" %}
+            Toast.fire({
+                icon: "warning",
+                title: "{{ message }}"
+            });
+        {% elif message.tags == "info" %}
+            Toast.fire({
+                icon: "info",
+                title: "{{ message }}"
+            });
+        {% elif message.tags == "debug" %}
+            Toast.fire({
+                icon: "question",
+                title: "{{ message }}"
+            });
+        {% endif %}
+    {% endfor %}
+</script>
+
+<style>
+    .custom-toast-position {
+        top: 90px !important; 
+
+        bottom: auto !important; 
+        border-radius: 10px !important;
+    }
+</style>
+{% endif %}

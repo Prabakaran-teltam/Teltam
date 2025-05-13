@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+  <section id="contact" class="contact section light-background">
+    <br><br><br>
+    <div class="container section-title" data-aos="fade-up">
+      <h2>Translated History <i class="bi bi-clock-history fs-4"></i></h2>
+      <p>You can find your Translate History</p>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+          <div class="row">
+            <div class="col-md-7"></div>
+            <div class="col-md-5">
+              <input class="form-control search-input" id="searchInput" type="text" placeholder="Search translations..">
+            </div>
+          </div>
+          <br>
+          <table class="table table-bordered table-striped" id="myTable">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>File</th>
+                    <th>Source Language</th>
+                    <th>Target Language</th>
+                    <th>Translated Date</th>
+                    <th style="text-align:center">Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for translation in page_obj %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{{ translation.file.url }}" target="_blank">View File&nbsp;<i class="bi bi-eye"></i></a>
+                    </td>
+                    <td>{{ translation.language }}</td>
+                    <td>{{ translation.target_language }}</td>
+                    <td>{{ translation.created }}</td>
+                    <td style="text-align:center"><a href="{% url "download_csv" translation.id %}" class="btn btn-secondary"><i class="bi bi-download"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No translations available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination-container text-center">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; </span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link"> &raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById('searchInput');
+      filter = input.value.toLowerCase();
+      table = document.getElementById('myTable');
+      tr = table.getElementsByTagName('tr');
+
+      for (i = 1; i < tr.length; i++) { 
+        td = tr[i].getElementsByTagName('td');
+        let found = false;
+        for (let j = 0; j < td.length; j++) {
+          txtValue = td[j].textContent || td[j].innerText;
+          if (txtValue.toLowerCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+        if (found) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+    });
+  </script>
+{% endblock content %}

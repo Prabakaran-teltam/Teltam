@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Teltam - OTP Verification</title>
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="{% static "assets/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/bootstrap-icons/bootstrap-icons.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/aos/aos.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/glightbox/css/glightbox.min.css" %}" rel="stylesheet">
+  <link href="{% static "assets/vendor/swiper/swiper-bundle.min.css" %}" rel="stylesheet">
+  <link href="{% static "assets/css/main.css" %}" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <style>
+    .otp-card {
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+      background-color: rgb(82, 119, 173);
+      color: white;
+      border-radius: 15px 15px 0 0 !important;
+    }
+    .otp-input {
+      width: 45px;
+      height: 45px;
+      font-size: 20px;
+      text-align: center;
+      margin: 0 6px;
+      border-radius: 8px;
+      border: 2px solid #ced4da;
+      font-weight: 600;
+    }
+    .otp-input:focus {
+      border-color: rgb(82, 119, 173);
+      box-shadow: 0 0 0 0.25rem rgba(82, 119, 173, 0.25);
+    }
+    .verify-btn {
+      background-color: rgb(82, 119, 173);
+      border-color: rgb(82, 119, 173);
+    }
+    .verify-btn:hover {
+      background-color: rgb(65, 95, 138);
+      border-color: rgb(65, 95, 138);
+    }
+    .resend-link {
+      color: rgb(82, 119, 173);
+      text-decoration: none;
+    }
+    .resend-link:hover {
+      text-decoration: underline;
+    }
+    /* Hide the original form fields visually but keep them accessible */
+    .hidden-form-field {
+      position: absolute;
+      opacity: 0;
+      height: 0;
+      width: 0;
+      z-index: -1;
+    }
+  </style>
+</head>
+
+<body class="index-page">
+
+<main class="main">
+
+<section id="otp-verification" class="register section light-background">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="row g-4 g-lg-5">
+        <div class="col-lg-6">
+            <img src="{% static "assets/img/login.png" %}" alt="Hero Image" class="img-fluid">
+        </div>
+
+        <div class="col-lg-5">
+          <div class="contact-form" data-aos="fade-up" data-aos-delay="300">
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Verification Code</h2>
+                <p>Enter the 6-digit code sent to your email.</p>
+            </div>
+
+            <form method="POST">
+              {% csrf_token %}
+              
+              <!-- Hidden original Django form fields -->
+              <div class="hidden-form-field">
+                {{ form.as_p }}
+              </div> 
+              <div class="card otp-card mb-4">
+                <div class="card-body p-4">
+                  <div class="text-center mb-4">
+                    <p class="mb-1">Please enter the 6-digit code sent to</p>
+                    <h6 class="mb-3">e••••@e••••.com</h6>
+                  </div>
+                  
+                  <div class="d-flex justify-content-center mb-4">
+                    <input type="text" class="form-control otp-input" maxlength="1" id="otp-1" autofocus>
+                    <input type="text" class="form-control otp-input" maxlength="1" id="otp-2">
+                    <input type="text" class="form-control otp-input" maxlength="1" id="otp-3">
+                    <input type="text" class="form-control otp-input" maxlength="1" id="otp-4">
+                    <input type="text" class="form-control otp-input" maxlength="1" id="otp-5">
+                    <input type="text" class="form-control otp-input" maxlength="1" id="otp-6">
+                  </div>
+                  
+                  <div class="text-center">
+                    <p class="text-muted mb-3 small">Code expires in <span id="timer">10:00</span></p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-check d-flex justify-content-center mb-4">
+                <div class="col-md-12 text-center">
+                  <p>Didn't receive the code? <a href="{% url 'resend_otp' %}" class="resend-link">Resend</a></p>
+                </div>
+              </div>
+              
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary verify-btn btn-block mb-4">
+                  Verify
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br><br>
+  </section>
+</main>
+{% include "message.html" %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get original form field (assuming it's an input with name 'otp' or similar)
+    // Adjust the selector based on your actual form field name
+    const djangoOtpField = document.querySelector('input[name="otp"]') || 
+                           document.querySelector('input[name="verification_code"]') ||
+                           document.querySelector('.hidden-form-field input');
+    
+    // OTP field handling
+    const inputs = document.querySelectorAll('.otp-input');
+    
+    // Focus first input on load
+    inputs[0].focus();
+    
+    // Handle input and auto-focus next field
+    inputs.forEach((input, index) => {
+      input.addEventListener('keyup', function(e) {
+        // If a digit is entered
+        if (this.value.length === 1) {
+          // Move to next input if available
+          if (index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+          
+          // Update the hidden Django form field
+          if (djangoOtpField) {
+            let combinedOtp = '';
+            inputs.forEach(input => {
+              combinedOtp += input.value || '';
+            });
+            djangoOtpField.value = combinedOtp;
+          }
+        }
+      });
+      
+      // Handle backspace key
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+      
+      // Prevent non-numeric input
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Update the hidden Django form field
+        if (djangoOtpField) {
+          let combinedOtp = '';
+          inputs.forEach(input => {
+            combinedOtp += input.value || '';
+          });
+          djangoOtpField.value = combinedOtp;
+        }
+      });
+    });
+    
+    // Form submission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+      // Check if all OTP inputs are filled
+      let isComplete = true;
+      let combinedOtp = '';
+      
+      inputs.forEach(input => {
+        if (!input.value) {
+          isComplete = false;
+        }
+        combinedOtp += input.value || '';
+      });
+      
+      // Update the hidden Django form field with combined OTP
+      if (djangoOtpField && isComplete) {
+        djangoOtpField.value = combinedOtp;
+      }
+    });
+    
+    // Countdown timer
+    let timeLeft = 600; // 2 minutes
+    const timerElement = document.getElementById('timer');
+    
+    const countdown = setInterval(function() {
+      const minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+      
+      timerElement.textContent = minutes + ':' + seconds;
+      timeLeft--;
+      
+      if (timeLeft < 0) {
+        clearInterval(countdown);
+        timerElement.textContent = '00:00';
+      }
+    }, 1000);
+  });
+</script>
+
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+<script src="{% static "assets/vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+<script src="{% static "assets/vendor/php-email-form/validate.js" %}"></script>
+<script src="{% static "assets/vendor/aos/aos.js" %}"></script>
+<script src="{% static "assets/vendor/glightbox/js/glightbox.min.js" %}"></script>
+<script src="{% static "assets/vendor/swiper/swiper-bundle.min.js" %}"></script>
+<script src="{% static "assets/vendor/purecounter/purecounter_vanilla.js" %}"></script>
+<script src="{% static "assets/js/main.js" %}"></script>
+</body>
+</html>

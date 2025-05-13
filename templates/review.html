@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Popup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .review-popup {
+            background: linear-gradient(135deg, #ffffff, #f5f7fa);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease forwards;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .review-popup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #334155;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h2 {
+            color: #1e293b;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+        
+        .rating-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .stars {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .star {
+            font-size: 2.5rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.3s;
+        }
+        
+        .star:hover {
+            transform: scale(1.2);
+        }
+        
+        .star.active {
+            color: #fbbf24;
+        }
+        
+        .rating-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #334155;
+            min-height: 1.75rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #334155;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            font-size: 1rem;
+            color: #1e293b;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            outline: none;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .emoji-feedback {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .emoji-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .emoji-option:hover {
+            transform: translateY(-5px);
+        }
+        
+        .emoji {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .emoji-label {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .emoji-option.selected .emoji-label {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .thanks-message {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        
+        .thanks-message h2 {
+            color: #1e293b;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .thanks-message p {
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .thanks-emoji {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 1s infinite alternate;
+        }
+        
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="review-popup">
+        <button class="close-btn">×</button>
+        
+        <div class="review-content">
+            <div class="header">
+                <h2>How was your experience?</h2>
+                <p>Your feedback helps us improve our service</p>
+            </div>
+            
+            <div class="rating-container">
+                <div class="stars">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <div class="rating-text"></div>
+            </div>
+            
+            <div class="emoji-feedback">
+                <div class="emoji-option" data-mood="bad">
+                    <span class="emoji">😞</span>
+                    <span class="emoji-label">Disappointed</span>
+                </div>
+                <div class="emoji-option" data-mood="neutral">
+                    <span class="emoji">😐</span>
+                    <span class="emoji-label">Neutral</span>
+                </div>
+                <div class="emoji-option" data-mood="good">
+                    <span class="emoji">😊</span>
+                    <span class="emoji-label">Satisfied</span>
+                </div>
+                <div class="emoji-option" data-mood="excellent">
+                    <span class="emoji">🤩</span>
+                    <span class="emoji-label">Delighted</span>
+                </div>
+            </div>
+            
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" placeholder="Enter your name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="review">Your Review</label>
+                    <textarea id="review" placeholder="Tell us about your experience..."></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Review</button>
+            </form>
+        </div>
+        
+        <div class="thanks-message">
+            <div class="thanks-emoji">🙏</div>
+            <h2>Thank You!</h2>
+            <p>Your feedback is incredibly valuable to us. We appreciate you taking the time to share your thoughts.</p>
+            <button class="submit-btn close-thanks">Close</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Star rating functionality
+            const stars = document.querySelectorAll('.star');
+            const ratingText = document.querySelector('.rating-text');
+            const ratingTexts = [
+                "",
+                "Poor - Needs significant improvement",
+                "Fair - Below expectations",
+                "Good - Meets expectations",
+                "Very Good - Exceeds expectations",
+                "Excellent - Outstanding experience"
+            ];
+            let currentRating = 0;
+            
+            stars.forEach(star => {
+                star.addEventListener('mouseover', function() {
+                    const value = this.getAttribute('data-value');
+                    highlightStars(value);
+                    ratingText.textContent = ratingTexts[value];
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    highlightStars(currentRating);
+                    ratingText.textContent = ratingTexts[currentRating];
+                });
+                
+                star.addEventListener('click', function() {
+                    currentRating = this.getAttribute('data-value');
+                    highlightStars(currentRating);
+                    ratingText.textContent = ratingTexts[currentRating];
+                });
+            });
+            
+            function highlightStars(count) {
+                stars.forEach(star => {
+                    const value = star.getAttribute('data-value');
+                    if (value <= count) {
+                        star.classList.add('active');
+                    } else {
+                        star.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Emoji feedback functionality
+            const emojiOptions = document.querySelectorAll('.emoji-option');
+            
+            emojiOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    emojiOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Map moods to star ratings
+                    const mood = this.getAttribute('data-mood');
+                    let moodRating;
+                    
+                    switch(mood) {
+                        case 'bad':
+                            moodRating = 2;
+                            break;
+                        case 'neutral':
+                            moodRating = 3;
+                            break;
+                        case 'good':
+                            moodRating = 4;
+                            break;
+                        case 'excellent':
+                            moodRating = 5;
+                            break;
+                        default:
+                            moodRating = 0;
+                    }
+                    
+                    currentRating = moodRating;
+                    highlightStars(moodRating);
+                    ratingText.textContent = ratingTexts[moodRating];
+                });
+            });
+            
+            // Form submission
+            const reviewForm = document.getElementById('review-form');
+            const reviewContent = document.querySelector('.review-content');
+            const thanksMessage = document.querySelector('.thanks-message');
+            
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (currentRating === 0) {
+                    alert('Please select a rating before submitting your review.');
+                    return;
+                }
+                
+                // Here you would typically send the data to your server
+                const formData = {
+                    rating: currentRating,
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    review: document.getElementById('review').value
+                };
+                
+                console.log('Review submitted:', formData);
+                
+                // Show thank you message
+                reviewContent.style.display = 'none';
+                thanksMessage.style.display = 'block';
+            });
+            
+            // Close buttons
+            const closeBtn = document.querySelector('.close-btn');
+            const closeThanks = document.querySelector('.close-thanks');
+            
+            closeBtn.addEventListener('click', function() {
+                document.querySelector('.review-popup').style.display = 'none';
+            });
+            
+            closeThanks.addEventListener('click', function() {
+                document.querySelector('.review-popup').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

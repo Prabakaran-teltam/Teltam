@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<section id="contact" class="contact section light-background">
+    <br><br><br>
+    <div class="container section-title" data-aos="fade-up">
+      <h2>Your Profile <i class="bi bi-person-fill"></i></h2>
+      <p>You can find your Profile Details</p>
+    </div>
+    <div class="">
+      <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 p-4">
+          <div class="card container" style="border-radius: 15px;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);">
+            <br>
+            <h4 class="text-center"><strong>{{ request.user.username }}</strong>'s</h4>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</strong> {{ request.user.email }}</li>
+              <li class="list-group-item">
+                <strong>Gender&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</strong>
+                {% if profile.gender == "M" %} Male
+                {% elif profile.gender == "F" %} Female
+                {% elif profile.gender == "O" %} Other
+                {% else %} Not specified
+                {% endif %}
+              </li>
+              <li class="list-group-item"><strong>Phone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</strong> {{ profile.phone|default:"N/A" }}</li>
+              <li class="list-group-item"><strong>Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</strong> {{ profile.address|default:"N/A" }}</li>
+            </ul>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+{% endblock content %}

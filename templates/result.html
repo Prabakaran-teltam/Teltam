@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if output_data %}
+<h2>Results:</h2>
+<table border="1">
+    <tr>
+        <th>Input Word</th>
+        <th>Tamil Pronunciation</th>
+        <th>Tamil Meaning</th>
+        <th>English Pronunciation</th>
+        <th>English Meaning</th>
+    </tr>
+    {% for row in output_data %}
+    <tr>
+        {% for col in row %}
+            <td>{{ col }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p style="color: red;">No text extracted. Try again with a clearer image.</p>
+{% endif %}
+{% endblock content %}

@@ -45,7 +45,7 @@ def index(request):
 
 
 def log_in(request):
-    error_message = None 
+    error_message = None
     if request.user.is_authenticated:
         return redirect('home')
     if request.method == 'POST':
@@ -319,7 +319,7 @@ def get_transliterations(words, source_language, target_language):
             english_meaning = translator.translate(word, src=source_lang_code, dest="en").text
             output_data.append([word, target_transliteration, target_meaning, english_transliteration, english_meaning])
         except Exception as e:
-            print(f"Error with '{word}': {e}")
+            # print(f"Error with '{word}': {e}")
             output_data.append([word, None, None,None, None])
     # word = ' '.join(words)
     # target_transliteration = transliterate(word, source_script, target_script)
@@ -346,45 +346,42 @@ def home(request):
     already_filled = SurveyResponse.objects.filter(user=request.user).exists()
     if not already_filled:
         return redirect('survey')
+
     output_data = []
     target_lang = None
-    
+
     if request.method == 'POST':
         try:
             source_lang = request.POST.get('source_language')
             target_lang = request.POST.get('target_language')
             uploaded_file = request.FILES.get('file')
-            
-            # Validate language selections
+
             if not source_lang or not target_lang:
                 messages.error(request, "Please select both source and target languages.")
                 return redirect('/home')
-                
+
             if source_lang == target_lang:
                 messages.warning(request, "Source and target languages must be different.")
                 return redirect('/home')
-                
+
             if target_lang not in lang_map:
                 messages.error(request, f"Error: Invalid target language '{target_lang}'")
                 return redirect('/home')
-            
-            # Validate file
+
             if not uploaded_file:
                 messages.error(request, "Please upload a file.")
                 return redirect('/home')
-                
-            # Get the tesseract language code
+
             if source_lang != 'tamil':
                 tesseract_lang, _ = lang_map[source_lang]
-            # Detele all the files from temp 
+
             delete_all_temp_files()
-            # Process the uploaded file
             file_path = handle_uploaded_temp_file(uploaded_file)
-            
+
             if not file_path or not os.path.exists(file_path):
                 messages.error(request, "Error processing uploaded file.")
                 return redirect('/home')
-                
+
             extracted_text = ""
 
             if file_path.lower().endswith('.pdf'):
@@ -394,36 +391,23 @@ def home(request):
                         messages.error(request, "The PDF file appears to be empty.")
                         return redirect('/home')
 
-
                     if source_lang.lower() == "tamil":
                         tamil_ocr = tamil_OCR(detect=True)
-                        extracted_text = ""
-                        try:
-                            pdf_doc = fitz.open(file_path)  # your path from handle_pdf_images(uploaded_file)
-                            for page_num in range(len(pdf_doc)):
-                                try:
-                                    page = pdf_doc.load_page(page_num)
-                                    pix = page.get_pixmap(dpi=300)
+                        for page_num in range(len(pdf_doc)):
+                            try:
+                                page = pdf_doc.load_page(page_num)
+                                pix = page.get_pixmap(dpi=300)
+                                image_path = save_page_image(pix, page_num)
+                                result = tamil_ocr.predict(image_path)
+                                page_text = " ".join(result[0]) if result and result[0] else ""
+                                extracted_text += page_text + " "
+                                # print(f"[Tamil OCR] Page {page_num+1}: {page_text[:100]}...")
+                            except Exception as e:
+                                messages.warning(request, f"Error processing page {page_num+1}: {str(e)}")
+                        delete_all_temp_pdf_image_files()
 
-                                    # Save image
-                                    image_path = save_page_image(pix, page_num)
-
-                                    # Tamil OCR
-                                    result = tamil_ocr.predict(image_path)
-                                    page_text = " ".join(result[0]) if result and result[0] else ""
-                                    extracted_text += page_text + " "
-
-                                    print(f"[Tamil OCR] Page {page_num+1}: {page_text[:100]}...")
-
-                                except Exception as e:
-                                    messages.warning(request, f"Error processing page {page_num+1}: {str(e)}")
-
-                            delete_all_temp_pdf_image_files()
-
-                        except Exception as e:
-                            messages.error(request, f"Failed to process PDF: {str(e)}")
                     else:
-                        reader = easyocr.Reader([tesseract_lang])
+                        reader = easyocr.Reader([tesseract_lang], gpu=False)
                         for page_num in range(len(pdf_doc)):
                             try:
                                 page = pdf_doc.load_page(page_num)
@@ -433,8 +417,7 @@ def home(request):
                                 result = reader.readtext(img_np)
                                 page_text = ' '.join([item[1] for item in result]) if result else ""
                                 extracted_text += page_text + " "
-                                print(f"[EasyOCR] Page {page_num+1}: {page_text[:100]}...")
-
+                                # print(f"[EasyOCR] Page {page_num+1}: {page_text[:100]}...")
                             except Exception as e:
                                 messages.warning(request, f"Error processing page {page_num+1}: {str(e)}")
 
@@ -454,12 +437,12 @@ def home(request):
                         tamil_ocr = tamil_OCR(detect=True)
                         result = tamil_ocr.predict(preprocessed_image)
                         extracted_text = " ".join(result[0]) if result and result[0] else ""
-                        print(f"[Tamil OCR] Image text: {extracted_text[:100]}...")
+                        # print(f"[Tamil OCR] Image text: {extracted_text[:100]}...")
                     else:
-                        reader = easyocr.Reader([tesseract_lang])
+                        reader = easyocr.Reader([tesseract_lang], gpu=False)
                         result = reader.readtext(preprocessed_image)
                         extracted_text = ' '.join([item[1] for item in result]) if result else ""
-                        print(f"[EasyOCR] Image text: {extracted_text[:100]}...")
+                        # print(f"[EasyOCR] Image text: {extracted_text[:100]}...")
 
                 except Exception as e:
                     messages.error(request, f"Error processing image: {str(e)}")
@@ -469,18 +452,17 @@ def home(request):
                 messages.warning(request, "No text could be extracted from the file. Please try a clearer image or different file.")
                 return redirect('/home')
 
-            # Process the extracted text
             words = extracted_text.split()
             if not words:
                 messages.warning(request, "No words were found in the extracted text.")
                 return redirect('/home')
+
             try:
-                output_data,paragrph_data = get_transliterations(words, source_lang, target_lang)
+                output_data, paragrph_data = get_transliterations(words, source_lang, target_lang)
                 if not output_data:
                     messages.warning(request, "Translation service could not process the extracted text.")
                     return redirect('/home')
 
-                # Create DataFrame and save to CSV
                 df = pd.DataFrame(output_data, columns=[
                     "Input Word", 
                     f"{target_lang.capitalize()} Transliteration", 
@@ -488,12 +470,11 @@ def home(request):
                     "English Transliteration",
                     "English Meaning"
                 ])
-                
-                # Save output file
+
                 output_directory = os.path.join(settings.MEDIA_ROOT, 'outputs')
                 os.makedirs(output_directory, exist_ok=True)
                 csv_file_path = os.path.join(output_directory, 'output.csv')
-                
+
                 try:
                     df.to_csv(csv_file_path, index=False, encoding="utf-8-sig")
                 except PermissionError:
@@ -502,8 +483,7 @@ def home(request):
                 except Exception as e:
                     messages.error(request, f"Error saving output file: {str(e)}")
                     return redirect('/home')
-                
-                # Save translation record
+
                 try:
                     with open(csv_file_path, 'rb') as f:
                         translation_record = Translations(
@@ -521,22 +501,35 @@ def home(request):
                 except (IOError, OSError) as e:
                     messages.error(request, f"Error saving translation record: {str(e)}")
                     return redirect('/home')
-                
+
                 target_lang = target_lang.capitalize()
- 
                 messages.info(request, "Translation completed...!")
-                print("====================Output data",output_data)
-                return render(request, 'home.html', {'output_data': output_data,'paragrph_data':paragrph_data, 'target_lang': target_lang,'word_count':len(output_data)})
+                # print("====================Output data", output_data)
+                return render(request, 'home.html', {
+                    'output_data': output_data,
+                    'paragrph_data': paragrph_data,
+                    'target_lang': target_lang,
+                    'word_count': len(output_data)
+                })
+
             except Exception as e:
                 messages.error(request, f"Translation error: {str(e)}")
                 return redirect('/home')
-        except Exception as e:
-            messages.error(request, f"An unexpected error occurred: {str(e)}")
-            import traceback
-            print(f"Error details: {traceback.format_exc()}")
+
+        except MemoryError:
+            messages.error(request, "Server ran out of memory while processing the file.")
             return redirect('/home')
+        except TimeoutError:
+            messages.error(request, "The server timed out. Please try with a smaller file.")
+            return redirect('/home')
+        except Exception as e:
+            import traceback
+            # print(f"Unexpected server error: {traceback.format_exc()}")
+            messages.error(request, f"Unexpected server error: {str(e)}")
+            return redirect('/home')
+
     form = UserReviewForm()
-    return render(request, 'home.html',{'form':form})
+    return render(request, 'home.html', {'form': form})
 
 
 

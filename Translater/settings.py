@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-i42p)5@e+&kh$g_p3d0bn3xc$8pgr2didk!mp%v*%h1e_2j3=9"
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -94,9 +94,13 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
+
 STATICFILES_DIRS = [
-    BASE_DIR / "static"
+os.path.join(BASE_DIR, 'static'),
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -108,8 +112,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'otpsendermessage@gmail.com'
-EMAIL_HOST_PASSWORD = 'tsqo mkan hqig ptsg' 
+EMAIL_HOST_USER = 'teltam2025@gmail.com'
+EMAIL_HOST_PASSWORD = 'gvns fnbn hrwd gzgx' 
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 

@@ -141,7 +141,6 @@
               {% if not file_uploaded %}
               <fieldset style="text-align: center;" class="upload_dropZone mb-3 p-4 ">
                 <legend class="visually-hidden ">Image uploader</legend>
-
                 <svg class="upload_svg " width="60" height="60" aria-hidden="true">
                   <use href="#icon-imageUpload"></use>
                 </svg>
@@ -149,11 +148,8 @@
                 <label class="btn btn-upload mb-3" for="upload_image_background">Browse your files</label>
                 <p class="small my-2">Supported file types: <i>.jpg, .jpeg, .png, .pdf</i></p>
                 <input id="upload_image_background" name="file" data-post-name="image_background" class="invisible" type="file" accept=".jpg, .jpeg, .png, .pdf" required />
-              
                 <div class="upload_gallery d-flex flex-wrap justify-content-center gap-3 mb-0"></div>
-
-              </fieldset>     
-
+              </fieldset>
               <svg style="display:none">
                 <defs>
                   <symbol id="icon-imageUpload" clip-rule="evenodd" viewBox="0 0 96 96">

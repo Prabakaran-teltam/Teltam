@@ -176,8 +176,7 @@ python-decouple==3.8
 python-docx==1.1.2
 python_tsp==0.5.0
 pytorch-lightning==1.9.5
-pyttsx3==2.98
-pywin32==305.1
+pyttsx3==2.90
 qrcode==8.0
 razorpay==1.4.2
 rcssmin==1.2.1

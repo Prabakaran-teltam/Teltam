@@ -82,7 +82,7 @@ google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.2
 google-pasta==0.2.0
 googleapis-common-protos==1.70.0
-googletrans==4.0.0rc1
+googletrans-new
 gprof2dot==2024.6.6
 graphviz==0.20.3
 grpcio==1.70.0

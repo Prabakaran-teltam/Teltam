@@ -371,7 +371,10 @@ def home(request):
             if not uploaded_file:
                 messages.error(request, "Please upload a file.")
                 return redirect('/home')
-
+            
+            if source_lang == 'tamil':
+                messages.error(request,"Currently unavailable on the server")
+            
             if source_lang != 'tamil':
                 tesseract_lang, _ = lang_map[source_lang]
 
@@ -523,7 +526,7 @@ def home(request):
             messages.error(request, "The server timed out. Please try with a smaller file.")
             return redirect('/home')
         except Exception as e:
-            import traceback
+            # import traceback
             # print(f"Unexpected server error: {traceback.format_exc()}")
             messages.error(request, f"Unexpected server error: {str(e)}")
             return redirect('/home')

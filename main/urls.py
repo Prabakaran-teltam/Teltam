@@ -2,6 +2,7 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    
     path("",index,name="index"),
     path("login",log_in,name="login"),
     path("register",register,name="register"),
@@ -21,8 +22,16 @@ urlpatterns = [
     # User pages
     path("home",home,name="home"),
     path("translations_history",translations_history,name="translations_history"),
-    path("download_csv/<int:id>",download_csv,name="download_csv")
+    path("download_csv/<int:id>",download_csv,name="download_csv"),
 
+    # Blog
+    path("blog/view/<str:title>",view_blog,name="view_blog"),
+    path('toggle-like/', toggle_like, name='toggle_like'),
+    path('blog/list_of_blogs',list_of_blogs,name="list_of_blogs"),
+    path("blog/tag_based_search/<str:tag>",tag_based_search,name="tag_based_search"),
+    path("video/list_of_videos",list_of_videos,name="list_of_videos"),
+    path("view_video/<int:id>",view_video,name="view_video"),
+    path("about_us",about_us,name="about_us")
 ]
 
 handler404 = 'main.views.custom_404'

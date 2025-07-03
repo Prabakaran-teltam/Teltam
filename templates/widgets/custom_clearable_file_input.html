@@ -1,0 +1,8 @@
+{% load static %}
+<div>
+    <input type="file" name="{{ widget.name }}" {% include "django/forms/widgets/attrs.html" %}>
+
+    {% if widget.value %}
+        <div class="mt-2 text-muted small">Current File: {{ widget.value.name }}</div>
+    {% endif %}
+</div>

@@ -1,0 +1,85 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+  <div class="py-4">
+    <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+      <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+        <li class="breadcrumb-item">
+          <a href="/">
+            <svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'dashboard' %}">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Translated Details</li>
+      </ol>
+    </nav>
+    <div class="d-flex justify-content-between w-100 flex-wrap">
+      <div class="mb-3 mb-lg-0">
+        <h1 class="h4">Translated Details</h1>
+      </div>
+      <div>
+        <a href="{% url 'home' %}" class="btn btn-outline-gray-600 d-inline-flex align-items-center"><i class="bi bi-translate"></i> &nbsp;&nbsp;&nbsp;Go to Translater</a>
+      </div>
+    </div>
+  </div>
+  <div class="">
+    <div class="">
+      <div class="card card-body border-0 shadow table-wrapper table-responsive">
+        <table id="myTable" class="table table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th class="border-0 rounded-start">#</th>
+              <th class="border-0">Source Language</th>
+              <th class="border-0">Target Language</th>
+              <th class="border-0">Translated</th>
+              <th class="border-0 rounded-end">View File</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in Output_files %}
+              <tr>
+                <td>
+                  <a href="#" class="text-primary fw-bold">{{ forloop.counter }}</a>
+                </td>
+                <td>{{ i.translation.language|default:'-' }}</td>
+                <td>{{ i.translation.target_language|default:'-' }}</td>
+                <td>{{ i.translation.created }}</td>
+                <td class="text-success">
+                  <div class="d-flex align-items-center">
+                    <!-- Trigger Modal -->
+                    <button type="button" class="btn btn-pill btn-outline-info" data-bs-toggle="modal" data-bs-target="#imageModal{{ forloop.counter }}"><i class="bi bi-eye-fill"></i></button>&nbsp;&nbsp;
+                   <a href="{% url "download_csv" i.id %}" class="btn btn-pill btn-outline-success"><i class="bi bi-download"></i>&nbsp;&nbsp;Output</a>
+                  </div>
+                  <!-- Modal for Each Image -->
+                  <div class="modal fade" id="imageModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="imageModalLabel{{ forloop.counter }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="imageModalLabel{{ forloop.counter }}">Image Preview</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                          <img src="{{ i.translation.file.url }}" class="img-fluid rounded" alt="Translation Image" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+ 
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5">No translations found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <br>
+{% endblock %}

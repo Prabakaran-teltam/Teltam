@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+  <title>Teltam | Blog's</title>
+{% endblock %}
+{% block content %}
+  <style>
+    .form-control.red-outline {
+      border: 1px solid red !important;
+      box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
+    }
+  </style>
+  <section id="blogs" class="services section light-background">
+    <br /><br /><br />
+    <div class="container section-title" data-aos="fade-up">
+      <h2>Discover our Blogs</h2>
+      <p>Explore fresh insights, tips, and stories from our latest blog posts.</p>
+    </div>
+    <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
+<div class="row mb-4">
+    <div class="col-md-6">
+    <label for="searchInput" class="form-label fw-bold">Search by Title or Content:</label>
+    <input type="text" id="searchInput" class="form-control shadow-none red-outline" placeholder="Search blogs by title or content..." />
+  </div>
+  <div class="col-md-6">
+    <label for="categoryFilter" class="form-label fw-bold">Filter by Category:</label>
+    <select id="categoryFilter" class="form-control shadow-none">
+      <option value="">All Categories</option>
+      {% for category in categories %}
+        <option value="{{ category.name|lower }}">{{ category.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+
+</div>
+
+
+      <div class="row g-4" id="blogContainer">
+        {% for blog in blogs %}
+          <div class="col-md-6 col-lg-4 video-card" data-title="{{ blog.title|lower }}" data-content="{{ blog.content|striptags|truncatewords:25|lower }}" data-category="{{ blog.category.name|lower }}">
+            <div class="card h-100 shadow-sm">
+              {% if blog.image %}
+                <img src="{{ blog.image.url }}" class="card-img-top" alt="{{ blog.title }}" style="height: 200px; object-fit: cover; width: 100%;" />
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title fw-bold">{{ blog.title }}</h5>
+                <button class="btn btn-danger btn-sm mb-2">{{ blog.created_at|date:'d/m/Y' }}</button>
+                <p class="card-text text-muted small">{{ blog.content|striptags|truncatewords:25 }}</p>
+                <div class="mt-auto">
+                  <a href="{% url 'view_blog' blog.title %}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+              {% if blog.tags.exists %}
+                <div class="card-footer bg-transparent border-0 small text-muted">
+                  {% for tag in blog.tags.all %}
+                    <span class="me-1">#<a href="{% url 'tag_based_search' tag.name %}" style="color: inherit; text-decoration: none;">{{ tag.name }}</a></span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function filterBlogs() {
+      const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase()
+      const selectedCategory = document.getElementById('categoryFilter').value.trim().toLowerCase()
+      const cards = document.querySelectorAll('.video-card')
+      let anyVisible = false
+    
+      cards.forEach((card) => {
+        const title = card.getAttribute('data-title')
+        const content = card.getAttribute('data-content')
+        const category = card.getAttribute('data-category')
+    
+        const matchesSearch = title.includes(searchQuery) || content.includes(searchQuery)
+        const matchesCategory = !selectedCategory || category === selectedCategory
+    
+        if (matchesSearch && matchesCategory) {
+          card.style.display = 'block'
+          anyVisible = true
+        } else {
+          card.style.display = 'none'
+        }
+      })
+    
+      const container = document.getElementById('blogContainer')
+      let noResult = document.getElementById('noResults')
+    
+      if (!anyVisible) {
+        if (!noResult) {
+          noResult = document.createElement('div')
+          noResult.id = 'noResults'
+          noResult.className = 'col-12 text-center text-muted mt-4'
+          noResult.innerText = 'No results found.'
+          container.appendChild(noResult)
+        }
+      } else {
+        if (noResult) noResult.remove()
+      }
+    }
+    
+    document.getElementById('searchInput').addEventListener('keyup', filterBlogs)
+    document.getElementById('categoryFilter').addEventListener('change', filterBlogs)
+  </script>
+{% endblock %}

@@ -38,7 +38,3 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
 
 
 
-
-
-
-

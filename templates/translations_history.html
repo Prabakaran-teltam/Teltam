@@ -1,9 +1,11 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
+{% block title %}
+  <title>Teltam | History</title>
+{% endblock %}
 {% block content %}
-
   <section id="contact" class="contact section light-background">
-    <br><br><br>
+    <br /><br /><br />
     <div class="container section-title" data-aos="fade-up">
       <h2>Translated History <i class="bi bi-clock-history fs-4"></i></h2>
       <p>You can find your Translate History</p>
@@ -13,112 +15,137 @@
         <div class="col-md-1"></div>
         <div class="col-md-10">
           <div class="row">
-            <div class="col-md-7"></div>
-            <div class="col-md-5">
-              <input class="form-control search-input" id="searchInput" type="text" placeholder="Search translations..">
+            <div class="col-md-6">
+              <label for="searchInput" class="form-label fw-bold">Search by Text:</label>
+              <input class="form-control shadow-none" id="searchInput" type="text" placeholder="Search translations..." />
+            </div>
+            <div class="col-md-6">
+              <label for="dateInput" class="form-label fw-bold">Filter by Date:</label>
+              <input class="form-control shadow-none" id="dateInput" type="date" />
             </div>
           </div>
-          <br>
-          <table class="table table-bordered table-striped" id="myTable">
+          <br />
+          <table class="table" id="myTable">
             <thead>
-                <tr>
-                    <th>No.</th>
-                    <th>File</th>
-                    <th>Source Language</th>
-                    <th>Target Language</th>
-                    <th>Translated Date</th>
-                    <th style="text-align:center">Download</th>
-                </tr>
+              <tr>
+                <th>No.</th>
+                <th>File</th>
+                <th>Source Language</th>
+                <th>Target Language</th>
+                <th>Translated Date</th>
+                <th style="text-align:center">Download</th>
+              </tr>
             </thead>
             <tbody>
-                {% for translation in page_obj %}
+              {% for translation in page_obj %}
                 <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>
-                        <a href="{{ translation.file.url }}" target="_blank">View File&nbsp;<i class="bi bi-eye"></i></a>
-                    </td>
-                    <td>{{ translation.language }}</td>
-                    <td>{{ translation.target_language }}</td>
-                    <td>{{ translation.created }}</td>
-                    <td style="text-align:center"><a href="{% url "download_csv" translation.id %}" class="btn btn-secondary"><i class="bi bi-download"></i></a></td>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    <a href="{{ translation.file.url }}" target="_blank">View File&nbsp;<i class="bi bi-eye"></i></a>
+                  </td>
+                  <td>{{ translation.language }}</td>
+                  <td>{{ translation.target_language }}</td>
+                  <td>{{ translation.created }}</td>
+                  <td style="text-align:center">
+                    <a href="{% url 'download_csv' translation.id %}" class="btn btn-secondary"><i class="bi bi-download"></i></a>
+                  </td>
                 </tr>
-                {% empty %}
+              {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">No translations available</td>
+                  <td colspan="5" class="text-center">No translations available</td>
                 </tr>
-                {% endfor %}
+              {% endfor %}
             </tbody>
-        </table>
+          </table>
 
-        <div class="pagination-container text-center">
+          <div class="pagination-container text-center">
             <ul class="pagination">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1">&laquo;</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&laquo; </span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link">Previous</span>
-                    </li>
-                {% endif %}
-
-                <li class="page-item disabled">
-                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page=1">&laquo;</a>
                 </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">&laquo;</span>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">Previous</span>
+                </li>
+              {% endif %}
 
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">Next</span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link"> &raquo;</span>
-                    </li>
-                {% endif %}
+              <li class="page-item disabled">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+              </li>
+
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">Next</span>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">&raquo;</span>
+                </li>
+              {% endif %}
             </ul>
-        </div>
-
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <script>
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-      var input, filter, table, tr, td, i, txtValue;
-      input = document.getElementById('searchInput');
-      filter = input.value.toLowerCase();
-      table = document.getElementById('myTable');
-      tr = table.getElementsByTagName('tr');
-
-      for (i = 1; i < tr.length; i++) { 
-        td = tr[i].getElementsByTagName('td');
-        let found = false;
-        for (let j = 0; j < td.length; j++) {
-          txtValue = td[j].textContent || td[j].innerText;
-          if (txtValue.toLowerCase().indexOf(filter) > -1) {
-            found = true;
-            break;
+    function formatDateToMatchDisplay(inputDate) {
+      // Convert YYYY-MM-DD → "Month Day, Year"
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      const parts = inputDate.split('-')
+      const year = parts[0]
+      const month = months[parseInt(parts[1], 10) - 1]
+      const day = parseInt(parts[2], 10)
+      return `${month} ${day}, ${year}`
+    }
+    
+    function filterTable() {
+      const searchValue = document.getElementById('searchInput').value.trim().toLowerCase()
+      const dateInput = document.getElementById('dateInput').value
+      const formattedDate = dateInput ? formatDateToMatchDisplay(dateInput) : ''
+      const table = document.getElementById('myTable')
+      const tr = table.getElementsByTagName('tr')
+    
+      for (let i = 1; i < tr.length; i++) {
+        const tds = tr[i].getElementsByTagName('td')
+        let rowTextMatch = false
+        let dateMatch = false
+    
+        for (let j = 0; j < tds.length; j++) {
+          const txt = tds[j].textContent.trim().toLowerCase()
+          if (txt.includes(searchValue)) {
+            rowTextMatch = true
           }
         }
-        if (found) {
-          tr[i].style.display = "";
+    
+        const dateTd = tds[4]?.textContent.trim() // 5th column is the date
+        if (!formattedDate || (dateTd && dateTd.includes(formattedDate))) {
+          dateMatch = true
+        }
+    
+        if (rowTextMatch && dateMatch) {
+          tr[i].style.display = ''
         } else {
-          tr[i].style.display = "none";
+          tr[i].style.display = 'none'
         }
       }
-    });
+    }
+    
+    document.getElementById('searchInput').addEventListener('keyup', filterTable)
+    document.getElementById('dateInput').addEventListener('change', filterTable)
   </script>
-{% endblock content %}
+{% endblock %}

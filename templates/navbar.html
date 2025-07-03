@@ -1,46 +1,134 @@
 {% load static %}
 {% if request.user.is_authenticated %}
-<header id="header" class="header d-flex fixed-top">
-    <div  class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
-        <img src="{% static 'assets/img/logo.png' %}"/>
-      </a>
+  <!--<header id="header" class="header d-flex fixed-top">
+
+    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0"><img src="{% static 'assets/img/logo.png' %}" /></a>
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="{% url "index" %}" class="active">Home</a></li>
-          <li><a href="/#features">Features</a></li>
-          <li><a href="/#features-2">About us</a></li>
-          <!--<li><a href="/#pricing">Pricing</a></li>-->
-          <li><a href="{% url "home" %}">Translater</a></li>
-          <li class="dropdown"><a href="#"><span><img src="{% static 'assets/img/user_icon.png' %}" height="20px" width="20px%">&nbsp;{{ request.user }}</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <li>
+            <a href="{% url 'index' %}" class="active">Home</a>
+          </li>
+          <li>
+            <a href="{% url "about_us" %}">About us</a>
+          </li>
+          <li>
+            <a href="/#features">Features</a>
+          </li>
+ 
+          <li>
+            <a href="/#blogs">Blogs</a>
+          </li>
+          <li>
+            <a href="{% url "list_of_videos" %}">Teltam Tube</a>
+          </li>
+          <li>
+            <a href="{% url 'home' %}">Translater</a>
+          </li>
+          <li class="dropdown">
+            <a href="#"><span><img src="{% static 'assets/img/user_icon.png' %}" height="20px" width="20px%" />&nbsp;{{ request.user }}</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
             <ul>
-              <li><a href="{% url "profile" %}">My Account</a></li>
-              <li><a href="{% url "translations_history" %}">History</a></li>
-              <li><a href="{% url "logout" %}">Logout</a></li>
+              <li>
+                <a href="{% url 'profile' %}">My Account</a>
+              </li>
+              {% if request.user.is_superuser %}
+              <li>
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+              </li>
+              {% else %}
+              <li>
+                <a href="{% url 'translations_history' %}">History</a>
+              </li>
+              {% endif %}
+              <li>
+                <a href="{% url 'logout' %}">Logout</a>
+              </li>
             </ul>
           </li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
     </div>
-  </header>
-  {% else %}
-  <header id="header" class="header d-flex fixed-top">
+  </header>-->
+
+    <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
-      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
-        <img src="{% static 'assets/img/logo.png' %}"/>
-      </a>
+
+<a href="/" class="logo d-flex align-items-center me-auto me-xl-0"><img src="{% static 'assets/img/logo.png' %}" /></a>
+
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="#hero" class="active">Home</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#features-2">About us</a></li>
-          <!--<li><a href="#pricing">Pricing</a></li>
-          <li><a href="#contact">Contact</a></li>-->
-          <a class="btn-getstarted" href="{% url "login" %}">Sign in</a>
+          <li>
+            <a href="{% url 'index' %}" class="active">Home</a>
+          </li>
+          <li>
+            <a href="{% url "about_us" %}">About us</a>
+          </li>
+          <li>
+            <a href="/#features">Features</a>
+          </li>
+ 
+          <li>
+            <a href="/#blogs">Blogs</a>
+          </li>
+          <li>
+            <a href="{% url "list_of_videos" %}">Teltam Tube</a>
+          </li>
+          <li>
+            <a href="{% url 'home' %}">Translater</a>
+          </li>
+ 
+           <li class="dropdown">
+            <a href="#"><span><img src="{% static 'assets/img/user_icon.png' %}" height="20px" width="20px%" />&nbsp;{{ request.user }}</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li>
+                <a href="{% url 'profile' %}">My Account</a>
+              </li>
+              {% if request.user.is_superuser %}
+              <li>
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+              </li>
+              {% else %}
+              <li>
+                <a href="{% url 'translations_history' %}">History</a>
+              </li>
+              {% endif %}
+            </ul>
+          </li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+      <a class="btn-getstarted" href="{% url "logout" %}">Logout</a>
+
+    </div>
+  </header>
+{% else %}
+  <header id="header" class="header d-flex fixed-top">
+    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0"><img src="{% static 'assets/img/logo.png' %}" /></a>
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li>
+            <a href="/#hero" class="active">Home</a>
+          </li>
+          <li>
+            <a href="{% url "about_us" %}">About us</a>
+          </li>
+          <li>
+            <a href="/#features">Features</a>
+          </li>
+          <!-- <li><a href="#pricing">Pricing</a></li> -->
+          <li>
+            <a href="/#blogs">Blogs</a>
+          </li>
+          <li>
+            <a href="/#videos">Teltam Tube</a>
+          </li>
+          &nbsp;<a class="btn-getstarted" href="{% url 'login' %}">Sign in</a>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
     </div>
   </header>
-  {% endif %}
+{% endif %}

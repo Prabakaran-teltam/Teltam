@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Teltam.in</title>
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="theme-color" content="#ffffff" />
+    <link type="text/css" href="{% static 'dashboard/vendor/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'dashboard/vendor/notyf/notyf.min.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'dashboard/css/volt.css' %}" rel="stylesheet" />
+    <link type="text/css" href="{% static 'dashboard/css/additional.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" />
+    
+    {{ form.media }} 
+  </head>
+
+  <body>
+    <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">
+      <a class="navbar-brand me-lg-5" href="../../index.html"><img class="navbar-brand-dark" src="../../assets/img/brand/light.svg" alt="Volt logo" /> <img class="navbar-brand-light" src="../../assets/img/brand/dark.svg" alt="Volt logo" /></a>
+      <div class="d-flex align-items-center">
+        <button class="navbar-toggler d-lg-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+      </div>
+    </nav>
+
+    <nav id="sidebarMenu" class="sidebar d-lg-block bg-gray-800 text-white collapse" data-simplebar>
+      <div class="sidebar-inner px-4 pt-3">
+        <div class="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
+          <div class="d-flex align-items-center">
+            <div class="avatar-lg me-4">
+              <img src="{% static 'assets/img/fav_icon.png' %}" class="card-img-top rounded-circle border-white" alt="Bonnie Green" />
+            </div>
+            <div class="d-block">
+              <h2 class="h5 mb-3">{{ request.user }}</h2>
+              <a href="#" class="btn btn-secondary btn-sm d-inline-flex align-items-center">
+                <svg class="icon icon-xxs me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>Sign Out
+              </a>
+            </div>
+          </div>
+          <div class="collapse-close d-md-none">
+            <a href="#sidebarMenu" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="true" aria-label="Toggle navigation">
+              <svg class="icon icon-xs" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        {% include 'admin/sidebar.html' %}
+      </div>
+    </nav>
+
+    <main class="content">
+      <nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark ps-0 pe-2 pb-0">
+        <div class="container-fluid px-0">
+          <div class="d-flex justify-content-between w-100" id="navbarSupportedContent">
+            <div class="d-flex align-items-center">
+              <form class="navbar-search form-inline" id="navbar-search-main" method="GET" action="#">
+                <div class="input-group input-group-merge search-bar">
+                  <span class="input-group-text" id="topbar-addon">
+                    <svg class="icon icon-xs" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                    </svg>
+                  </span>
+                  <input type="text" class="form-control" id="topbarInputIconLeft" name="q" placeholder="Search" aria-label="Search" aria-describedby="topbar-addon" value="{{ request.GET.q|default:'' }}" />
+                </div>
+              </form>
+            </div>
+            <ul class="navbar-nav align-items-center">
+              <li class="nav-item dropdown ms-lg-3">
+                <a class="nav-link dropdown-toggle pt-1 px-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <div class="media d-flex align-items-center">
+                    {% if navbar_profile_image %}
+                      <img class="avatar rounded-circle" alt="Image placeholder" src="{{ navbar_profile_image }}" />
+                    {% else %}
+                      <img class="avatar rounded-circle" alt="Image placeholder" src="{{ navbar_profile_image }}" />
+                    {% endif %}
+                    <div class="media-body ms-2 text-dark align-items-center d-none d-lg-block">
+                      <span class="mb-0 font-small fw-bold text-gray-900">{{ request.user }}</span>
+                    </div>
+                  </div>
+                </a>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-end mt-2 py-1">
+                  <a class="dropdown-item d-flex align-items-center" href="#">
+                    <svg class="dropdown-icon text-gray-400 me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
+                    </svg>My Profile
+                  </a>
+                  <div role="separator" class="dropdown-divider my-1"></div>
+                  <a class="dropdown-item d-flex align-items-center" href="{% url "logout" %}">
+                    <svg class="dropdown-icon text-danger me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>Logout
+                  </a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      {% include 'admin/Notification.html' %}
+      {% block content %}
+      {% endblock %}
+    </main>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        $('#myTable').DataTable()
+      })
+    </script>
+    <!-- Core -->
+    <script src="{% static 'dashboard/vendor/@popperjs/core/dist/umd/popper.min.js' %}"></script>
+    <script src="{% static 'dashboard/vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+
+    <!-- Vendor JS -->
+    <script src="{% static 'dashboard/vendor/onscreen/dist/on-screen.umd.min.js' %}"></script>
+
+    <!-- Slider -->
+    <script src="{% static 'dashboard/vendor/nouislider/distribute/nouislider.min.js' %}"></script>
+
+    <!-- Smooth scroll -->
+    <script src="{% static 'dashboard/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js' %}"></script>
+
+    <!-- Charts -->
+    <script src="{% static 'dashboard/vendor/chartist/dist/chartist.min.js' %}"></script>
+    <script src="{% static 'dashboard/vendor/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js' %}"></script>
+
+    <!-- Datepicker -->
+    <script src="{% static 'dashboard/vendor/vanillajs-datepicker/dist/js/datepicker.min.js' %}"></script>
+
+    <!-- Sweet Alerts 2 -->
+    <script src="{% static 'dashboard/vendor/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+
+    <!-- Moment JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+
+    <!-- Vanilla JS Datepicker -->
+    <script src="{% static 'dashboard/vendor/vanillajs-datepicker/dist/js/datepicker.min.js' %}"></script>
+
+    <!-- Notyf -->
+    <script src="{% static 'dashboard/vendor/notyf/notyf.min.js' %}"></script>
+
+    <!-- Simplebar -->
+    <script src="{% static 'dashboard/vendor/simplebar/dist/simplebar.min.js' %}"></script>
+
+    <!-- Github buttons (external script - no static) -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Volt JS -->
+    <script src="{% static 'dashboard/assets/js/volt.js' %}"></script>
+  </body>
+</html>

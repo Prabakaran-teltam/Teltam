@@ -1,99 +1,96 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Teltam | Sign in</title>
-<link href="{% static 'assets/img/fav_icon.png' %}" rel="icon">
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-  <link href="{% static "assets/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
-  <link href="{% static "assets/vendor/bootstrap-icons/bootstrap-icons.css" %}" rel="stylesheet">
-  <link href="{% static "assets/vendor/aos/aos.css" %}" rel="stylesheet">
-  <link href="{% static "assets/vendor/glightbox/css/glightbox.min.css" %}" rel="stylesheet">
-  <link href="{% static "assets/vendor/swiper/swiper-bundle.min.css" %}" rel="stylesheet">
-  <link href="{% static "assets/css/main.css" %}" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
- 
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Teltam | Sign in</title>
+    <link href="{% static 'assets/img/fav_icon.png' %}" rel="icon" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/main.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  </head>
 
-<body class="index-page light-background">
-
-<main class="main">
-
-<section id="register" class="register section ">
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-      <div class="row g-4 g-lg-5">
-        <div class="col-lg-6">
-            <img src="{% static "assets/img/login.png" %}" alt="Hero Image" class="img-fluid">
-        </div>
-
-        <div class="col-lg-5" >
-            
-          <div class="card contact-form" data-aos="fade-up" data-aos-delay="300" style="border-radius: 15px;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);">
-            <br>
-            <div class="container section-title" data-aos="fade-up">
-                <h2>Sign in to Teltam</h2>
-                <p>Fill in the form to get started.</p>
+  <body class="index-page light-background">
+    <main class="main">
+      <section id="register" class="register section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+          <div class="row g-4 g-lg-5">
+            <div class="col-lg-6">
+              <img src="{% static 'assets/img/login.png' %}" alt="Hero Image" class="img-fluid" />
             </div>
-            <form method="POST" action="" class="container">
-              {% csrf_token %}
-              <div class="form-outline">
-                  <input type="text" name="username" id="form3Example3" class="form-control" placeholder="Username"/>
-              </div>
-              <br>
-              <div class="form-outline position-relative">
-                  <input type="password" name="password" id="form3Example4" class="form-control" placeholder="Password"/>
-                  <!-- Show/Hide password icon -->
-                  <span id="togglePassword" style="position: absolute; right: 15px; top: 10px; cursor: pointer;color:rgb(82,119,173)">
-                      <i class="fas fa-eye"></i>
-                  </span>
-              </div>
-              <br>
-              <div class="form-check d-flex justify-content-center mb-4">
-                  <div class="col-md-7">
-                      <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+            <div class="col-lg-5">
+              <div class="contact-form" data-aos="fade-up" data-aos-delay="300">
+                <br />
+                <div class="container section-title" data-aos="fade-up">
+                  <h2>Sign in to Teltam</h2>
+                  <p>Fill in the form to get started.</p>
+                </div>
+                <form method="POST" action="" class="container">
+                  {% csrf_token %}
+                  {% if request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}" />
+                  {% endif %}
+                  <div class="form-outline">
+                    <input type="text" name="username" id="form3Example3" class="form-control shadow-none" placeholder="Username" />
                   </div>
-                  <div class="col-md-5" style="text-align:right">
-                      <p><a href="{% url 'password_reset_request' %}">Forgot password?</a></p>
+                  <br />
+                  <div class="form-outline position-relative">
+                    <input type="password" name="password" id="form3Example4" class="form-control shadow-none" placeholder="Password" />
+                    <!-- Show/Hide password icon -->
+                    <span id="togglePassword" style="position: absolute; right: 15px; top: 10px; cursor: pointer;color:rgb(82,119,173)"><i class="fas fa-eye"></i></span>
                   </div>
+                  <br />
+                  <div class="form-check d-flex justify-content-center mb-4">
+                    <div class="col-md-7">
+                      <p>
+                        Don't have an account? <a href="{% url 'register' %}">Sign up</a>
+                      </p>
+                    </div>
+                    <div class="col-md-5" style="text-align:right">
+                      <p>
+                        <a href="{% url 'password_reset_request' %}">Forgot password?</a>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary btn-block mb-4">Sign In</button>
+                  </div>
+                </form>
               </div>
-              <div class="col-12 text-center">
-                  <button type="submit" class="btn btn-primary btn-block mb-4">
-                      Sign In
-                  </button>
-              </div>
-          </form>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-    <br><br>
-  </section>
-</main>
-{% include "message.html" %}
+        <br /><br />
+      </section>
+    </main>
+    {% include 'message.html' %}
 
-<script>
-    const togglePassword = document.querySelector('#togglePassword');
-    const passwordInput = document.querySelector('#form3Example4');
-    togglePassword.addEventListener('click', function () {
-        const type = passwordInput.type === 'password' ? 'text' : 'password';
-        passwordInput.type = type;
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-</script>
+    <script>
+      const togglePassword = document.querySelector('#togglePassword')
+      const passwordInput = document.querySelector('#form3Example4')
+      togglePassword.addEventListener('click', function () {
+        const type = passwordInput.type === 'password' ? 'text' : 'password'
+        passwordInput.type = type
+        this.querySelector('i').classList.toggle('fa-eye')
+        this.querySelector('i').classList.toggle('fa-eye-slash')
+      })
+    </script>
 
-
-<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-<script src="{% static "assets/vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
-<script src="{% static "assets/vendor/php-email-form/validate.js" %}"></script>
-<script src="{% static "assets/vendor/aos/aos.js" %}"></script>
-<script src="{% static "assets/vendor/glightbox/js/glightbox.min.js" %}"></script>
-<script src="{% static "assets/vendor/swiper/swiper-bundle.min.js" %}"></script>
-<script src="{% static "assets/vendor/purecounter/purecounter_vanilla.js" %}"></script>
-<script src="{% static "assets/js/main.js" %}"></script>
-</body>
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+    <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+    <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+  </body>
 </html>

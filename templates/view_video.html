@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load youtube_extras %}
+{% load static %}
+{% block content %}
+  <style>
+    .social-share a {
+      margin-right: 10px;
+      font-size: 1.4rem;
+      color: #555;
+    }
+    .blog-content {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 2rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    
+    /* Headings */
+    .blog-content h1,
+    .blog-content h2,
+    .blog-content h3,
+    .blog-content h4,
+    .blog-content h5,
+    .blog-content h6 {
+      font-weight: 600;
+      margin: 1.5rem 0 1rem;
+      line-height: 1.3;
+    }
+    /* Paragraphs */
+    .blog-content p {
+      margin: 1rem 0;
+    }
+    
+    /* Bold & Italic */
+    .blog-content strong {
+      font-weight: bold;
+    }
+    .blog-content em {
+      font-style: italic;
+    }
+    
+    /* Blockquote */
+    .blog-content blockquote {
+      border-left: 4px solid #ccc;
+      padding-left: 1rem;
+      color: #555;
+      background-color: #f9f9f9;
+      margin: 1.5rem 0;
+      font-style: italic;
+    }
+    
+    /* Lists */
+    .blog-content ul,
+    .blog-content ol {
+      margin: 1rem 0 1rem 2rem;
+      padding-left: 1rem;
+    }
+    
+    .blog-content ul {
+      list-style-type: disc;
+    }
+    
+    .blog-content ol {
+      list-style-type: decimal;
+    }
+    
+    .blog-content li {
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Images */
+    .blog-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+    
+    /* Tables */
+    .blog-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+    
+    .blog-content th,
+    .blog-content td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    
+    .blog-content th {
+      background-color: #f1f1f1;
+      font-weight: bold;
+    }
+    
+    /* Media Embeds */
+    .blog-content iframe,
+    .blog-content video {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    
+    /* Horizontal Line */
+    .blog-content hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 2rem 0;
+    }
+    
+    /* Alignments */
+    .blog-content .text-left {
+      text-align: left;
+    }
+    .blog-content .text-center {
+      text-align: center;
+    }
+    .blog-content .text-right {
+      text-align: right;
+    }
+    
+    /* Utility */
+    .blog-content .mt-1 {
+      margin-top: 0.25rem;
+    }
+    
+    .blog-content .mt-2 {
+      margin-top: 0.5rem;
+    }
+    
+    .blog-content .mt-3 {
+      margin-top: 1rem;
+    }
+    .blog-content {
+      width: 1000px;
+      height: 490px;
+    }
+    
+    .video-container iframe {
+      width: 1000px;
+      height: 490px;
+    }
+  </style>
+
+  <div class="page-title light-background">
+    <div class="container">
+      <h1>Discover our Vidoes</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li>
+            <a href="/">Home</a>
+          </li>
+          <li>
+            <a href="{% url 'list_of_videos' %}">Videos</a>
+          </li>
+          <li class="current">{{ video.title }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <section id="service-details" class="service-details section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="200">
+          <h3>{{ video.title }}</h3>
+          {% if video.category %}
+            <p>
+              <strong>Category:</strong> {{ video.category.name }}
+            </p>
+          {% endif %}
+
+          <div class="container">
+            <div class="ratio ratio-21x9 mb-4">
+              <iframe src="https://www.youtube.com/embed/{{ video.youtube_url|youtube_id }}" title="{{ video.title }}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            </div>
+          </div>
+
+          <div class="blog-content">{{ video.description|safe }}</div>
+                     <div class="social-share mb-4">
+            <strong>Share:</strong>&nbsp;
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://api.whatsapp.com/send?text={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.linkedin.com/shareArticle?url={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--   <section id="services" class="services section light-background">
+    <div class="container section-title" data-aos="fade-up">
+      <h2>You might also like…</h2>
+      <p>Explore fresh insights, tips, and stories from our latest blog posts.</p>
+    </div>
+
+    <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
+      <div class="row g-4">
+        {% for blog in related_blog %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+              {% if blog.image %}
+                <img src="{{ blog.image.url }}" class="card-img-top" alt="{{ blog.title }}" />
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title fw-bold">{{ blog.title }}</h5>
+
+                <button class="btn btn-danger btn-sm">{{ blog.created_at|date:'d/m/Y' }}</button>
+                <p class="card-text text-muted small">{{ blog.content|striptags|truncatewords:25 }}</p>
+                <div class="mt-auto">
+                  <a href="{% url 'view_blog' blog.id %}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+              {% if blog.tags.exists %}
+                <div class="card-footer bg-transparent border-0 small text-muted">
+                  {% for tag in blog.tags.all %}
+                    <span class="me-1">#<a href="{% url 'tag_based_search' tag.name %}" style="color: inherit;text-decoration: none;">{{ tag.name }}</a></span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>   -->
+{% endblock %}

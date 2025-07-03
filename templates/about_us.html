@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+<title>Teltam | About us</title>
+{% endblock title %}
+{% block content %}
+<br><br><br>
+    <!-- About Section -->
+    <section id="about" class="services about section">
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
+    <div class="row gy-4 align-items-center justify-content-between">
+      <div class="col-xl-5" data-aos="fade-up" data-aos-delay="200">
+        <span class="about-meta">MORE ABOUT US</span>
+        <h2 class="about-title">Your Gateway to Smart Translation & Knowledge</h2>
+        <p class="about-description">
+          At <strong>Teltam.in</strong>, we enable users to upload images or PDF files and translate their content into any language of choice, offering not just the translated text but also pronunciation and meaning. We combine this with rich blogs and embedded YouTube videos to offer a complete learning and discovery experience.
+        </p>
+        <div class="row feature-list-wrapper">
+          <div class="col-md-6">
+            <ul class="feature-list">
+              <li><i class="bi bi-check-circle-fill"></i> Upload & Translate Images/PDFs</li>
+              <li><i class="bi bi-check-circle-fill"></i> Extract Text with Pronunciation</li>
+              <li><i class="bi bi-check-circle-fill"></i> Meaning in Target Language</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="feature-list">
+              <li><i class="bi bi-check-circle-fill"></i> Watch Embedded YouTube Videos</li>
+              <li><i class="bi bi-check-circle-fill"></i> Read Blogs in Your Language</li>
+              <li><i class="bi bi-check-circle-fill"></i> Multi-language Support</li>
+            </ul>
+          </div>
+        </div>
+ 
+      </div>
+
+      <div class="col-xl-6" data-aos="fade-up" data-aos-delay="300">
+        <div class="image-wrapper">
+          <div class="images position-relative" data-aos="zoom-out" data-aos-delay="400">
+            <img src="{% static 'assets/img/about-5.webp' %} " alt="Translation Service" class="img-fluid main-image rounded-4">
+            <img src="{% static 'assets/img/about-2.webp' %} " alt="Language Tools" class="img-fluid small-image rounded-4">
+          </div>
+          <div class="experience-badge floating">
+            <h3>Next-Gen <span>Translation</span></h3>
+            <p>Empowering understanding across languages</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+          <div class="row g-4">
+<div class="col-lg-1" data-aos="fade-up" data-aos-delay="100">
+</div>
+          <div class="col-lg-5" data-aos="fade-up" data-aos-delay="100">
+            <div class="service-card d-flex">
+              <div class="icon flex-shrink-0">
+                <i class="bi bi-activity"></i>
+              </div>
+              <div>
+                <h3>Vision</h3>
+                <p>To become the go-to Tamil platform for learning, creating, and applying AI, empowering every Tamil speaker to explore technology with confidence and purpose.</p>
+              </div>
+            </div>
+          </div> 
+
+          <div class="col-lg-5" data-aos="fade-up" data-aos-delay="200">
+            <div class="service-card d-flex">
+              <div class="icon flex-shrink-0">
+                <i class="bi bi-diagram-3"></i>
+              </div>
+              <div>
+                <h3>Mission</h3>
+                <p>To build and deliver user-friendly AI tools, blogs, and digital solutions in Tamil, combining technology, language, and culture. We aim to make AI and tech accessible, especially for students, creators, and small businesses.</p>
+              </div>
+            </div>
+          </div> 
+
+ 
+        </div>
+</section>
+<!-- /About Section -->
+
+{% endblock content %}

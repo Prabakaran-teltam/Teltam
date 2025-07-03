@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}
+<title>Teltam</title>
+{% endblock title %}
 {% block content %}
 <link href="{% static "assets/css/review.css" %}" rel="stylesheet">
 <style>
@@ -121,8 +124,8 @@
   </div>
   <p class="text-light mt-3">Please wait while we process the image...</p>
 </div>
-{% if not output_data %}
-<section id="contact" class="contact section light-background">
+{% if not target_transliterate %}
+<section id="home" class="contact section light-background">
   <br><br><br><br>
 
   <div class="container section-title" data-aos="fade-up">
@@ -161,9 +164,10 @@
                   <select class="form-control" name="source_language" required>
                     <option value="" disabled selected>Select Source Language</option>
                     <!--<option value="auto">Auto Detect</option>-->
+                    <option value="tamil">Tamil</option>
+                    <option value="english">English</option>
                     <option value="hindi">Hindi</option>
                     <option value="telugu">Telugu</option>
-                    <option value="tamil">Tamil</option>
                     <option value="malayalam">Malayalam</option>
                     <option value="kannada">Kannada</option>
                   </select>
@@ -171,9 +175,10 @@
                 <div class="col-md-6 col-12">
                   <select class="form-control" name="target_language" required>
                     <option value="" disabled selected>Select Target Language</option>
+                    <option value="tamil">Tamil</option>
+                    <option value="english">English</option>
                     <option value="hindi">Hindi</option>
                     <option value="telugu">Telugu</option>
-                    <option value="tamil">Tamil</option>
                     <option value="malayalam">Malayalam</option>
                     <option value="kannada">Kannada</option>
                   </select>
@@ -201,7 +206,7 @@
 {% endif %}
 
 
-{% if output_data %}
+{% if target_transliterate %}
 <section id="Translater" class="features section light-background">
 
   <div class="container section-title" data-aos="fade-up">
@@ -210,78 +215,30 @@
     <p>Extracted words count : {{word_count}}</p>
   </div>
   <div class="container">
-    <div class="d-flex justify-content-center">
-      <ul class="nav nav-tabs" data-aos="fade-up" data-aos-delay="100">
-        <li class="nav-item">
-          <a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1">
-            <h4>Tabular Format</h4>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2">
-            <h4>Paragraph Format</h4>
-          </a> 
-        </li>
-      </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade active show">
+    <div class="container row">
+      <div class="col-md-12">
+                <h4>Extracted Text:</h4>
+          <textarea class="form-control" rows="10">{{extracted_text}}</textarea>
+          <br>
+      </div>
+          
+        <div class="col-md-6">
+          <h4>{{target_lang}} Pronunciation:</h4>
+            <textarea class="form-control" rows="10">{{target_transliterate}}</textarea>
+        </div>
+        <div class="col-md-6">
+          <h4>{{target_lang}} Meaning:</h4>
+            <textarea class="form-control" rows="10">{{target_meaning}}</textarea>
+        </div>
     </div>
-
-    <div class="tab-content" data-aos="fade-up" data-aos-delay="200">
-      <div class="tab-pane fade active show" id="features-tab-1">
-        <div class="row">
-          <div class="col-md-1"></div>
-          <div class="col-md-12">
-            <div class="table-responsive">
-              <table class="table table-bordered table-striped" border="1">
-                <tr>
-                  <th>Input Word</th>
-                  <th>{{target_lang}} Pronunciation</th>
-                  <th>{{target_lang}} Meaning</th>
-                  <th>English Pronunciation</th>
-                  <th>English Meaning</th>
-                </tr>
-                {% for row in output_data %}
-                <tr>
-                  {% for col in row %}
-                  <td>{{ col }}</td>
-                  {% endfor %}
-                </tr>
-                {% endfor %}
-              </table>
-            </div>
-          </div>
-        </div>
       </div>
-
-      <div class="tab-pane fade" id="features-tab-2">
-        <div class="container mt-4">
-          <div class="row">
-            <div class="col-md-1"></div>
-            <div class="col-md-10">
-              <div class="translated-content">
-                {% for row in output_data %}
-                <div class="card mb-3">
-                  <div class="card-body">
-                    <h5 class="card-title fw-bold">Extracted Text: {{ row.0 }}</h5>
-                    <p class="card-text mb-1"><span class="fw-medium">{{ target_lang }} Pronunciation:</span> {{ row.1 }}</p>
-                    <p class="card-text"><span class="fw-medium">{{ target_lang }} Meaning:</span> {{ row.2 }}</p>
-                    <p class="card-text mb-1"><span class="fw-medium">English Pronunciation:</span> {{ row.3 }}</p>
-                    <p class="card-text"><span class="fw-medium">English Meaning:</span> {{ row.4 }}</p>
-                  </div>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-            <div class="col-md-1"></div>
-          </div>
-        </div>
-      </div>
-
 
 
     </div>
   </div>
 </section>
-
 
 <section id="contact" class="contact section light-background">
 
@@ -348,6 +305,28 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const sourceSelect = document.querySelector('[name="source_language"]');
+    const targetSelect = document.querySelector('[name="target_language"]');
+
+    const allTargetOptions = Array.from(targetSelect.options).map(option => option.cloneNode(true));
+
+    sourceSelect.addEventListener('change', function () {
+      const selectedSource = this.value;
+
+      // Reset target select to its default state
+      targetSelect.innerHTML = '';
+      allTargetOptions.forEach(option => {
+        if (option.value !== selectedSource || option.value === '') {
+          targetSelect.appendChild(option.cloneNode(true));
+        }
+      });
+    });
+  });
+
+
 document.addEventListener('DOMContentLoaded', function() {
   // Get form and relevant elements
   const form = document.getElementById('upload-form');

@@ -9,12 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-i42p)5@e+&kh$g_p3d0bn3xc$8pgr2didk!mp%v*%h1e_2j3=9"
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
-    "unfold",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -22,8 +21,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "main",
+    "admin_dashboard",
     "widget_tweaks",
+    "django_celery_beat",
+    "django_ckeditor_5"
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -36,9 +39,8 @@ MIDDLEWARE = [
     "main.middleware.Custom500Middleware"
 ]
 
-
-
 ROOT_URLCONF = "Translater.urls"
+
 
 TEMPLATES = [
     {
@@ -51,13 +53,14 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'admin_dashboard.context_processors.notification_count',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "Translater.wsgi.application"
 
+WSGI_APPLICATION = "Translater.wsgi.application"
 
 DATABASES = {
     "default": {
@@ -87,7 +90,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Asia/Kolkata"
-
+CELERY_TIMEZONE = 'Asia/Kolkata'
 USE_I18N = True
 
 USE_TZ = True
@@ -99,12 +102,50 @@ STATICFILES_DIRS = [
 os.path.join(BASE_DIR, 'static'),
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
-
+# STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'png', 'jpg']
+
+CKEDITOR_5_CONFIGS = {
+    "default": {
+        "toolbar": [
+            "heading", "|",
+            "bold", "italic", "underline", "strikethrough", "code", "|",
+            "subscript", "superscript", "|",
+            "link", "imageUpload", "mediaEmbed", "|",
+            "bulletedList", "numberedList", "todoList", "|",
+            "outdent", "indent", "|",
+            "alignment", "blockQuote", "codeBlock", "|",
+            "insertTable", "horizontalLine", "pageBreak", "|",
+            "undo", "redo", "|",
+            "sourceEditing", "selectAll", "findAndReplace", "removeFormat"
+        ],
+        "image": {
+            "toolbar": [
+                "imageTextAlternative", "|",
+                "imageStyle:alignLeft", 
+                "imageStyle:alignCenter", 
+                "imageStyle:alignRight", "|",
+                "toggleImageCaption", "resizeImage"
+            ]
+        },
+        "table": {
+            "contentToolbar": [
+                "tableColumn", "tableRow", "mergeTableCells", 
+                "tableProperties", "tableCellProperties"
+            ]
+        },
+        "height": 500,
+        "width": "100%",
+    }
+}
+
 
 
 
@@ -129,17 +170,3 @@ DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 #     "site_brand": "Teltam",
 # }
 
-UNFOLD = {
-    "SITE_TITLE": "Teltam Administration",
-    "SITE_HEADER": "Admin DashBoard",
-    "SITE_SUBHEADER": "Teltam",
-    "SITE_DROPDOWN": [
-        {
-            "icon": "diamond",
-            "title": _("My site"),
-            "link": "http://teltam.in",
-        },
-        # ...
-    ],
-    "SITE_URL": "/",
-}

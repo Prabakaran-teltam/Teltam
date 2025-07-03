@@ -1,0 +1,30 @@
+.dataTables_length {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dataTables_length label {
+    margin: 0;
+    font-weight: 500;
+}
+
+.dataTables_length select {
+    width: auto;
+    display: inline-block;
+    margin: 0 5px;
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='0,0 140,0 70,80' fill='%23333'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 0.65rem auto;
+}
+
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter {
+    margin-bottom: 1rem;
+  }

@@ -1,0 +1,20 @@
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% for message in messages %}
+            {% if message.tags == "error" or message.tags == "success" or message.tags == "warning" or message.tags == "info" or message.tags == "debug" %}
+                Swal.fire({
+                    icon: '{% if message.tags == "error" %}error{% elif message.tags == "success" %}success{% elif message.tags == "warning" %}warning{% elif message.tags == "info" or message.tags == "debug" %}info{% endif %}',
+                    title: '{{ message.tags|title }}',
+                    text: '{{ message|escapejs }}',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'btn btn-primary'
+                    },
+                    buttonsStyling: false
+                });
+            {% endif %}
+        {% endfor %}
+    });
+</script>
+{% endif %}

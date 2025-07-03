@@ -1,0 +1,182 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+  <div class="py-4">
+    <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+      <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+        <li class="breadcrumb-item">
+          <a href="/">
+            <svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'dashboard' %}">Dashboard</a>
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-sm-6 col-xl-4 mb-4">
+      <div class="card border-0 shadow">
+        <div class="card-body">
+          <div class="row d-block d-xl-flex align-items-center">
+            <div class="col-12 col-xl-5 text-xl-center mb-3 mb-xl-0 d-flex align-items-center justify-content-xl-center">
+              <div class="icon-shape icon-shape-primary rounded me-4 me-sm-0">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                </svg>
+              </div>
+              <div class="d-sm-none">
+                <h2 class="h5">Customers</h2>
+                <h3 class="fw-extrabold mb-1">{{ user_count }}</h3>
+              </div>
+            </div>
+            <div class="col-12 col-xl-7 px-xl-0">
+              <div class="d-none d-sm-block">
+                <h2 class="h6 text-gray-400 mb-0">Customers</h2>
+                <h3 class="fw-extrabold mb-2">{{ user_count }}</h3>
+              </div>
+              <small class="d-flex align-items-center text-gray-500">Last user joined on:</small>
+              <div class="small d-flex mt-1">
+                <div>
+                  <span class="text-success fw-bolder">{{ last_user }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4 mb-4">
+      <div class="card border-0 shadow">
+        <div class="card-body">
+          <div class="row d-block d-xl-flex align-items-center">
+            <div class="col-12 col-xl-5 text-xl-center mb-3 mb-xl-0 d-flex align-items-center justify-content-xl-center">
+              <div class="icon-shape icon-shape-secondary rounded me-4 me-sm-0">
+                <i class="bi bi-translate fs-3"></i>
+              </div>
+              <div class="d-sm-none">
+                <h2 class="fw-extrabold h5">Translations</h2>
+                <h3 class="mb-1">{{ translation_count }}</h3>
+              </div>
+            </div>
+            <div class="col-12 col-xl-7 px-xl-0">
+              <div class="d-none d-sm-block">
+                <h2 class="h6 text-gray-400 mb-0">Translations</h2>
+                <h3 class="fw-extrabold mb-2">{{ translation_count }}</h3>
+              </div>
+              <small class="d-flex align-items-center text-gray-500">Last translation done on:</small>
+              <div class="small d-flex mt-1">
+                <div>
+                  <span class="text-success fw-bolder">{{ last_translation_date }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4 mb-4">
+      <div class="card border-0 shadow">
+        <div class="card-body">
+          <div class="row d-block d-xl-flex align-items-center">
+            <div class="col-12 col-xl-5 text-xl-center mb-3 mb-xl-0 d-flex align-items-center justify-content-xl-center">
+              <div class="icon-shape icon-shape-tertiary rounded me-4 me-sm-0">
+                <i class="bi bi-substack fs-3"></i>
+              </div>
+              <div class="d-sm-none">
+                <h2 class="fw-extrabold h5">Blog's</h2>
+                <h3 class="mb-1">{{ blog_count }}</h3>
+              </div>
+            </div>
+            <div class="col-12 col-xl-7 px-xl-0">
+              <div class="d-none d-sm-block">
+                <h2 class="h6 text-gray-400 mb-0">Blog's</h2>
+                <h3 class="fw-extrabold mb-2">{{ blog_count }}</h3>
+              </div>
+              <small class="text-gray-500">Last blog created on:</small>
+              <div class="small d-flex mt-1">
+                <div>
+                  <span class="text-success fw-bolder">{{ last_blog }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-xl-12">
+      <div class="row">
+        <div class="col-12 mb-4">
+          <div class="card border-0 shadow">
+            <div class="card-header">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h2 class="fs-5 fw-bold mb-0">Translated Details</h2>
+                </div>
+                <div class="col text-end">
+                  <a href="{% url "translations" %}" class="btn btn-sm btn-primary">See all</a>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                  <tr>
+                    <th class="border-0 rounded-start">#</th>
+                    <th class="border-0">Source Language</th>
+                    <th class="border-0">Target Language</th>
+                    <th class="border-0">Translated</th>
+                    <th class="border-0 rounded-end">View File</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for translation in translation_details %}
+                    <tr>
+                      <td>
+                        <a href="#" class="text-primary fw-bold">{{ forloop.counter }}</a>
+                      </td>
+                      <td>{{ translation.language|default:'-' }}</td>
+                      <td>{{ translation.target_language|default:'-' }}</td>
+                      <td>{{ translation.created }} ago</td>
+                      <td class="text-success">
+                        <div class="d-flex align-items-center">
+                          <!-- Trigger Modal -->
+                          <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#imageModal{{ forloop.counter }}"><i class="bi bi-eye-fill"></i>&nbsp;&nbsp;View</button>
+                        </div>
+
+                        <!-- Modal for Each Image -->
+                        <div class="modal fade" id="imageModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="imageModalLabel{{ forloop.counter }}" aria-hidden="true">
+                          <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="imageModalLabel{{ forloop.counter }}">Image Preview</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body text-center">
+                                <img src="{{ translation.file.url }}" class="img-fluid rounded" alt="Translation Image" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="5">No translations found.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

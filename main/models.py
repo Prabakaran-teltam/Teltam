@@ -15,6 +15,7 @@ class UserProfile(models.Model):
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=15, blank=True, unique=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
+    is_seen = models.BooleanField(default=False) 
     
     class Meta:
         verbose_name = "User Self Details"
@@ -31,8 +32,9 @@ class Translations(models.Model):
     language = models.CharField(max_length=100,null=True, blank=False)
     target_language = models.CharField(max_length=100,null=True,blank=False)
     created = models.DateField(auto_now_add=True)
-    
-    
+    is_seen = models.BooleanField(default=False) 
+
+
     class Meta:
         verbose_name = "Translation Details"
         verbose_name_plural = "Translation Details"
@@ -47,6 +49,7 @@ class User_Reviews(models.Model):
     review_text = models.TextField()
     star_rating = models.IntegerField(null=True,blank=False)
     created = models.DateField(auto_now_add=True)
+    is_seen = models.BooleanField(default=False) 
     
     
     class Meta:
@@ -101,6 +104,7 @@ class SurveyResponse(models.Model):
     languages = models.JSONField()
     usage = models.CharField(max_length=20, choices=USAGE_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_seen = models.BooleanField(default=False) 
     
     
     class Meta:
@@ -112,6 +116,7 @@ class Output_files(models.Model):
     translation = models.ForeignKey(Translations,on_delete=models.CASCADE)
     file = models.FileField(upload_to='outputs/')
     created = models.DateField(auto_now_add=True)
+    is_seen = models.BooleanField(default=False) 
     
     class Meta:
         verbose_name = "Final "

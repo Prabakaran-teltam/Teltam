@@ -8,7 +8,7 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 SECRET_KEY = config('SECRET_KEY')
 
 ALLOWED_HOSTS = ["*"]
@@ -110,7 +110,7 @@ STATICFILES_DIRS = [
 os.path.join(BASE_DIR, 'static'),
 ]
 
-# STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 
 MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -2,6 +2,7 @@ from django import forms
 from .models import BlogPost, Category, Tag, Contact,Video, VideoCategory
 from django.contrib.auth.models import User
 from django_ckeditor_5.widgets import CKEditor5Widget
+from captcha.fields import CaptchaField
 
 
 class BlogPostForm(forms.ModelForm):
@@ -95,6 +96,7 @@ class TagForm(forms.ModelForm):
         
         
 class ContactForm(forms.ModelForm):
+    captcha = CaptchaField()
     class Meta:
         model = Contact
         fields = ['name', 'email', 'message']
@@ -116,6 +118,12 @@ class ContactForm(forms.ModelForm):
                 'required': 'required'
             }),
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['captcha'].widget.attrs.update({
+            'class': 'form-control shadow-none',
+            'placeholder': 'Enter Captcha'
+        })
         
 class VideoForm(forms.ModelForm):
     description = forms.CharField(

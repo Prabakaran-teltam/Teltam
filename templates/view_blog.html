@@ -2,24 +2,25 @@
 {% load blog_extras %}
 {% load static %}
 {% block title %}
-<title>{{blog.meta_title}}</title>
-<meta name="description" content="{{ blog.meta_description }}">
-{% endblock title %}
+  <title>{{ blog.meta_title }}</title>
+  <meta name="description" content="{{ blog.meta_description }}" />
+{% endblock %}
 {% block content %}
-   <style>
+
+  <style>
     .social-share a {
       margin-right: 10px;
       font-size: 1.4rem;
       color: #555;
     }
-
+    
     .blog-content {
       font-family: 'Segoe UI', sans-serif;
- 
+    
       line-height: 1.6;
       color: #333;
     }
-
+    
     /* Headings */
     .blog-content h1,
     .blog-content h2,
@@ -31,11 +32,31 @@
       margin: 1.5rem 0 1rem;
       line-height: 1.3;
     }
+    
+    .blog-content h1 {
+      font-size: 2.25rem;
+    }
+    .blog-content h2 {
+      font-size: 1.875rem;
+    }
+    .blog-content h3 {
+      font-size: 1.5rem;
+    }
+    .blog-content h4 {
+      font-size: 1.25rem;
+    }
+    .blog-content h5 {
+      font-size: 1rem;
+    }
+    .blog-content h6 {
+      font-size: 0.875rem;
+    }
+    
     /* Paragraphs */
     .blog-content p {
-      margin: 1rem 0;
+      margin: 0.8rem 0;
     }
-
+    
     /* Bold & Italic */
     .blog-content strong {
       font-weight: bold;
@@ -43,7 +64,7 @@
     .blog-content em {
       font-style: italic;
     }
-
+    
     /* Blockquote */
     .blog-content blockquote {
       border-left: 4px solid #ccc;
@@ -62,18 +83,14 @@
     }
     
     .blog-content ul {
-      list-style-type: disc;
+      list-style-type: disc !important;
+      padding-left: 1.5rem !important;
+      margin: 2rem 0 !important;
     }
     
-    .blog-content ol {
-      list-style-type: decimal;
+    .blog-content ul li {
+      display: list-item !important;
     }
-    
-    .blog-content li {
-      margin-bottom: 0.5rem;
-    }
-    
-
     
     /* Images */
     .blog-content img {
@@ -83,23 +100,58 @@
       margin: 1rem 0;
     }
     
-    /* Tables */
-    .blog-content table {
+    /* Responsive table wrapper */
+    .blog-content .table-responsive {
       width: 100%;
-      border-collapse: collapse;
-      margin: 1.5rem 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     
+    /* Core Bootstrap table styling */
+    .blog-content table {
+      width: 100%;
+      margin-bottom: 1rem;
+      color: #212529;
+      border-collapse: collapse;
+      border: 1px solid #dee2e6;
+      font-size: 0.95rem;
+    }
+    
+    /* Table borders */
     .blog-content th,
     .blog-content td {
-      border: 1px solid #ddd;
       padding: 0.75rem;
+      vertical-align: top;
+      border: 1px solid #dee2e6;
       text-align: left;
     }
     
-    .blog-content th {
+    /* Table header */
+    .blog-content thead th {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-weight: 600;
+      border-bottom: 2px solid #dee2e6;
+    }
+    
+    /* Striped rows */
+    .blog-content tbody tr:nth-of-type(odd) {
+      background-color: #f9f9f9;
+    }
+    
+    /* Hover effect */
+    .blog-content tbody tr:hover {
       background-color: #f1f1f1;
-      font-weight: bold;
+    }
+    
+    /* Table caption styling (optional) */
+    .blog-content caption {
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+      color: #6c757d;
+      text-align: left;
+      caption-side: top;
+      font-weight: 600;
     }
     
     /* Media Embeds */
@@ -114,7 +166,7 @@
     /* Horizontal Line */
     .blog-content hr {
       border: none;
-      border-top: 1px solid #ccc;
+      border-top: 3px solid #ccc;
       margin: 2rem 0;
     }
     
@@ -163,7 +215,7 @@
       <div class="row gy-2">
         <div class="col-lg-12" data-aos="fade-up" data-aos-delay="200">
           <h3>{{ blog.title }}</h3>
-          <p class="text-muted">By {{ blog.author.get_full_name|default:blog.author.username }} |
+          <p class="text-muted">By Prabakaran |
             {{ blog.created_at|date:'F j, Y' }}</p>
           {% if blog.category %}
             <p>
@@ -172,7 +224,7 @@
           {% endif %}
           <img src="{{ blog.image.url }}" alt="" class="img-fluid services-img" />
           <div class="prose blog-content">{{ blog.content|safe }}</div>
-           <div class="social-share mb-4">
+          <div class="social-share mb-4">
             <strong>Share:</strong>&nbsp;
             <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-facebook"></i></a>
             <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-twitter"></i></a>
@@ -192,38 +244,39 @@
             </div>
             <br />
             {% if blog.comment_show_status %}
-            {% else %}
-            <div class="mb-5">
-              <h5>Leave a comment on this post:</h5>
-              <form method="post">
-                {% csrf_token %}
-                <div class="mb-3">
-                  <textarea class="form-control shadow-none" name="content" rows="3" placeholder="Write your comment..." required></textarea>
-                </div>
-                <button type="submit" class="btn btn-dark">Post Comment</button>
-              </form>
-              <div class="mt-4">
-                {% for comment in comments %}
-                  <div class="d-flex mb-4">
-                    <!-- User Icon -->
-                    <div class="me-3">
-                      <i class="bi bi-person-circle fs-2 text-secondary"></i>
-                    </div>
 
-                    <!-- Comment Content -->
-                    <div class="flex-grow-1">
-                      <div class="d-flex justify-content-between align-items-center mb-3">
-                        <strong class="me-2">{{ comment.user.username }}</strong>
-                        <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
-                      </div>
-                      <p class="mt-1 mb-0">{{ comment.comment }}</p>
-                    </div>
+            {% else %}
+              <div class="mb-5">
+                <h5>Leave a comment on this post:</h5>
+                <form method="post">
+                  {% csrf_token %}
+                  <div class="mb-3">
+                    <textarea class="form-control shadow-none" name="content" rows="3" placeholder="Write your comment..." required></textarea>
                   </div>
-                {% empty %}
-                  <p class="text-muted">No comments yet. Be the first!</p>
-                {% endfor %}
+                  <button type="submit" class="btn btn-dark">Post Comment</button>
+                </form>
+                <div class="mt-4">
+                  {% for comment in comments %}
+                    <div class="d-flex mb-4">
+                      <!-- User Icon -->
+                      <div class="me-3">
+                        <i class="bi bi-person-circle fs-2 text-secondary"></i>
+                      </div>
+
+                      <!-- Comment Content -->
+                      <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <strong class="me-2">{{ comment.user.username }}</strong>
+                          <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                        </div>
+                        <p class="mt-1 mb-0">{{ comment.comment }}</p>
+                      </div>
+                    </div>
+                  {% empty %}
+                    <p class="text-muted">No comments yet. Be the first!</p>
+                  {% endfor %}
+                </div>
               </div>
-            </div>
             {% endif %}
           {% else %}
             <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-secondary">Login to Comment</a>
@@ -233,73 +286,72 @@
     </div>
   </section>
   {% if related_blog %}
-  <section id="services" class="services section light-background">
-
-    <div class="container section-title" data-aos="fade-up">
-      <h2>You might also like…</h2>
-      <p>Explore fresh insights, tips, and stories from our latest blog posts.</p>
-    </div>
-
-    <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
-      <div class="row g-4">
-        {% for blog in related_blog %}
-          <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm">
-              {% if blog.image %}
-                <img src="{{ blog.image.url }}" class="card-img-top" alt="{{ blog.title }}" style="height: 200px; object-fit: cover; width: 100%;" />
-              {% endif %}
-              <div class="card-body">
-                <h5 class="card-title fw-bold">{{ blog.title }}</h5>
-                <button class="btn btn-danger btn-sm">{{ blog.created_at|date:'d/m/Y' }}</button>
-                <p class="card-text text-muted small">{{ blog.content|striptags|truncatewords:25 }}</p>
-                <div class="mt-auto">
-                  <a href="{% url 'view_blog' blog.id %}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
-                </div>
-              </div>
-              {% if blog.tags.exists %}
-                <div class="card-footer bg-transparent border-0 small text-muted">
-                  {% for tag in blog.tags.all %}
-                    <span class="me-1">#<a href="{% url 'tag_based_search' tag.name %}" style="color: inherit;text-decoration: none;">{{ tag.name }}</a></span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            </div>
-          </div>
-        {% endfor %}
+    <section id="services" class="services section light-background">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>You might also like…</h2>
+        <p>Explore fresh insights, tips, and stories from our latest blog posts.</p>
       </div>
-    </div>
-  </section>
+
+      <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="row g-4">
+          {% for blog in related_blog %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 shadow-sm">
+                {% if blog.image %}
+                  <img src="{{ blog.image.url }}" class="card-img-top" alt="{{ blog.title }}" style="height: 200px; object-fit: cover; width: 100%;" />
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">{{ blog.title }}</h5>
+                  <button class="btn btn-danger btn-sm">{{ blog.created_at|date:'d/m/Y' }}</button>
+                  <p class="card-text text-muted small">{{ blog.content|striptags|truncatewords:25 }}</p>
+                  <div class="mt-auto">
+                    <a href="{% url 'view_blog' blog.title %}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                  </div>
+                </div>
+                {% if blog.tags.exists %}
+                  <div class="card-footer bg-transparent border-0 small text-muted">
+                    {% for tag in blog.tags.all %}
+                      <span class="me-1">#<a href="{% url 'tag_based_search' tag.name %}" style="color: inherit;text-decoration: none;">{{ tag.name }}</a></span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
   {% endif %}
   <script src="https://cdn.ckeditor.com/ckeditor5/45.2.0/ckeditor5.umd.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll("oembed[url]").forEach(element => {
-      const rawUrl = element.getAttribute("url");
-
-      let embedUrl = "";
-      if (rawUrl.includes("youtube.com/watch?v=")) {
-        const videoId = rawUrl.split("watch?v=")[1].split("&")[0];
-        const tParam = rawUrl.split("t=")[1];
-        const startTime = tParam ? `?start=${parseInt(tParam)}` : "";
-        embedUrl = `https://www.youtube.com/embed/${videoId}${startTime}`;
-      } else if (rawUrl.includes("youtu.be/")) {
-        const videoId = rawUrl.split("youtu.be/")[1].split("?")[0];
-        embedUrl = `https://www.youtube.com/embed/${videoId}`;
-      }
-
-      const iframe = document.createElement("iframe");
-      iframe.setAttribute("width", "1110");
-      iframe.setAttribute("height", "500");
-      iframe.setAttribute("src", embedUrl);
-      iframe.setAttribute("frameborder", "0");
-      iframe.setAttribute("allowfullscreen", "true");
-
-      element.parentNode.replaceWith(iframe);
-    });
-  });
-
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('oembed[url]').forEach((element) => {
+        const rawUrl = element.getAttribute('url')
+    
+        let embedUrl = ''
+        if (rawUrl.includes('youtube.com/watch?v=')) {
+          const videoId = rawUrl.split('watch?v=')[1].split('&')[0]
+          const tParam = rawUrl.split('t=')[1]
+          const startTime = tParam ? `?start=${parseInt(tParam)}` : ''
+          embedUrl = `https://www.youtube.com/embed/${videoId}${startTime}`
+        } else if (rawUrl.includes('youtu.be/')) {
+          const videoId = rawUrl.split('youtu.be/')[1].split('?')[0]
+          embedUrl = `https://www.youtube.com/embed/${videoId}`
+        }
+    
+        const iframe = document.createElement('iframe')
+        iframe.setAttribute('width', '1110')
+        iframe.setAttribute('height', '500')
+        iframe.setAttribute('src', embedUrl)
+        iframe.setAttribute('frameborder', '0')
+        iframe.setAttribute('allowfullscreen', 'true')
+    
+        element.parentNode.replaceWith(iframe)
+      })
+    })
+    
     function getCookie(name) {
       let cookieValue = null
       if (document.cookie && document.cookie !== '') {

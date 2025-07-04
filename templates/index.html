@@ -2,7 +2,9 @@
 {% load static %}
 {% load youtube_extras %}
 {% block title %}
-<title>Teltam</title>
+<title>Teltam | Translate Images & PDFs to Tamil, English, Hindi, Telugu, Malayalam, Kannada</title>
+<meta name="description" content="At Teltam.in, upload images or PDFs and translate them into Tamil, English, Hindi, Telugu, Malayalam, or Kannada. Get pronunciation, meanings, and cultural context with blogs and YouTube videos for deeper language discovery.">
+
 {% endblock title %}
 {% block content %}
   <style>
@@ -33,7 +35,7 @@
       opacity: 0.9;
     }
   </style>
-  <section id="hero" class="hero section">
+  <section id="slide" class="hero section">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
       <div class="row align-items-center">
         <div class="col-lg-5">
@@ -623,7 +625,31 @@
 
   </section>   -->
 
- 
+     <section id="call-to-action-2" class="call-to-action-2 section dark-background">
+
+      <div class="container">
+        <div class="row justify-content-center" data-aos="zoom-in" data-aos-delay="100">
+          <div class="col-xl-10">
+            <div class="text-center">
+              <h3>Subscribe to our Newsletter!</h3>
+              <p>Subscribe to our newsletter for the latest in translation tools, language-learning blogs, and curated YouTube videos.</p>
+              <div class="row">
+              <div class="col-md-3"></div>
+              <div class="col-md-6">
+                <form method="POST" action="{% url "newsletter" %}">
+                  {% csrf_token %}
+              <input type="email" name="email" class="form-control" style="border-radius: 20px;" placeholder="Email" required>
+              <button style="background-color: #0D83FD;" type="submit" class="cta-btn">Subscribe</button>
+                </form>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
 
   
   <section id="contact" class="contact section light-background">
@@ -669,6 +695,11 @@
                 <div class="col-md-6">{{ form.name }}</div>
                 <div class="col-md-6">{{ form.email }}</div>
                 <div class="col-12">{{ form.message }}</div>
+                <div class="col-md-6"> {{ form.captcha }}</div>
+                <div class="col-md-6">
+                  {{ form.captcha.errors }}
+                </div>
+
                 <div class="col-12 text-center">
                   <button type="submit" class="btn btn-primary">Send Message</button>
                 </div>

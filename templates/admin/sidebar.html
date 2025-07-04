@@ -89,7 +89,7 @@
           </svg>
         </span><span class="sidebar-text">Translations</span>
       </span>
-            {% if new_translations_count %}
+      {% if new_translations_count %}
         <span><span class="badge badge-sm bg-secondary ms-1 text-gray-800">{{ new_translations_count }}</span></span>
       {% endif %}
       <span class="link-arrow">
@@ -97,12 +97,10 @@
           <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
         </svg>
       </span>
-
     </span>
     <div class="multi-level collapse" role="list" id="submenu-component" aria-expanded="false">
       <ul class="flex-column nav">
         <li class="nav-item">
-
           <a class="nav-link" href="{% url 'translations' %}"><span class="sidebar-text-contracted">A</span>Translation details<span class="sidebar-text"></span></a>
         </li>
       </ul>
@@ -142,6 +140,8 @@
       {% endif %}
     </a>
   </li>
+
+ 
 
   <li class="nav-item">
     <a href="{% url 'contect_list' %}" class="nav-link">

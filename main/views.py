@@ -23,9 +23,7 @@ from .models import *
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from django.core.files import File
-
 import shutil
- 
 from django.core.mail import EmailMultiAlternatives
 from admin_dashboard.models import *
 from django.urls import reverse
@@ -35,10 +33,13 @@ import openai
 from pdf2image import convert_from_path
 import base64
 from openai import OpenAI
+from decouple import config
 
 # POPPLER_PATH = "C:\Release-24.08.0-0\poppler-24.08.0\Library\bin"
 # POPPLER_PATH = ""
-client = OpenAI(api_key="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") 
+
+api_key = config('OPENAI_API_KEY')
+client = OpenAI(api_key=api_key)
 
 def index(request):
     img = Translations.objects.all().count()
@@ -54,7 +55,31 @@ def index(request):
             form.save()
             messages.success(request, "Your message has been sent. Thank you!")
             return redirect('index')
+        else:
+            messages.error(request,"Invalid Captcha.")
+            return redirect('index')
     return render(request,'index.html',{'img':img,'clients':clients,'reviews':reviews,'blog':blog,'form':form,'video':video})
+
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+def newsletter(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        res = Newsletter(email=email)
+        res.save()
+        subject = "Welcome to Teltam.in Newsletter"
+        from_email = "no-reply@teltam.in"
+        to = [email]
+        html_content = render_to_string("newsletter_welcome_email.html", {'email': email})
+        text_content = strip_tags(html_content)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        messages.success(request, "Thank you for subscribing!")
+        return redirect("index")
 
 
 def view_blog(request,title):
@@ -105,11 +130,12 @@ def list_of_blogs(request):
     return render(request,"list_of_blogs.html",{'blogs':blogs,'categories':categories})
 
 
+
 def list_of_videos(request):
     videos = Video.objects.filter(is_active=True).order_by('-created_at')
     return render(request,"list_of_videos.html",{'videos':videos})
 
- 
+
 def tag_based_search(request,tag):
     tag = Tag.objects.get(name=tag)
     blogs = BlogPost.objects.filter(tags=tag)
@@ -219,7 +245,6 @@ def verify_otp(request):
     else:
         form = OTPForm()
     return render(request,'verify_otp.html',{'form':form})
-
 
 
 def resend_otp(request):
@@ -371,15 +396,7 @@ lang_map = {
     "english":('en', sanscript.ITRANS)
 }
 
-# lang_map = {
-#     'Hindi': ('hi', sanscript.DEVANAGARI),
-#     'Tamil': ('ta', sanscript.TAMIL),
-#     'Telugu': ('te', sanscript.TELUGU),
-#     'Kannada': ('kn', sanscript.KANNADA),
-#     'Malayalam': ('ml', sanscript.MALAYALAM),
-#     'English': ('en', sanscript.ITRANS)
-# }
-
+ 
 def preprocess_image(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     image = cv2.resize(image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
@@ -432,21 +449,24 @@ def get_transliterations(words, source_language, target_language):
 # Translater with using Chat GPT API key
 
 def extract_text_from_image(image_path):
-    with open(image_path, "rb") as image_file:
-        base64_bytes = base64.b64encode(image_file.read()).decode('utf-8')
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "user", "content": [
-                    {"type": "text", "text": "Extract all text from this image with high accuracy."},
-                    {"type": "image_url", "image_url": {
-                        "url": f"data:image/jpeg;base64,{base64_bytes}"
-                    }},
-                ]}
-            ],
-            max_tokens=4096
-        )
-        return response.choices[0].message.content
+    try:
+        with open(image_path, "rb") as image_file:
+            base64_bytes = base64.b64encode(image_file.read()).decode('utf-8')
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "user", "content": [
+                        {"type": "text", "text": "Extract all text from this image with high accuracy."},
+                        {"type": "image_url", "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_bytes}"
+                        }},
+                    ]}
+                ],
+                max_tokens=4096
+            )
+            return response.choices[0].message.content
+    except:
+        return "OpenAIError"
 
 def extract_text_from_pdf(pdf_path):
     images = convert_from_path(pdf_path)
@@ -469,163 +489,94 @@ def home(request):
     if not already_filled:
         return redirect('survey')
 
- 
     target_lang = None
 
     if request.method == 'POST':
-        # try:
-            source_lang = request.POST.get('source_language')
-            target_lang = request.POST.get('target_language')
-            uploaded_file = request.FILES.get('file')
+
+        source_lang = request.POST.get('source_language')
+        target_lang = request.POST.get('target_language')
+        uploaded_file = request.FILES.get('file')
+        
+        if not source_lang or not target_lang:
+            messages.error(request, "Please select both source and target languages.")
+            return redirect('/home')
+
+        if source_lang == target_lang:
+            messages.warning(request, "Source and target languages must be different.")
+            return redirect('/home')
+
+        if target_lang not in lang_map:
+            messages.error(request, f"Error: Invalid target language '{target_lang}'")
+            return redirect('/home')
+
+        if not uploaded_file:
+            messages.error(request, "Please upload a file.")
+            return redirect('/home')
+
+        delete_all_temp_files()
+        file_path = handle_uploaded_temp_file(uploaded_file)
+
+        if file_path.lower().endswith('.pdf'):
+            extracted_text =  extract_text_from_pdf(file_path)
+            # extracted_text = "సీరియారిటీ నైపుణ్యాలు మరియు అభినందనలు!"
+        elif file_path.lower().endswith(('.jpg', '.jpeg', '.png')):
+            extracted_text =  extract_text_from_image(file_path)
+            # extracted_text = "हिंदी निबंध की आरंभिक परंपरा का निर्माण भारतेंदु युग के लेखकों से हुआ। राष्ट्रीय जागरण, मुद्रण-कला का प्रसार एवं पत्र-पत्रिकाओं का प्रकाशन, गद्य की बढ़ती लोकप्रियता, अँग्रेज़ी साहित्य से संपर्क आदि ने बतौर विधा निबंध-साहित्य के उदय में प्रमुख भूमिका निभाई। विषय, शैली और भाषा में नवीन प्रयोगों के भारतेंदुयुगीन योगदान के बाद भाषा के मानकीकरण, चिंतन की प्रौढ़ता और शैली के परिष्करण के रूप में प्रमुख योगदान द्विवेदीयुगीन निबंधकारों का रहा। हिंदी निबंध-साहित्य में आचार्य रामचंद्र शुक्ल को केंद्रीय महत्त्व प्राप्त है जिन्होंने विचार, भाषा और शैली तीनों ही स्तरों पर इसे उच्चस्तरीय स्वरूप प्रदान किया। आचार्य शुक्ल ने निबंध को गद्य की कसौटी कहा है।"
+            # extracted_text = ""
+        else:
+            messages.error(request,"Unsupported file type. Please upload a PDF, JPG, JPEG, or PNG file only.")
+            return redirect("home")
+        os.remove(file_path)
+        
+        if extracted_text == "OpenAIError":
+            messages.warning(request,"Service temporarily unavailable!")
+            return redirect("home")
+        if not extracted_text.strip():
+            messages.warning(request, "No text could be extracted from the file. Please try a clearer image or different file.")
+            return redirect('/home')
+        source_lang_code, source_script = lang_map[source_lang]
+        target_lang_code, target_script = lang_map[target_lang]
+        target_transliterate = transliterate(extracted_text,source_script,target_script)
+        target_meaning = GoogleTranslator(source=source_lang_code, target=target_lang_code).translate(extracted_text)
+        print("==========target_transliterate",target_transliterate)
+        print("==========target_meaning",target_meaning)
+
+        # Create PDF in memory
+        output_data = [extracted_text, target_transliterate, target_meaning]
+        df = pd.DataFrame([output_data], columns=[
+            "Input Word", 
+            f"{target_lang.capitalize()} Transliteration", 
+            f"{target_lang.capitalize()} Meaning",
+        ])
+        
+        output_directory = os.path.join(settings.MEDIA_ROOT, 'outputs')
+        os.makedirs(output_directory, exist_ok=True)
+        csv_file_path = os.path.join(output_directory, 'output.csv')
+        
+        df.to_csv(csv_file_path, index=False, encoding="utf-8-sig")
+
+        with open(csv_file_path, 'rb') as f:
+            translation_record = Translations(
+                user=request.user,
+                language=source_lang.capitalize(),
+                target_language=target_lang.capitalize()
+            )
+            translation_record.file = uploaded_file
+            translation_record.save()
+            output_file_instance = Output_files(
+                translation=translation_record,
+                file=File(f, name='output.csv')
+            )
+            output_file_instance.save()
+        messages.info(request, "Translation completed...!")
+        return render(request, 'home.html', {
+            'target_transliterate': target_transliterate,
+            'target_meaning': target_meaning,
+            'target_lang': str(target_lang).title(),
+            'word_count': len(extracted_text),
+            'extracted_text':extracted_text
+        })
             
-            if not source_lang or not target_lang:
-                messages.error(request, "Please select both source and target languages.")
-                return redirect('/home')
-
-            if source_lang == target_lang:
-                messages.warning(request, "Source and target languages must be different.")
-                return redirect('/home')
-
-            if target_lang not in lang_map:
-                messages.error(request, f"Error: Invalid target language '{target_lang}'")
-                return redirect('/home')
-
-            if not uploaded_file:
-                messages.error(request, "Please upload a file.")
-                return redirect('/home')
-
-            delete_all_temp_files()
-            file_path = handle_uploaded_temp_file(uploaded_file)
-
-            if file_path.lower().endswith('.pdf'):
-                extracted_text =  extract_text_from_pdf(file_path)
-                # extracted_text = "సీరియారిటీ నైపుణ్యాలు మరియు అభినందనలు!"
-            else:
-                extracted_text =  extract_text_from_image(file_path)
-                # extracted_text = "हिंदी निबंध की आरंभिक परंपरा का निर्माण भारतेंदु युग के लेखकों से हुआ। राष्ट्रीय जागरण, मुद्रण-कला का प्रसार एवं पत्र-पत्रिकाओं का प्रकाशन, गद्य की बढ़ती लोकप्रियता, अँग्रेज़ी साहित्य से संपर्क आदि ने बतौर विधा निबंध-साहित्य के उदय में प्रमुख भूमिका निभाई। विषय, शैली और भाषा में नवीन प्रयोगों के भारतेंदुयुगीन योगदान के बाद भाषा के मानकीकरण, चिंतन की प्रौढ़ता और शैली के परिष्करण के रूप में प्रमुख योगदान द्विवेदीयुगीन निबंधकारों का रहा। हिंदी निबंध-साहित्य में आचार्य रामचंद्र शुक्ल को केंद्रीय महत्त्व प्राप्त है जिन्होंने विचार, भाषा और शैली तीनों ही स्तरों पर इसे उच्चस्तरीय स्वरूप प्रदान किया। आचार्य शुक्ल ने निबंध को गद्य की कसौटी कहा है।"
-
-            os.remove(file_path)
-            if not extracted_text.strip():
-                messages.warning(request, "No text could be extracted from the file. Please try a clearer image or different file.")
-                return redirect('/home')
-            source_lang_code, source_script = lang_map[source_lang]
-            target_lang_code, target_script = lang_map[target_lang]
-            target_transliterate = transliterate(extracted_text,source_script,target_script)
-            target_meaning = GoogleTranslator(source=source_lang_code, target=target_lang_code).translate(extracted_text)
-            print("==========target_transliterate",target_transliterate)
-            print("==========target_meaning",target_meaning)
-
-            # Create PDF in memory
-            output_data = [extracted_text, target_transliterate, target_meaning]
-            df = pd.DataFrame([output_data], columns=[
-                "Input Word", 
-                f"{target_lang.capitalize()} Transliteration", 
-                f"{target_lang.capitalize()} Meaning",
-            ])
-            
-            output_directory = os.path.join(settings.MEDIA_ROOT, 'outputs')
-            os.makedirs(output_directory, exist_ok=True)
-            csv_file_path = os.path.join(output_directory, 'output.csv')
-            
-            df.to_csv(csv_file_path, index=False, encoding="utf-8-sig")
-
-            with open(csv_file_path, 'rb') as f:
-                translation_record = Translations(
-                    user=request.user,
-                    language=source_lang.capitalize(),
-                    target_language=target_lang.capitalize()
-                )
-                translation_record.file = uploaded_file
-                translation_record.save()
-                output_file_instance = Output_files(
-                    translation=translation_record,
-                    file=File(f, name='output.csv')
-                )
-                output_file_instance.save()
-
-            return render(request, 'home.html', {
-                'target_transliterate': target_transliterate,
-                'target_meaning': target_meaning,
-                'target_lang': str(target_lang).title(),
-                'word_count': len(extracted_text),
-                'extracted_text':extracted_text
-            })
-
-        #     words = extracted_text.split()
-
-        #     try:
-        #         output_data, paragrph_data = get_transliterations(words, source_lang, target_lang)
-        #         if not output_data:
-        #             messages.warning(request, "Translation service could not process the extracted text.")
-        #             return redirect('/home')
-
-        #         df = pd.DataFrame(output_data, columns=[
-        #             "Input Word", 
-        #             f"{target_lang.capitalize()} Transliteration", 
-        #             f"{target_lang.capitalize()} Meaning",
-        #             "English Transliteration",
-        #             "English Meaning"
-        #         ])
-
-        #         output_directory = os.path.join(settings.MEDIA_ROOT, 'outputs')
-        #         os.makedirs(output_directory, exist_ok=True)
-        #         csv_file_path = os.path.join(output_directory, 'output.csv')
-                
-        #         try:
-        #             df.to_csv(csv_file_path, index=False, encoding="utf-8-sig")
-        #         except PermissionError:
-        #             messages.error(request, "Permission denied when saving output file.")
-        #             return redirect('/home')
-        #         except Exception as e:
-        #             messages.error(request, f"Error saving output file: {str(e)}")
-        #             return redirect('/home')
-
-        #         try:
-        #             print("==========3")
-        #             with open(csv_file_path, 'rb') as f:
-        #                 translation_record = Translations(
-        #                     user=request.user,
-        #                     language=source_lang.capitalize(),
-        #                     target_language=target_lang.capitalize()
-        #                 )
-        #                 translation_record.file = uploaded_file
-        #                 translation_record.save()
-        #                 output_file_instance = Output_files(
-        #                     translation=translation_record,
-        #                     file=File(f, name='output.csv')
-        #                 )
-        #                 output_file_instance.save()
-        #         except (IOError, OSError) as e:
-        #             messages.error(request, f"Error saving translation record: {str(e)}")
-        #             return redirect('/home')
-
-        #         target_lang = target_lang.capitalize()
-        #         messages.info(request, "Translation completed...!")
-        #         # print("====================Output data", output_data)
-        #         return render(request, 'home.html', {
-        #             'output_data': output_data,
-        #             'paragrph_data': paragrph_data,
-        #             'target_lang': target_lang,
-        #             'word_count': len(output_data)
-        #         })
-
-        #     except Exception as e:
-        #         messages.error(request, f"Translation error: {str(e)}")
-        #         return redirect('/home')
-
-        # except MemoryError:
-        #     messages.error(request, "Server ran out of memory while processing the file.")
-        #     return redirect('/home')
-        # except TimeoutError:
-        #     messages.error(request, "The server timed out. Please try with a smaller file.")
-        #     return redirect('/home')
-        # except Exception as e:
-        #     # import traceback
-        #     # print(f"Unexpected server error: {traceback.format_exc()}")
-        #     # messages.error(request, f"Unexpected server error: {str(e)}")
-        #     print("============error")
-        #     return redirect('/translations_history')
-
     form = UserReviewForm()
     output = True
     return render(request, 'home.html', {'form': form,'output':output})

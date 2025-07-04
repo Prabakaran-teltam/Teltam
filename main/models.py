@@ -138,3 +138,8 @@ class User_OTP(models.Model):
     
     def is_expired(self):
         return timezone.now() > self.created + timezone.timedelta(minutes=10)
+
+class Newsletter(models.Model):
+    email = models.EmailField(max_length=254)
+    created = models.DateField(auto_now_add=True)
+    is_seen = models.BooleanField(default=False) 

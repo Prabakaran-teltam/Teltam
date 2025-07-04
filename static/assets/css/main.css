@@ -2028,9 +2028,6 @@ section,
   color: var(--contrast-color);
 }
 
-.call-to-action-2 .cta-btn:hover {
-  border-color: var(--contrast-color);
-}
 
 /*--------------------------------------------------------------
 # Contact Section

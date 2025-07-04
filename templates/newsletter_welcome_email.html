@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to Teltam.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #3e64ff;
+      color: #ffffff;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 30px 20px;
+      color: #333333;
+    }
+    .content p {
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .content ul {
+      padding-left: 20px;
+    }
+    .content li {
+      margin-bottom: 8px;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      color: #888888;
+      background-color: #f0f0f0;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #3e64ff;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      .content, .header, .footer {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="email-container">
+    <div class="header">
+      <h1>Welcome to Teltam.in!</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>{{ email }}</strong>,</p>
+      <p>Thank you for subscribing to Teltam.in! We’re thrilled to have you on board.</p>
+      <p>Here’s what you can look forward to:</p>
+      <ul>
+        <li>🔤 Seamless translation of images and PDFs into your preferred language</li>
+        <li>📝 Educational and cultural blogs to expand your knowledge</li>
+        <li>📺 Curated YouTube videos for immersive learning</li>
+      </ul>
+      <p>We’re here to help you discover, learn, and grow in any language you choose.</p>
+      <a href="https://teltam.in" class="btn">Visit Teltam.in</a>
+    </div>
+    <div class="footer">
+      © {{ year|default:"2025" }} Teltam.in – All rights reserved.<br>
+      You’re receiving this email because you subscribed to our newsletter.
+    </div>
+  </div>
+
+</body>
+</html>

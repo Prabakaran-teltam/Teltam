@@ -5,7 +5,7 @@ from django.contrib import messages
 from main.models import *
 from django.contrib.auth.decorators import user_passes_test
 from .models import *
-
+from django.db.models import Q
 
 
 def update_scheduled_posts():
@@ -18,23 +18,59 @@ def update_scheduled_posts():
 
 @user_passes_test(lambda u: u.is_superuser)
 def dashboard(request):
-    user_count = User.objects.all().count
-    last_user = User.objects.latest('date_joined').date_joined.strftime('%b %d, %Y, %I:%M %p')
-    translation_count = Translations.objects.all().count
-    last_translation = Translations.objects.latest('created')
-    last_translation_date = last_translation.created.strftime('%b %d, %Y')
-    blog_count = BlogPost.objects.all().count
-    last_blog = BlogPost.objects.latest("created_at").created_at.strftime('%b %d, %Y')
-    translation_details = Translations.objects.order_by('-created')[:5]
-    return render(request,"admin/dashboard.html",{'user_count':user_count,'translation_count':translation_count,'blog_count':blog_count,'last_user':last_user,'last_translation_date':last_translation_date,'last_blog':last_blog,'translation_details':translation_details})
+    user_count = User.objects.count()
+    if User.objects.exists():
+        last_user = User.objects.latest('date_joined').date_joined.strftime('%b %d, %Y, %I:%M %p')
+    else:
+        last_user = "No users"
 
+    translation_count = Translations.objects.count()
+    if Translations.objects.exists():
+        last_translation = Translations.objects.latest('created')
+        last_translation_date = last_translation.created.strftime('%b %d, %Y')
+        translation_details = Translations.objects.order_by('-created')[:5]
+    else:
+        last_translation_date = "No translations"
+        translation_details = []
+
+    blog_count = BlogPost.objects.count()
+    if BlogPost.objects.exists():
+        last_blog = BlogPost.objects.latest("created_at").created_at.strftime('%b %d, %Y')
+    else:
+        last_blog = "No blogs"
+
+    return render(request, "admin/dashboard.html", {
+        'user_count': user_count,
+        'translation_count': translation_count,
+        'blog_count': blog_count,
+        'last_user': last_user,
+        'last_translation_date': last_translation_date,
+        'last_blog': last_blog,
+        'translation_details': translation_details
+    })
 @user_passes_test(lambda u: u.is_superuser)
 def users_list(request):
-    user_data = User.objects.all()
+    query = request.GET.get("q", "")
+    
+    if query:
+        user_data = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(email__icontains=query)
+        )
+    else:
+        user_data = User.objects.all()
+    
     user_profile = UserProfile.objects.all()
     UserProfile.objects.filter(is_seen=False).update(is_seen=True)
-    return render(request,"admin/users_list.html",{'user_data':user_data,'user_profile':user_profile})
-
+    
+    return render(request, "admin/users_list.html", {
+        "user_data": user_data,
+        "user_profile": user_profile
+    })
+    
+    
 @user_passes_test(lambda u: u.is_superuser)
 def blog_list(request):
     blog_data = BlogPost.objects.all()
@@ -233,7 +269,5 @@ def feedbacks(request):
 def survey_details(request):
     SurveyResponse.objects.filter(is_seen=False).update(is_seen=True)
     data = SurveyResponse.objects.all()
-    
     return render(request,"admin/survey_details.html",{'data':data})
-
-
+ 

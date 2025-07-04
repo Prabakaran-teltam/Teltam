@@ -31,7 +31,8 @@ urlpatterns = [
     path("blog/tag_based_search/<str:tag>",tag_based_search,name="tag_based_search"),
     path("video/list_of_videos",list_of_videos,name="list_of_videos"),
     path("view_video/<int:id>",view_video,name="view_video"),
-    path("about_us",about_us,name="about_us")
+    path("about_us",about_us,name="about_us"),
+    path("newsletter",newsletter,name="newsletter")
 ]
 
 handler404 = 'main.views.custom_404'

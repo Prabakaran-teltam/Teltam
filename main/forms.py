@@ -77,3 +77,14 @@ class SurveyForm(forms.ModelForm):
     class Meta:
         model = SurveyResponse
         exclude = ['user']
+        
+class ClassEnquiryForm(forms.ModelForm):
+    class Meta:
+        model = ClassInquiry
+        fields = ['full_name', 'email', 'phone', 'message']
+        widgets = {
+            'full_name': forms.TextInput(attrs={'class': 'form-control shadow-none', 'placeholder': 'Your Full Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control shadow-none', 'placeholder': 'Your Email'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control shadow-none', 'placeholder': 'Your Phone Number'}),
+            'message': forms.Textarea(attrs={'class': 'form-control shadow-none', 'rows': 4, 'placeholder': 'Your Message'}),
+        }

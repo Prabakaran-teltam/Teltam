@@ -8,7 +8,10 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = False
+# DEBUG = config('DEBUG', default=False, cast=bool)
+
+
 SECRET_KEY = config('SECRET_KEY')
 
 ALLOWED_HOSTS = ["*"]
@@ -76,6 +79,8 @@ DATABASES = {
         'PORT': config('DB_PORT', default='5432'),
     }
 }
+
+
 
 LOGIN_URL = 'login'
 
@@ -178,3 +183,12 @@ DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 #     "site_brand": "Teltam",
 # }
 
+
+PHONEPE_CLIENT_ID = "SU2512221940131207413145"
+PHONEPE_CLIENT_SECRET = "790deb93-b432-49b2-bda5-5ff8f1b73143"
+PHONEPE_CLIENT_VERSION = 1
+
+# PHONEPE_CLIENT_ID="M23GWPBU6FENJ_2512061206"
+# PHONEPE_CLIENT_SECRET="MjYyZWUxZDEtNTA3ZC00MmM2LTkwYmMtMWE2NDYyNDg1ZmM3"
+# PHONEPE_CLIENT_VERSION=1
+# PHONEPE_ENV="SANDBOX"

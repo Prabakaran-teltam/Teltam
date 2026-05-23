@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Blog Notification</title>
+  <style>
+    body {
+      background-color: #f3f6fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 650px;
+      background-color: #ffffff;
+      margin: 40px auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(90deg, #007bff, #00bcd4);
+      padding: 25px;
+      text-align: center;
+      color: white;
+    }
+    .header h1 {
+      font-size: 24px;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 25px;
+      color: #333;
+      line-height: 1.6;
+    }
+    .content h2 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      background-color: #f8f9fa;
+      text-align: center;
+      padding: 15px;
+      font-size: 13px;
+      color: #777;
+    }
+    .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📰 New Blog Alert from Teltam.in</h1>
+    </div>
+    <div class="content">
+      <p>Dear Reader,</p>
+      <p>We’re excited to announce a brand-new blog post on <strong>Teltam.in</strong>!</p>
+      <h2>{{ title }}</h2>
+      <p>Published by <strong>{{ author }}</strong>.</p>
+      <p>Click below to explore the full article and gain new insights.</p>
+      <a href="{{ link }}" class="btn">Read the Blog</a>
+      <p style="margin-top: 20px;">Stay tuned for more updates and exciting posts.</p>
+      <p>Warm regards,<br><strong>The Teltam Team</strong></p>
+    </div>
+    <div class="footer">
+      <p>You're receiving this email because you're registered with <a href="https://teltam.in">Teltam.in</a>.</p>
+      <p>&copy; {{ now|date:"Y" }} Teltam.in. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+
+
+

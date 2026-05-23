@@ -2,106 +2,121 @@
 {% load youtube_extras %}
 {% block title %}
 <title>Learn Tamil, Hindi, Malayalam & More with YouTube Videos | Teltam</title>
-<meta name="description" content="Watch curated videos to learn Tamil, Hindi, Telugu, Malayalam, Kannada, and English. Understand pronunciation, meanings, and context through engaging video content.">
+<meta name="description"
+  content="Watch curated videos to learn Tamil, Hindi, Telugu, Malayalam, Kannada, and English. Understand pronunciation, meanings, and context through engaging video content.">
 
 {% endblock title %}
 {% load static %}
 
 {% block content %}
-  <style>
-    .form-control.red-outline {
-      border: 1px solid red !important;
-      box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
-    }
-    
-    .youtube-play-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 68px;
-      height: 48px;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      opacity: 0.9;
-    }
-  </style>
-  <section id="videos" class="services section light-background">
-    <br /><br /><br />
-    <div class="container section-title" data-aos="fade-up">
-      <h2>Discover our Videos</h2>
-      <p>Explore fresh insights, tips, and stories from our latest video uploads.</p>
-    </div>
-    <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
-      <div class="row mb-4">
-        <div class="col-md-4"></div>
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
-          <input type="text" id="searchInput" class="form-control shadow-none red-outline" placeholder="Search video by title or content..." />
-        </div>
-      </div>
+<style>
+  .form-control.red-outline {
+    border: 1px solid red !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
+  }
 
-      <div class="row g-4" id="videoContainer">
-        {% for video in videos %}
-          <div class="col-md-6 col-lg-4 video-card" data-title="{{ video.title|lower }}" data-content="{{ video.description|striptags|truncatewords:25|lower }}">
-            <a href="#">
-              <div class="card h-100 shadow-sm">
-                <a href="{% url "view_video" video.id %}" class="video-thumbnail-wrapper text-decoration-none">
-                  <div class="ratio ratio-16x9 position-relative">
-                    <img src="https://img.youtube.com/vi/{{ video.youtube_url|youtube_id }}/hqdefault.jpg" alt="{{ video.title }}" class="img-fluid rounded shadow" />
-                    <div class="youtube-play-button">
-                      <svg height="100%" version="1.1" viewBox="0 0 68 48" width="100%">
-                        <path d="M66.52 7.85c-.77-2.9-3.06-5.19-5.96-5.96C55.45 0 34 0 34 0S12.55 0 7.44 1.89c-2.9.77-5.19 3.06-5.96 5.96C0 12.95 0 24 0 24s0 11.05 1.48 16.15c.77 2.9 3.06 5.19 5.96 5.96C12.55 48 34 48 34 48s21.45 0 26.56-1.89c2.9-.77 5.19-3.06 5.96-5.96C68 35.05 68 24 68 24s0-11.05-1.48-16.15z" fill="#f00" />
-                        <path d="M45 24 27 14v20z" fill="#fff" />
-                      </svg>
-                    </div>
-                  </div>
-                </a>
-                
-                <div class="card-body">
-                  <h5 class="card-title fw-bold">{{ video.title }}</h5>
-                  <p class="card-text text-muted small">{{ video.description|striptags|truncatewords:25 }}</p>
+  .youtube-play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 68px;
+    height: 48px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0.9;
+  }
+</style>
+<section id="videos" class="services section light-background">
+  <br /><br /><br />
+  <div class="container section-title" data-aos="fade-up">
+    <h2>Discover our Videos</h2>
+    <p>Explore fresh insights, tips, and stories from our latest video uploads.</p>
+  </div>
+  <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
+    <div class="row mb-4">
+      <div class="col-md-4"></div>
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+        <input type="text" id="searchInput" class="form-control shadow-none red-outline"
+          placeholder="Search video by title or content..." />
+      </div>
+    </div>
+
+    <div class="row g-4" id="videoContainer">
+      {% for video in videos %}
+      <div class="col-md-6 col-lg-4 video-card" data-title="{{ video.title|lower }}"
+        data-content="{{ video.description|striptags|truncatewords:25|lower }}">
+        <a href="#">
+          <div class="card h-100 shadow-sm">
+            <a href="{% url 'view_video' video.id %}" class="video-thumbnail-wrapper text-decoration-none">
+              <div class="ratio ratio-16x9 position-relative">
+                {% if video.video_id %}
+                <img src="https://img.youtube.com/vi/{{ video.video_id }}/hqdefault.jpg" alt="{{ video.title }}"
+                  class="img-fluid rounded shadow" />
+                {% else %}
+                <div class="bg-dark text-white d-flex align-items-center justify-content-center rounded shadow"
+                  style="height:200px;">
+                  Invalid video embed code
+                </div>
+                {% endif %}
+                <div class="youtube-play-button">
+                  <svg height="100%" version="1.1" viewBox="0 0 68 48" width="100%">
+                    <path
+                      d="M66.52 7.85c-.77-2.9-3.06-5.19-5.96-5.96C55.45 0 34 0 34 0S12.55 0 7.44 1.89c-2.9.77-5.19 3.06-5.96 5.96C0 12.95 0 24 0 24s0 11.05 1.48 16.15c.77 2.9 3.06 5.19 5.96 5.96C12.55 48 34 48 34 48s21.45 0 26.56-1.89c2.9-.77 5.19-3.06 5.96-5.96C68 35.05 68 24 68 24s0-11.05-1.48-16.15z"
+                      fill="#f00" />
+                    <path d="M45 24 27 14v20z" fill="#fff" />
+                  </svg>
                 </div>
               </div>
             </a>
-          </div>
-        {% empty %}
-          <p class="text-center">No videos available.</p>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
 
-  <script>
-    document.getElementById('searchInput').addEventListener('keyup', function () {
-      const query = this.value.toLowerCase()
-      const cards = document.querySelectorAll('.video-card')
-    
-      let anyVisible = false
-    
-      cards.forEach((card) => {
-        const title = card.getAttribute('data-title')
-        const content = card.getAttribute('data-content')
-    
-        if (title.includes(query) || content.includes(query)) {
-          card.style.display = 'block'
-          anyVisible = true
-        } else {
-          card.style.display = 'none'
-        }
-      })
-    
-      if (!anyVisible) {
-        if (!document.getElementById('noResults')) {
-          const noResult = document.createElement('div')
-          noResult.id = 'noResults'
-          noResult.className = 'col-12 text-center text-muted mt-4'
-          noResult.innerText = 'No results found.'
-          document.getElementById('blogContainer').appendChild(noResult)
-        }
+            <div class="card-body">
+              <h5 class="card-title fw-bold">{{ video.title }}</h5>
+              <p class="card-text text-muted small">{{ video.description|striptags|truncatewords:25 }}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% empty %}
+      <p class="text-center">No videos available.</p>
+      {% endfor %}
+    </div>
+
+
+  </div>
+</section>
+ 
+<script>
+  document.getElementById('searchInput').addEventListener('keyup', function () {
+    const query = this.value.toLowerCase()
+    const cards = document.querySelectorAll('.video-card')
+
+    let anyVisible = false
+
+    cards.forEach((card) => {
+      const title = card.getAttribute('data-title')
+      const content = card.getAttribute('data-content')
+
+      if (title.includes(query) || content.includes(query)) {
+        card.style.display = 'block'
+        anyVisible = true
       } else {
-        const noResult = document.getElementById('noResults')
-        if (noResult) noResult.remove()
+        card.style.display = 'none'
       }
     })
-  </script>
+
+    if (!anyVisible) {
+      if (!document.getElementById('noResults')) {
+        const noResult = document.createElement('div')
+        noResult.id = 'noResults'
+        noResult.className = 'col-12 text-center text-muted mt-4'
+        noResult.innerText = 'No results found.'
+        document.getElementById('blogContainer').appendChild(noResult)
+      }
+    } else {
+      const noResult = document.getElementById('noResults')
+      if (noResult) noResult.remove()
+    }
+  })
+</script>
 {% endblock %}

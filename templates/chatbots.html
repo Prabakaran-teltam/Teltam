@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+  <title>Teltam | Assitants</title>
+{% endblock %}
+{% block content %}
+
+<style>
+    .message-bubble {
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.message-bubble h1,
+.message-bubble h2,
+.message-bubble h3 {
+  font-weight: 600;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.message-bubble p {
+  margin-bottom: 10px;
+}
+
+.message-bubble ul {
+  padding-left: 18px;
+  margin-bottom: 10px;
+}
+
+.message-bubble li {
+  margin-bottom: 6px;
+}
+
+.message-bubble strong {
+  font-weight: 600;
+}
+
+.message-bubble code {
+  background: #f1f1f1;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.message-bubble h3 {
+  color: #4facfe;
+}
+</style>
+
+
+    <div class="chatbox-wrapper">
+      <!-- Sidebar -->
+      <div class="chat-sidebar">
+        <div class="px-4 pb-3 pt-2">
+          <h5 class="fw-bold mb-0">AI Assistants</h5>
+          <small class="text-muted"> Powered by Teltam AI</small>
+        </div>
+        <ul class="chat-bots-list">
+          <li class="chat-bot-item" onclick="switchBot('careerpilot')" id="btn-careerpilot">
+            <div class="bot-avatar career-bot"><i class="bi bi-briefcase-fill"></i></div>
+            <div class="bot-name">
+              <h6 class="mb-0 fw-bold">CareerPilot AI</h6>
+              <small class="text-muted">Career & Interviews</small>
+            </div>
+          </li>
+          <li class="chat-bot-item" onclick="switchBot('resumex')" id="btn-resumex">
+            <div class="bot-avatar resume-bot"><i class="bi bi-file-earmark-person"></i></div>
+            <div class="bot-name">
+              <h6 class="mb-0 fw-bold">ResumeX AI</h6>
+              <small class="text-muted">Resume Optimization</small>
+            </div>
+          </li>
+          <li class="chat-bot-item" onclick="switchBot('assistx')" id="btn-assistx">
+            <div class="bot-avatar assist-bot"><i class="bi bi-chat-square-dots"></i></div>
+            <div class="bot-name">
+              <h6 class="mb-0 fw-bold">AssistX AI</h6>
+              <small class="text-muted">General Assistant</small>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Main Chat Area -->
+      <div class="chat-main">
+        <div class="chat-header">
+          <div class="bot-avatar" id="current-bot-avatar"><i class="bi bi-robot"></i></div>
+          <div>
+            <h4 id="current-bot-name" class="mb-1">Select an AI</h4>
+            <small class="text-success fw-bold"><i class="bi bi-circle-fill me-1"
+                style="font-size: 8px;"></i>Online</small>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <!-- Messages will be injected here via JS -->
+          <div class="text-center text-muted mt-5">
+            <i class="bi bi-chat-dots" style="font-size: 3rem; opacity: 0.2;"></i>
+            <p class="mt-3">Choose a bot from the left menu to start chatting.</p>
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="chat-input-wrapper shadow-sm">
+            <button id="upload-resume-btn" onclick="document.getElementById('resume-upload-input').click()"
+              style="display: none; background: #e9ecef; color: #4facfe; margin-right: 10px;" title="Upload Resume">
+              <i class="bi bi-paperclip"></i>
+            </button>
+            <input type="file" id="resume-upload-input" style="display: none;" onchange="handleFileUpload(event)"
+              accept=".pdf,.doc,.docx,.txt">
+            <input type="text" placeholder="Type your message here..." id="chat-input-field">
+            <button onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <script>
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    const bots = {
+      careerpilot: { name: 'CareerPilot AI', class: 'career-bot', icon: 'bi-briefcase-fill', greeting: 'Hello! I am CareerPilot AI. Ready to prep for your next big interview or discuss your career path?' },
+      resumex: { name: 'ResumeX AI', class: 'resume-bot', icon: 'bi-file-earmark-person', greeting: 'Hi there! I am ResumeX. Paste your resume text here and let us optimize it for maximum impact and ATS bypass.' },
+      assistx: { name: 'AssistX AI', class: 'assist-bot', icon: 'bi-chat-square-dots', greeting: 'Hey! I am AssistX, your personal AI assistant. How can I help you today? Ask me anything!' }
+    };
+
+    let currentBot = '';
+    let isTyping = false;
+
+function typeWriter(element, text, index, callback) {
+  if (index < text.length) {
+
+    element.innerText = text.substring(0, index + 1);
+
+    const messagesEl = document.getElementById('chat-messages');
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    setTimeout(() => typeWriter(element, text, index + 1, callback), 15);
+  } else {
+    // ✅ After typing → render Markdown properly
+    element.innerHTML = marked.parse(text);
+
+    if (callback) callback();
+  }
+}
+
+
+
+
+let thinkingElement = null;
+
+function showThinking() {
+  const messagesEl = document.getElementById('chat-messages');
+
+  // Remove old one if exists
+  if (thinkingElement) {
+    thinkingElement.remove();
+  }
+
+  thinkingElement = document.createElement('div');
+  thinkingElement.className = "message bot-message";
+
+  thinkingElement.innerHTML = `
+    <div class="message-bubble shadow-sm">
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  `;
+
+  messagesEl.appendChild(thinkingElement);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function removeThinking() {
+  if (thinkingElement) {
+    thinkingElement.remove();
+    thinkingElement = null;
+  }
+}
+
+
+let typingElement = null;
+
+function appendBotMessage(text) {
+  const messagesEl = document.getElementById('chat-messages');
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = "message bot-message";
+
+  const bubble = document.createElement('div');
+  bubble.className = "message-bubble shadow-sm";
+
+  messageDiv.appendChild(bubble);
+  messagesEl.appendChild(messageDiv);
+
+  typeWriter(bubble, text, 0);
+}
+
+
+
+    function switchBot(botId) {
+      if (isTyping) return; // Prevent switching while typing
+      currentBot = botId;
+      const bot = bots[botId];
+      if (!bot) return;
+
+      // Update Sidebar Active State
+      document.querySelectorAll('.chat-bot-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('btn-' + botId).classList.add('active');
+
+      // Update Header
+      const avatarEl = document.getElementById('current-bot-avatar');
+      avatarEl.className = 'bot-avatar ' + bot.class + ' shadow-sm';
+      avatarEl.innerHTML = `<i class="bi ${bot.icon}"></i>`;
+      document.getElementById('current-bot-name').innerText = bot.name;
+
+      // Handle Upload Button Visibility
+      const uploadBtn = document.getElementById('upload-resume-btn');
+      if (botId === 'resumex') {
+        uploadBtn.style.display = 'flex';
+      } else {
+        uploadBtn.style.display = 'none';
+      }
+
+      // Clear old messages and Load Greeting
+      const messagesEl = document.getElementById('chat-messages');
+      messagesEl.innerHTML = '';
+      appendBotMessage(bot.greeting, 400);
+    }
+
+
+    function sendMessage() {
+  if (isTyping) return;
+
+  const input = document.getElementById('chat-input-field');
+  const text = input.value.trim();
+
+  if (!text || !currentBot) return;
+
+  const messagesEl = document.getElementById('chat-messages');
+
+  // User Message
+  messagesEl.innerHTML += `
+    <div class="message user-message">
+      <div class="message-bubble shadow-sm">${text}</div>
+    </div>
+  `;
+
+  input.value = '';
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  // Show typing
+  showThinking();
+
+  fetch('/api/chat/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({
+      message: text,
+      bot: currentBot
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+
+    // ✅ Remove only typing element safely
+    removeThinking();
+
+    if (data.reply) {
+      appendBotMessage(data.reply, 200);
+    } else {
+      appendBotMessage("Error: " + data.error, 200);
+    }
+  })
+  .catch(err => {
+    removeThinking();
+    appendBotMessage("Something went wrong!", 200);
+  });
+}
+
+
+
+function getCSRFToken() {
+  return document.cookie.split('; ')
+    .find(row => row.startsWith('csrftoken'))
+    ?.split('=')[1];
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('resume', file);
+  formData.append('bot', currentBot);
+
+  // Show user file in chat
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.innerHTML += `
+    <div class="message user-message">
+      <div class="message-bubble shadow-sm">
+        📄 ${file.name}
+      </div>
+    </div>
+  `;
+
+  showThinking(); // ✅ show loader
+
+  fetch('/api/upload-resume/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    removeThinking();
+
+    if (data.reply) {
+      appendBotMessage(data.reply);
+    } else {
+      appendBotMessage("Error analyzing resume.");
+    }
+  })
+  .catch(err => {
+    removeThinking();
+    appendBotMessage("Upload failed!");
+  });
+}
+    // Handle enter key
+    document.getElementById('chat-input-field').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Init Page Script
+    window.onload = () => {
+      let startBot = getQueryParam('bot') || 'careerpilot';
+      switchBot(startBot);
+    };
+
+
+
+
+  </script>
+
+{% endblock %}

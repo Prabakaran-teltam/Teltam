@@ -1,0 +1,175 @@
+{% load static %}
+<!-- Bottom Left Button -->
+<!-- Poster Overlay -->
+
+<style>
+  /* Poster Overlay */
+  .poster-overlay {
+    display: none; /* REQUIRED */
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+  
+    /* center content */
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .poster-image {
+    max-width: 90%;
+    max-height: 90%;
+    cursor: pointer;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Close button */
+  .poster-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 40px;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  /* Form Overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9998;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 35px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+    .iti {
+    width: 100%;
+  }
+
+  .iti input {
+    width: 100%;
+    height: 45px; /* match Bootstrap input height */
+  }
+</style>
+
+
+<!-- Bottom Left Button -->
+<div class="bottom-left-btn">
+  <button class="swing-button btn btn-primary" onclick="openForm()">Join AI Classes <i class="bi bi-robot"></i></button>
+</div>
+
+<!-- Overlay with Form -->
+<div class="overlay" id="overlay" style="display:none;">
+  <span class="close-btn" onclick="closeForm()">&times;</span>
+
+  <div class="form-container container shadow-lg rounded bg-white p-4" style="max-width: 900px;">
+    <div class="row g-0">
+      <div class="col-md-12">
+        <h2 class="mb-3"><i class="bi bi-robot"></i> Start Your AI Journey</h2>
+
+        <form method="POST" action="{% url 'enquiry_view' %}">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-control shadow-none" placeholder="Your Full Name" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control shadow-none" placeholder="Your Email" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input id="phone" type="tel" name="phone" class="form-control shadow-none" placeholder="Your Phone Number" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea name="message" class="form-control shadow-none" rows="4" placeholder="Your Message"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-success w-100"><i class="bi bi-send-fill"></i> Submit Enquiry</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+<script>
+  const input = document.querySelector("#phone");
+  window.intlTelInput(input, {
+    initialCountry: "in",
+    separateDialCode: true,
+  });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const poster = document.getElementById('posterOverlay');
+  const overlay = document.getElementById('overlay');
+
+  // 🛑 Hide after enquiry submission
+  {% if request.session.from_enquiry %}
+    if (poster) poster.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    return;
+  {% endif %}
+
+  // ✅ First visit → show poster
+  if (poster && !sessionStorage.getItem('posterClosed')) {
+    poster.style.display = 'flex';
+  }
+});
+
+function closePoster() {
+  const poster = document.getElementById('posterOverlay');
+  if (poster) {
+    poster.style.display = 'none';
+  }
+  sessionStorage.setItem('posterClosed', 'true');
+}
+
+function openFormFromPoster() {
+  closePoster();
+  openForm();
+}
+
+// Auto close after 5 seconds
+window.addEventListener('load', function () {
+  const posterClosed = sessionStorage.getItem('posterClosed');
+
+  if (!posterClosed) {
+    setTimeout(function () {
+      closePoster();
+    }, 10000); // 10000ms = 10 seconds
+  }
+});
+
+function openForm() {
+  {% if request.session.from_enquiry %}
+    return;
+  {% endif %}
+  const overlay = document.getElementById('overlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeForm() {
+  const overlay = document.getElementById('overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+</script>

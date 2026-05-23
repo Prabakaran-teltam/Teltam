@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to {{ site_name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f3f6fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 650px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(90deg, #007bff, #00bcd4);
+      color: #ffffff;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .header h1 {
+      font-size: 26px;
+      margin: 0;
+    }
+    .content {
+      padding: 25px;
+      color: #333;
+      line-height: 1.7;
+      text-align: left;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      text-align: center;
+      padding: 15px;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌍 Welcome to {{ site_name }}</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>{{ user.first_name|default:user.username }}</strong>,</p>
+      <p>Welcome to <strong>{{ site_name }}</strong> — your one-stop platform for translation, learning, and discovery!</p>
+      <p>At <strong>{{ site_name }}</strong>, you can:</p>
+      <ul>
+        <li>📤 Upload images or PDF files and translate their content into any language</li>
+        <li>🔊 Listen to pronunciations and explore word meanings in your chosen language</li>
+        <li>🧠 Read rich blogs and articles that expand your learning horizons</li>
+        <li>🎥 Watch embedded YouTube videos for an immersive experience</li>
+      </ul>
+      <p>We’re excited to help you explore languages and cultures — one translation at a time.</p>
+      <a href="https://teltam.in">Start Exploring</a>
+      <p style="margin-top: 20px;">Happy Learning!<br><strong>The Teltam Team</strong></p>
+    </div>
+    <div class="footer">
+      <p>&copy; {{ now|date:"Y" }} {{ site_name }}. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -15,6 +15,8 @@
   <link href="{% static "assets/vendor/swiper/swiper-bundle.min.css" %}" rel="stylesheet">
   <link href="{% static "assets/css/main.css" %}" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
 </head>
 
 <body class="index-page light-background">
@@ -70,8 +72,8 @@
                 </div>
 
                 <div class="col-md-6">
-                  <input type="text" name="phone" class="form-control" placeholder="Phone Number"
-         pattern="[0-9]{10}" title="Enter a 10-digit phone number" required>
+
+                  <input type="tel" class="form-control" id="phone" name="phone" required placeholder="Enter phone number">
                   {% if form.errors.phone %}
                     <label class="text-danger">{{form.errors.phone}}</label>
                   {% endif %}
@@ -118,6 +120,8 @@
   </section>
   {% include "message.html" %}
 </main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 <script>
   function togglePasswordVisibility(passwordId) {
     var passwordField = document.getElementById(passwordId);
@@ -134,7 +138,50 @@
       icon.classList.add('fa-eye-slash');
     }
   }
-</script>
+
+
+
+        const phoneInput = document.querySelector("#phone");
+ 
+        // Initialize plugin
+        const iti = window.intlTelInput(phoneInput, {
+            initialCountry: "in",
+            separateDialCode: true,
+            preferredCountries: ["in", "us", "ae", "bh", "gb"],
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+        });
+ 
+        // Function to validate phone length
+        function validatePhone() {
+            const number = phoneInput.value.trim();
+            if (number === "") return true;
+ 
+            if (!iti.isValidNumber()) {
+                const errorMap = {
+                    0: "Invalid Mobile number",
+                    1: "Invalid country code",
+                    2: "Mobile Too short",
+                    3: "Mobile Too long",
+                    4: "Invalid Mobile number",
+                };
+                const errorCode = iti.getValidationError();
+                alert(errorMap[errorCode] || "Invalid phone number");
+                return false;
+            }
+ 
+            return true;
+        }
+ 
+        // Replace local number with full international format on submit
+        const form = phoneInput.closest("form");
+        form.addEventListener("submit", function(e) {
+            if (!validatePhone()) {
+                e.preventDefault();
+                return false;
+            }
+            phoneInput.value = iti.getNumber(); // +919876543210 format
+        });
+    </script>
 
 <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 <script src="{% static "assets/vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>

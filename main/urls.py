@@ -12,6 +12,8 @@ urlpatterns = [
     path('survey',survey,name='survey'),
     path("logout/",logout_view,name="logout"),
     path('profile',profile,name="profile"),
+    
+    path('enquiry_view',enquiry_view,name="enquiry_view"),
     # Password reset
 
     path('password_reset/', password_reset_request, name='password_reset_request'),
@@ -32,7 +34,28 @@ urlpatterns = [
     path("video/list_of_videos",list_of_videos,name="list_of_videos"),
     path("view_video/<int:id>",view_video,name="view_video"),
     path("about_us",about_us,name="about_us"),
-    path("newsletter",newsletter,name="newsletter")
+    path("newsletter",newsletter,name="newsletter"),
+
+    path('terms',terms,name="terms"),
+    path('policy',policy,name="policy"),
+    path('refund',refund,name="refund"),
+
+    path('basic_plan',basic_plan,name="basic_plan"),
+    path('pro_plan',pro_plan,name='pro_plan'),
+    path('enterprise_plan',enterprise_plan,name='enterprise_plan'),
+    path('current_plan/', current_plan_view, name='current_plan'),
+
+    path('dashboard/', dashboard_view, name='dashboard'),
+
+    path('chatbots',chatbots,name="chatbots"),
+
+    path('api/chat/', chat_api, name='chat_api'),
+    path('api/upload-resume/', upload_resume, name='upload_resume'),
+
+    path('init_pay/',init_pay,name="init_pay"),
+
+    path('pay/', initiate_payment, name='initiate_payment'),
+    path('callback/', payment_callback, name='payment_callback'),
 ]
 
 handler404 = 'main.views.custom_404'

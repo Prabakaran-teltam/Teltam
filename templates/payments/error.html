@@ -1,0 +1,12 @@
+{% extends 'payments/base.html' %}
+
+{% block content %}
+<div class="status-icon error">⚠</div>
+<div class="logo">
+    <h1>System Error</h1>
+</div>
+<div class="card">
+    <p style="text-align: center; color: #ff4b5c;">{{ error }}</p>
+</div>
+<a href="{% url 'home' %}" class="btn">Back to Home</a>
+{% endblock %}

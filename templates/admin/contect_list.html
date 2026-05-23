@@ -28,6 +28,7 @@
           <th>No.</th>
           <th>Name</th>
           <th>Email</th>
+
           <th>Message</th>
           <th>Action</th>
         </tr>
@@ -42,19 +43,21 @@
               <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ i.message }}">{{ i.message }}</span>
             </td>
             <td>
-              <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-default"><i class="bi bi-eye"></i>&nbsp;&nbsp;View</button>
+              <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-{{ forloop.counter }}"><i class="bi bi-eye"></i>&nbsp;&nbsp;View</button>
             </td>
           </tr>
-          <div class="modal fade" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+          <div class="modal fade" id="modal-{{ forloop.counter }}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <div class="modal-header">
                   <h4 class="h6 modal-title">{{ i.name }} | {{ i.email }}</h4>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
                   <p>{{ i.message }}</p>
                 </div>
+
                 <div class="modal-footer">
                   <button type="button" class="btn btn-link text-gray-600 ms-auto" data-bs-dismiss="modal">Close</button>
                 </div>
@@ -65,5 +68,5 @@
       </tbody>
     </table>
   </div>
-  <br>
+  <br />
 {% endblock %}

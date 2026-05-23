@@ -28,7 +28,7 @@
           <th>Username</th>
           <th>Email</th>
           <th>Join Us</th>
-          <th>Last Login</th>
+          <th>Admin Privilege</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -39,7 +39,24 @@
             <td>{{ user.username }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.date_joined|date:'Y-m-d' }}</td>
-            <td>{{ user.last_login|date:'Y-m-d' }}</td>
+            <td class="text-center">
+              {% if user.id == 1 %}
+              {% else %}
+                <form method="POST" action="{% url 'toggle_superuser' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="user_id" value="{{ user.id }}">
+
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" 
+                          type="checkbox" 
+                          name="is_superuser"
+                          id="user-superuser-{{ user.id }}"
+                          onchange="this.form.submit();" 
+                          {% if user.is_superuser %} checked {% endif %}>
+                  </div>
+                </form>
+                {% endif %}
+            </td>
             <td>
               <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewUserModal{{ user.id }}"><i class="bi bi-eye"></i>&nbsp;&nbsp;View</button>
             </td>
@@ -107,5 +124,5 @@
       </tbody>
     </table>
   </div>
-  <br>
+  <br />
 {% endblock %}

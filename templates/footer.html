@@ -1,17 +1,24 @@
 
 <footer id="footer" class="footer">
-    <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">Teltam</strong> <span>All Rights Reserved</span></p>
-      <!--<div class="credits">
-        <div class="text-center">
-          <div class="social-links d-flex">
-            <a href=""><i class="bi bi-twitter-x"></i></a>
-            <a href=""><i class="bi bi-facebook"></i></a>
-            <a href=""><i class="bi bi-instagram"></i></a>
-            <a href=""><i class="bi bi-linkedin"></i></a>
-          </div>
-        </div>-->
-        Developed By <a href="https://digitalmarketing.dlktech.co.in/">DLK Technologies Pvt Ltd</a>
-      </div>
+  <div class="container mt-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start">
+    
+    <!-- Left: Copyright -->
+    <div class="copyright mb-2 mb-md-0">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">MLK Tech | Teltam.in</strong> <span>All Rights Reserved</span></p>
     </div>
+
+    <!-- Center: Policies Links -->
+    <div class="footer-links mb-2 mb-md-0">
+      <a href="{% url "terms" %}" class="mx-2">Terms & Conditions</a>
+      <a href="{% url "policy" %}" class="mx-2">Privacy Policy</a>
+      <a href="{% url "refund" %}" class="mx-2">Refund Policy</a>
+    </div>
+
+    <!-- Right: Developer -->
+    <div class="developer">
+      <p>Developed By <a href="https://digitalmarketing.dlktech.co.in/">DLK Technologies Pvt Ltd</a></p>
+    </div>
+
+  </div>
 </footer>
+

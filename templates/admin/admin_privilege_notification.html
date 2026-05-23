@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teltam.in | Admin Privilege Notification</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f5f6fa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(90deg, #0078d7, #00a8ff);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 30px;
+      line-height: 1.6;
+    }
+    .content h2 {
+      color: #0078d7;
+      margin-top: 0;
+    }
+    .status {
+      font-weight: bold;
+      color: #0078d7;
+    }
+    .footer {
+      background-color: #f1f2f6;
+      text-align: center;
+      padding: 15px;
+      font-size: 13px;
+      color: #555;
+    }
+    .footer a {
+      color: #0078d7;
+      text-decoration: none;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      background: #0078d7;
+      color:white;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Teltam.in</h1>
+    </div>
+    <div class="content">
+      <h2>Hello {{ user.username }},</h2>
+      <p>
+        Your <strong>admin privileges</strong> have been 
+        <span class="status">{{ status_text }}</span> on 
+        <strong>Teltam.in</strong>.
+      </p>
+
+      {% if status_text == 'granted' %}
+      <p>
+        Congratulations! You now have access to the Teltam.in administrative dashboard.  
+        Please use your admin rights responsibly and adhere to platform guidelines.<a href="https://teltam.in/login"> Go to Admin Panel</a>
+      </p>
+      {% else %}
+      <p>
+        Your admin privileges have been revoked.  
+        If you believe this was a mistake, please contact the Teltam.in support team.
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="footer">
+      <p>© {{ now|date:"Y" }} <a href="https://teltam.in">Teltam.in</a> — All rights reserved.</p>
+      <p>This is an automated email, please do not reply.</p>
+    </div>
+  </div>
+</body>
+</html>

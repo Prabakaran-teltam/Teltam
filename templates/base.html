@@ -17,6 +17,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="google-site-verification" content="KfPSxBwa8WMsUfAMI8u2zuXtrT5DJkUtTF3Q5BrShXM" />
     {% block title %}
+
     {% endblock %}
     <link href="{% static 'assets/img/fav_icon.png' %}" rel="icon" />
     <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon" />
@@ -29,6 +30,242 @@
     <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet" />
     <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet" />
     <link href="{% static 'assets/css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/chatbots.css' %}" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+      /* Bottom Left Button */
+      .bottom-left-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 999;
+      }
+      
+      .swing-button {
+        background: linear-gradient(45deg, #3195fd);
+        color: #fff;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        animation: swingUpDown 1.8s ease-in-out infinite;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        transition: background 0.3s ease, transform 0.2s;
+      }
+      
+      .swing-button:hover {
+        background: linear-gradient(45deg, #3195fd);
+        transform: scale(1.05);
+      }
+      
+      @keyframes swingUpDown {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+      
+      /* Overlay Background */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      
+      /* Form Container */
+      .form-container {
+        background: #fff;
+        width: 500px;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.5s ease;
+      }
+      @media (max-width: 576px) {
+        .form-container {
+          width: 350px;
+          padding: 15px;
+        }
+      }
+      
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      
+      .form-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .form-container input,
+      .form-container textarea {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+      
+      .form-container button {
+        width: 100%;
+        padding: 12px;
+        background: #3195fd;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      
+      .form-container button:hover {
+        background: #3195fd;
+      }
+      
+      .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 30px;
+        color: white;
+        cursor: pointer;
+      }
+      
+      .typing-text {
+        white-space: pre-wrap;
+        overflow: hidden;
+        font-family: 'Noto Sans Tamil', serif;
+        font-size: 1rem;
+      }
+      
+      .company-badge {
+        font-weight: bold;
+        font-size: 1.3rem;
+      }
+      .form-control.red-outline {
+        border: 1px solid red !important;
+        box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
+      }
+      
+      .youtube-play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 68px;
+        height: 48px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        opacity: 0.9;
+      }
+      
+      /* ===== UNIQUE CHATBOT DOCK ===== */
+      .teltam-chatbot-dock {
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 9999;
+      }
+      
+      /* ===== EACH BOT ===== */
+      .teltam-bot-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        text-decoration: none;
+      }
+      
+      /* ===== ICON STYLE ===== */
+      .teltam-bot-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      
+        font-size: 20px;
+        color: #fff;
+      
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+      
+      /* ===== GRADIENT VARIANTS ===== */
+      .teltam-career .teltam-bot-icon {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+      }
+      
+      .teltam-resume .teltam-bot-icon {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+      }
+      
+      .teltam-assist .teltam-bot-icon {
+        background: linear-gradient(135deg, #fa709a, #fee140);
+      }
+      
+      /* ===== HOVER EFFECT ===== */
+      .teltam-bot-item:hover .teltam-bot-icon {
+        transform: scale(1.2);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+      }
+      
+      /* ===== TOOLTIP ===== */
+      .teltam-bot-label {
+        position: absolute;
+        right: 65px;
+        background: #111;
+        color: #fff;
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        white-space: nowrap;
+      
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s ease;
+      }
+      
+      .teltam-bot-item:hover .teltam-bot-label {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      
+      /* Tooltip arrow */
+      .teltam-bot-label::after {
+        content: '';
+        position: absolute;
+        right: -6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: transparent transparent transparent #111;
+      }
+    </style>
   </head>
 
   <body class="index-page">
@@ -38,13 +275,34 @@
       {% block content %}
 
       {% endblock %}
+      {% if icon_status %}
+
+      {% else %}
+            <div class="teltam-chatbot-dock">
+        <!-- CareerPilot -->
+        <a href="{% url 'chatbots' %}?bot=careerpilot" class="teltam-bot-item teltam-career">
+          <span class="teltam-bot-label">CareerPilot AI</span>
+          <div class="teltam-bot-icon">🎯</div>
+        </a>
+        <!-- ResumeX -->
+        <a href="{% url 'chatbots' %}?bot=resumex" class="teltam-bot-item teltam-resume">
+          <span class="teltam-bot-label">ResumeX AI</span>
+          <div class="teltam-bot-icon">📄</div>
+        </a>
+
+        <!-- AssistX -->
+        <a href="{% url 'chatbots' %}?bot=assistx" class="teltam-bot-item teltam-assist">
+          <span class="teltam-bot-label">AssistX AI</span>
+          <div class="teltam-bot-icon">🤖</div>
+        </a>
+      </div>
+      {% endif %}
     </main>
 
     {% include 'footer.html' %}
     {% include 'message.html' %}
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
     <script>
-
       document.addEventListener('contextmenu', function (event) {
         event.preventDefault()
       })
@@ -63,7 +321,6 @@
     <!-- Main JS File -->
     <script src="{% static 'assets/js/main.js' %}"></script>
     <!-- Add in <head> -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-papM/lE4...YourHash..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-papM/lE4...YourHash..." crossorigin="anonymous" referrerpolicy="no-referrer" />
   </body>
 </html>

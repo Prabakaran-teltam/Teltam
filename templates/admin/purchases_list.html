@@ -1,0 +1,60 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+      <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+        <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+          <li class="breadcrumb-item">
+            <a href="/">
+              <svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+              </svg>
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Purchasing Details</li>
+        </ol>
+      </nav>
+      <h2 class="h4">Purchasing Details</h2>
+    </div>
+  </div>
+  <div class="card card-body border-0 shadow table-wrapper table-responsive">
+    <table id="myTable" class="table table-hover">
+      <thead class="thead-light">
+        <tr>
+          <th>#</th>
+          <th>Order ID</th>
+          <th>Plan Name</th>
+          <th>User Email</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in subscriptions %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ sub.transaction.order_id }}</td>
+            <td><span class="fw-bold text-primary">{{ sub.plan.name|title }}</span></td>
+            <td>{{ sub.user.email }}</td>
+            <td>₹{{ sub.transaction.amount }}</td>
+            <td>
+              {% if sub.transaction.status == 'SUCCESS' %}
+                <span class="badge bg-success">Success</span>
+              {% elif sub.transaction.status == 'FAILED' %}
+                <span class="badge bg-danger">Failed</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+            <td>{{ sub.transaction.created_at|date:'Y-m-d H:i' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <br />
+{% endblock %}

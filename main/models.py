@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import random
 from django.utils import timezone
-
+from datetime import timedelta
 
 
 class UserProfile(models.Model):
@@ -15,15 +15,14 @@ class UserProfile(models.Model):
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=15, blank=True, unique=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
-    is_seen = models.BooleanField(default=False) 
-    
+    is_seen = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "User Self Details"
         verbose_name_plural = "User Self Details"
 
     def __str__(self):
         return self.user.username
-
 
 
 class Translations(models.Model):
@@ -106,17 +105,17 @@ class SurveyResponse(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_seen = models.BooleanField(default=False) 
     
-    
+
+
     class Meta:
         verbose_name = "Survey Details"
         verbose_name_plural = "Survey Details"
-    
 
 class Output_files(models.Model):
     translation = models.ForeignKey(Translations,on_delete=models.CASCADE)
     file = models.FileField(upload_to='outputs/')
     created = models.DateField(auto_now_add=True)
-    is_seen = models.BooleanField(default=False) 
+    is_seen = models.BooleanField(default=False)
     
     class Meta:
         verbose_name = "Final "
@@ -139,7 +138,205 @@ class User_OTP(models.Model):
     def is_expired(self):
         return timezone.now() > self.created + timezone.timedelta(minutes=10)
 
+
 class Newsletter(models.Model):
     email = models.EmailField(max_length=254)
     created = models.DateField(auto_now_add=True)
-    is_seen = models.BooleanField(default=False) 
+    is_seen = models.BooleanField(default=False)
+    
+    
+    
+class ClassInquiry(models.Model):
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Inquiry from {self.full_name}"
+    
+    def __str__(self):
+        return self.name
+
+
+
+class Plan(models.Model):
+    PLAN_CHOICES = [
+        ('basic','basic'),
+        ('pro', 'pro'),
+        ('enterprise', 'enterprise')
+    ]
+    name = models.CharField(choices=PLAN_CHOICES,null=True,blank=False,unique=True)
+    price = models.DecimalField(max_digits=8,decimal_places=2)
+    period =  models.IntegerField(default=30)
+    
+    def __str__(self):
+        return f"{self.get_name_display()} - ₹{self.price} / {self.period}"
+
+
+class Transaction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_id = models.CharField(max_length=100, unique=True)
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    note = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='PENDING')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.order_id} - {self.status}"
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    plan = models.ForeignKey(Plan,on_delete=models.CASCADE)
+    transaction = models.ForeignKey(Transaction,on_delete=models.CASCADE)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(blank=True,null=True)
+    is_active = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.end_date:
+            duration = int(self.plan.period)
+            self.end_date = self.start_date + timedelta(days=duration)
+        super().save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.user.username} - {self.plan.name}"
+
+
+class Usage(models.Model):
+    subscription = models.ForeignKey(Subscription,on_delete=models.CASCADE,related_name="usages")
+    image_requests_used = models.IntegerField(default=0)
+    pdf_requests_used = models.IntegerField(default=0)
+    translations_used = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f"Usage for {self.subscription.user.username} ({self.subscription.plan.name})"
+
+
+import uuid
+
+
+# payments/models.py
+
+class UserSubscription(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    PLAN_CHOICES = [
+        ('basic', 'Basic'),
+        ('pro', 'Pro'),
+        ('premium', 'Premium'),
+    ]
+
+    user       = models.OneToOneField(
+                        User,
+                     on_delete=models.CASCADE,
+                     related_name='payment_subscription'
+                 )
+    plan_name  = models.CharField(max_length=20, choices=PLAN_CHOICES)   # ← plain string
+    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    started_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def is_active(self):
+        if self.status != 'active':
+            return False
+        if self.expires_at and self.expires_at < timezone.now():
+            return False
+        return True
+
+    def __str__(self):
+        return f"{self.user.email} → {self.plan_name} [{self.status}]"
+
+# payments/models.py
+
+class PaymentOrder(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    PLAN_CHOICES = [
+        ('basic', 'Basic'),
+        ('pro', 'Pro'),
+        ('premium', 'Premium'),
+    ]
+
+    id                = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    merchant_order_id = models.CharField(max_length=100, unique=True)
+    phonepe_order_id  = models.CharField(max_length=200, blank=True, null=True)
+
+    user              = models.ForeignKey(
+                            User,
+                            on_delete=models.CASCADE,
+                            related_name='payment_orders'
+                        )
+    plan_name         = models.CharField(max_length=20, choices=PLAN_CHOICES)  # ← plain string, no FK
+
+    amount            = models.DecimalField(max_digits=10, decimal_places=2)
+    currency          = models.CharField(max_length=5, default='INR')
+    status            = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    phonepe_response  = models.JSONField(null=True, blank=True)
+
+    created_at        = models.DateTimeField(auto_now_add=True)
+    updated_at        = models.DateTimeField(auto_now=True)
+    paid_at           = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def amount_in_paise(self):
+        return int(self.amount * 100)
+
+    def __str__(self):
+        return f"Order {self.merchant_order_id} | {self.user.email} | ₹{self.amount} [{self.status}]"
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    # Identifiers
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    merchant_order_id = models.CharField(max_length=100, unique=True)     # sent to PhonePe
+    phonepe_order_id = models.CharField(max_length=200, blank=True, null=True)  # returned by PhonePe
+
+    # Relations
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='payment_orders'
+    )
+    plan = models.CharField(max_length=20)
+    # Payment info
+    amount = models.DecimalField(max_digits=10, decimal_places=2)         # in ₹
+    currency = models.CharField(max_length=5, default='INR')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # PhonePe response data (raw)
+    phonepe_response = models.JSONField(null=True, blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def amount_in_paise(self):
+        return int(self.amount * 100)
+
+    def __str__(self):
+        return f"Order {self.merchant_order_id} | {self.user.email} | ₹{self.amount} [{self.status}]"
+    

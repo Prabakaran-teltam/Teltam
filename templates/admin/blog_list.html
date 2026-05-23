@@ -60,7 +60,7 @@
               {% endif %}
             </td>
             <td>
-              <a class="btn btn-pill btn-outline-info" href="{% url 'view_blog' blog.id %}"><i class="bi bi-eye"></i></a>&nbsp;
+              <a class="btn btn-pill btn-outline-info" href="{% url 'view_blog' blog.title %}"><i class="bi bi-eye"></i></a>&nbsp;
               <a class="btn btn-pill btn-outline-primary" href="{% url 'blog_edit' blog.id %}"><i class="bi bi-pencil-square"></i></a>&nbsp;
               <a class="btn btn-pill btn-outline-danger delete-btn" href="#" data-url="{% url 'blog_delete' blog.id %}"><i class="bi bi-trash"></i></a>
             </td>
@@ -70,7 +70,7 @@
     </table>
   </div>
   <br>
-  <script>
+  <script> 
     document.addEventListener('DOMContentLoaded', function () {
       const deleteButtons = document.querySelectorAll('.delete-btn')
     

@@ -6,6 +6,10 @@ from main.models import *
 from django.contrib.auth.decorators import user_passes_test
 from .models import *
 from django.db.models import Q
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 
 
 def update_scheduled_posts():
@@ -48,10 +52,10 @@ def dashboard(request):
         'last_blog': last_blog,
         'translation_details': translation_details
     })
+
 @user_passes_test(lambda u: u.is_superuser)
 def users_list(request):
     query = request.GET.get("q", "")
-    
     if query:
         user_data = User.objects.filter(
             Q(username__icontains=query) |
@@ -84,21 +88,83 @@ def blog_draft_list(request):
 @user_passes_test(lambda u: u.is_superuser)
 def blog_create(request):
     if request.method == "POST":
-        form = BlogPostForm(request.POST,request.FILES)
+        form = BlogPostForm(request.POST, request.FILES)
+
         if form.is_valid():
-            form.save()
-            messages.success(request,"Blog has been created...")
+            blog = form.save(commit=False)
+            blog.title = blog.title.replace("/", ",")
+            blog.save()
+
+            # ✅ Get User emails
+            user_emails = User.objects.filter(
+                is_active=True
+            ).exclude(email="").values_list("email", flat=True)
+
+            # ✅ Get ClassInquiry emails
+            inquiry_emails = ClassInquiry.objects.exclude(
+                email=""
+            ).values_list("email", flat=True)
+
+            # ✅ Merge & remove duplicates
+            all_emails = set(user_emails) | set(inquiry_emails)
+
+            subject = "📰 New Blog Published on Teltam.in"
+            from_email = "no-reply@teltam.in"
+
+            # ✅ Send Emails
+            for email in all_emails:
+                if email == "admin@gmail.com":
+                    continue
+
+                html_content = render_to_string(
+                    "admin/new_blog_notification.html",
+                    {
+                        "title": blog.title,
+                        "author": request.user.username,
+                        "link": request.build_absolute_uri(
+                            f"/blog/view/{blog.title}"
+                        ),
+                    },
+                )
+
+                text_content = strip_tags(html_content)
+
+                msg = EmailMultiAlternatives(
+                    subject,
+                    text_content,
+                    from_email,
+                    [email],
+                )
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+
+            messages.success(
+                request,
+                "✅ Blog created and email notifications sent to all users (including inquiries).",
+            )
             return redirect("blog_list")
+
         else:
-            messages.error(request,form.errors)
+            messages.error(request, form.errors)
+
     else:
         form = BlogPostForm()
         category_form = CategoryForm()
         tag_form = TagForm()
         category_list = Category.objects.all()
         tag_list = Tag.objects.all()
-    return render(request,"admin/blog_create.html",{"form":form,"category_form":category_form,"tag_form":tag_form,"category_list":category_list,"tag_list":tag_list})
 
+    return render(
+        request,
+        "admin/blog_create.html",
+        {
+            "form": form,
+            "category_form": category_form,
+            "tag_form": tag_form,
+            "category_list": category_list,
+            "tag_list": tag_list,
+        },
+    )
 
 @user_passes_test(lambda u: u.is_superuser)
 def blog_edit(request,id):
@@ -106,7 +172,9 @@ def blog_edit(request,id):
     if request.method == "POST":
         form = BlogPostForm(request.POST,request.FILES,instance=blog)
         if form.is_valid():
-            form.save()
+            blog = form.save(commit=False)
+            blog.title = blog.title.replace("/", ",")
+            blog.save()
             messages.success(request,"Blog Edited...")
             return redirect("blog_list")
         else:
@@ -193,9 +261,7 @@ def contect_list(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def video_create(request):
-    print("======")
     if request.method == "POST":
-        print("POST method detected")
         form = VideoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
@@ -270,4 +336,53 @@ def survey_details(request):
     SurveyResponse.objects.filter(is_seen=False).update(is_seen=True)
     data = SurveyResponse.objects.all()
     return render(request,"admin/survey_details.html",{'data':data})
- 
+
+
+
+
+@user_passes_test(lambda u:u.is_superuser)
+def enquiry_details(request):
+    data = ClassInquiry.objects.all()
+    return render(request,"admin/enquiry_details.html",{'data':data})
+
+
+
+
+@user_passes_test(lambda u: u.is_staff)
+def toggle_superuser(request):
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+        is_superuser = 'is_superuser' in request.POST  # checkbox only sends when checked
+        try:
+            user = User.objects.get(id=user_id)
+            user.is_superuser = is_superuser
+            user.save()
+
+            # Email content
+            status_text = "granted" if is_superuser else "revoked"
+            subject = f"Admin Privileges {status_text.capitalize()}"
+            from_email = "no-reply@yourdomain.com"
+            to_email = [user.email]
+
+            html_content = render_to_string("admin/admin_privilege_notification.html", {
+                "user": user,
+                "status_text": status_text
+            })
+            text_content = strip_tags(html_content)
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
+            messages.success(request, f"Superuser access {status_text} for {user.username}.")
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+@user_passes_test(lambda u:u.is_superuser)
+def purchasing_details(request):
+    subscriptions = Subscription.objects.select_related('transaction', 'plan', 'user').all().order_by('-transaction__created_at')
+    return render(request, "admin/purchases_list.html", {"subscriptions": subscriptions})

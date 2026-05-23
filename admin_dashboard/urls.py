@@ -24,5 +24,9 @@ urlpatterns = [
     path("survey_details",survey_details,name="survey_details"),
     path("blog_category_delete/<int:id>",blog_category_delete,name="blog_category_delete"),
     path("blog_tag_delete/<int:id>",blog_tag_delete,name="blog_tag_delete"),
-    path("video_category_delete/<int:id>",video_category_delete,name="video_category_delete")
+    path("video_category_delete/<int:id>",video_category_delete,name="video_category_delete"),
+    path("enquiry_details",enquiry_details,name="enquiry_details"),
+    path("purchasing_details",purchasing_details,name="purchasing_details"),
+
+    path('toggle-superuser/', toggle_superuser, name='toggle_superuser'),
 ]

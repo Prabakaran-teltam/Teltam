@@ -219,7 +219,8 @@
 
           <div class="container">
             <div class="ratio ratio-21x9 mb-4">
-              <iframe src="https://www.youtube.com/embed/{{ video.youtube_url|youtube_id }}" title="{{ video.title }}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+              {{ video.youtube_url|safe }}
+            <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/PwuXx1L0EoM?si=k6v-4HfLJuF8SxDx" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> -->
             </div>
           </div>
 

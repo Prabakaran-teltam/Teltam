@@ -135,7 +135,11 @@ class VideoForm(forms.ModelForm):
         fields = ['category', 'title', 'description', 'youtube_url', 'thumbnail_image', 'is_active']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Title'}),
-            'youtube_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'YouTube URL'}),
+            'youtube_url': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Paste the full YouTube iframe embed code here'
+            }),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'thumbnail_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

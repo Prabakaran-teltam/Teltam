@@ -1,0 +1,25 @@
+{% extends 'payments/base.html' %}
+
+{% block content %}
+<div class="logo">
+    <h1>Premium Payment</h1>
+</div>
+<div class="card">
+    <p style="text-align: center; color: #aaa;">Secure integration with PhonePe V2 Gateway</p>
+    <form action="{% url 'initiate_payment' %}" method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+            <label for="amount">Enter Amount (INR)</label>
+            <input type="number" name="amount" id="amount" value="100.00" step="0.01" required>
+        </div>
+        <div class="input-group">
+            <label for="note">Payment Note (Optional)</label>
+            <input type="text" name="note" id="note" placeholder="What is this for?">
+        </div>
+        <button type="submit" class="btn">Pay Now with PhonePe</button>
+    </form>
+</div>
+<p style="font-size: 0.8rem; text-align: center; color: #666;">
+    Powered by PhonePe SDK
+</p>
+{% endblock %}

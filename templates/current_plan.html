@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load youtube_extras %}
+{% block title %}
+<title>Teltam</title>
+<meta name="description" content="#" />
+{% endblock %}
+{% load static %}
+
+{% block content %}
+<style>
+  .form-control.red-outline {
+    border: 1px solid red !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
+  }
+
+  .youtube-play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 68px;
+    height: 48px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0.9;
+  }
+</style>
+<section id="videos" class="services section light-background">
+  <br /><br /><br />
+  <div class="container section-title" data-aos="fade-up">
+    <h2>Your Current Plan</h2>
+    <p>View your active subscription details, benefits, and validity at a glance.</p>
+  </div>
+  <div class="container py-5" data-aos="fade-up" data-aos-delay="100">
+    {% if plan.plan.name == 'basic' %}
+    <section id="basic-plan" class="service-details section">
+      <div class="container">
+        <div class="row gy-5">
+          <!-- CONTENT AREA -->
+          {% include 'partials/basic_plan_content.html' %}
+
+          <!-- BUY SECTION -->
+          <div class="col-lg-4">
+            <div class="card shadow-sm">
+              <div class="card-header text-center fw-bold">Your Current Plan</div>
+
+              <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Plan Name</th>
+                      <td>Basic Plan</td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">Expiry Date</th>
+                      <td>{{ expiry_date|date:'d M Y' }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Days Left</th>
+                      <td>
+                        {% if days_left > 0 %}
+                        <span class="badge bg-success">{{ days_left }} days</span>
+                        {% else %}
+                        <span class="badge bg-danger">Expired</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Status</th>
+                      <td>
+                        {% if days_left > 0 %}
+                        <span class="text-success fw-bold">Active</span>
+                        {% else %}
+                        <span class="text-danger fw-bold">Inactive</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% elif plan.plan.name == 'pro' %}
+    <section id="basic-plan" class="service-details section">
+      <div class="container">
+        <div class="row gy-5">
+          <!-- CONTENT AREA -->
+          {% include 'partials/pro_plan_content.html' %}
+
+          <!-- BUY SECTION -->
+
+          <div class="col-lg-4">
+            <div class="card shadow-sm">
+              <div class="card-header text-center fw-bold">Your Current Plan</div>
+
+              <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Plan Name</th>
+                      <td>Pro Plan</td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">Expiry Date</th>
+                      <td>{{ expiry_date|date:'d M Y' }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Days Left</th>
+                      <td>
+                        {% if days_left > 0 %}
+                        <span class="badge bg-success">{{ days_left }} days</span>
+                        {% else %}
+                        <span class="badge bg-danger">Expired</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Status</th>
+                      <td>
+                        {% if days_left > 0 %}
+                        <span class="text-success fw-bold">Active</span>
+                        {% else %}
+                        <span class="text-danger fw-bold">Inactive</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% else %}
+    <section id="basic-plan" class="service-details section">
+      <div class="container">
+        <div class="row gy-5">
+          <!-- CONTENT AREA -->
+          {% include 'partials/enterprise_plan_content.html' %}
+
+          <!-- BUY SECTION -->
+
+          <div class="col-lg-4">
+            <div class="card shadow-sm">
+              <div class="card-header text-center fw-bold">Your Current Plan</div>
+
+              <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Plan Name</th>
+                      <td>Enterprise Plan</td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">Expiry Date</th>
+                      <td>{{ expiry_date|date:'d M Y' }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Days Left</th>
+                      <td>
+                        {% if days_left > 0 %}
+                        <span class="badge bg-success">{{ days_left }} days</span>
+                        {% else %}
+                        <span class="badge bg-danger">Expired</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Status</th>
+                      <td>
+                        {% if days_left > 0 %}
+                        <span class="text-success fw-bold">Active</span>
+                        {% else %}
+                        <span class="text-danger fw-bold">Inactive</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

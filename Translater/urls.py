@@ -27,7 +27,7 @@ handler500 = 'main.views.custom_500'
 
 
 urlpatterns = [
-    path("admin_dashboard/", admin.site.urls),
+    # path("admin_dashboard/", admin.site.urls),
     path("",include("main.urls")),
     path("admin/",include("admin_dashboard.urls")),
     path("ckeditor5/", include('django_ckeditor_5.urls'), name="ck_editor_5_upload_file"),

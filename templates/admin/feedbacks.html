@@ -62,31 +62,39 @@
                   <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ feedback.review_text }}">{{ feedback.review_text }}</span>
                 </td>
                 <td>
-                  <button type="button" class="btn btn-pill btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-default"><i class="bi bi-eye"></i>&nbsp;&nbsp;View</button>
+                  <button type="button" class="btn btn-pill btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-{{ forloop.counter }}"><i class="bi bi-eye"></i>&nbsp;&nbsp;View</button>
                 </td>
               </tr>
-              <div class="modal fade" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+              <div class="modal fade" id="modal-{{ forloop.counter }}" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h4 class="h6 modal-title">
                         {{ feedback.name }} |{% if feedback.star_rating == 5 %}
-                          <i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>
+                          ★★★★★
                         {% elif feedback.star_rating == 4 %}
-                          <i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star"></i>
+                          ★★★★☆
                         {% elif feedback.star_rating == 3 %}
-                          <i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star"></i>&nbsp;<i class="bi bi-star"></i>
+                          ★★★☆☆
                         {% elif feedback.star_rating == 2 %}
-                          <i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star"></i>&nbsp;<i class="bi bi-star"></i>&nbsp;<i class="bi bi-star"></i>
+                          ★★☆☆☆
                         {% else %}
-                          <i class="bi bi-star-fill"></i>&nbsp;<i class="bi bi-star"></i>&nbsp;<i class="bi bi-star"></i>&nbsp;<i class="bi bi-star"></i>&nbsp;<i class="bi bi-star"></i>
+                          ★☆☆☆☆
                         {% endif %}
                       </h4>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
                     <div class="modal-body">
+                      <p>
+                        <strong>User:</strong> {{ feedback.user }}
+                      </p>
+                      <p>
+                        <strong>Review:</strong>
+                      </p>
                       <p>{{ feedback.review_text }}</p>
                     </div>
+
                     <div class="modal-footer">
                       <button type="button" class="btn btn-link text-gray-600 ms-auto" data-bs-dismiss="modal">Close</button>
                     </div>

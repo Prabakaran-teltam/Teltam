@@ -70,13 +70,13 @@ TEMPLATES = [
 WSGI_APPLICATION = "Translater.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'teltam',
+        'USER': 'teltamuser',
+        'PASSWORD': 'StrongPassword123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 

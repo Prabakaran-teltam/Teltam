@@ -51,7 +51,8 @@ from django.utils.timezone import now
 # POPPLER_PATH = ""
 
 api_key = config('OPENAI_API_KEY')
-client = OpenAI(api_key=api_key)
+openai_client = OpenAI(api_key=api_key)
+
 
 def index(request):
     img = Translations.objects.all().count()
@@ -1051,7 +1052,6 @@ def chatbots(request):
 
 
 
-openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
 def chat_api(request):

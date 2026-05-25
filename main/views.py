@@ -464,7 +464,7 @@ def translate_with_chatgpt_batch(words, source_lang, target_lang):
                  f"Return ONLY the translations in the same order, separated by commas.\n\n" \
                  f"{', '.join(words)}"
 
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             temperature=0
@@ -516,7 +516,7 @@ def extract_text_from_image(image_path):
         with open(image_path, "rb") as image_file:
             image_file.seek(0)
             base64_bytes = base64.b64encode(image_file.read()).decode('utf-8')
-            response = client.chat.completions.create(
+            response = openai_client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
                     {"role": "user", "content": [
@@ -550,7 +550,7 @@ def extract_text_from_pdf(pdf_path):
 
 def detect_language(text):
     prompt = f"Detect the language of the following text and reply ONLY with the language name.\n\nText: {text}"
-    response = client.chat.completions.create(
+    response = openai_client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0

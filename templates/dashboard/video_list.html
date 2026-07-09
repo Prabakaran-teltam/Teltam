@@ -1,0 +1,148 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Manage Videos{% endblock %}
+{% block header_title %}Manage YouTube Video Guides{% endblock %}
+{% block nav_videos %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-card p-4">
+    <!-- Top actions bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <!-- Search bar -->
+        <form method="GET" action="{% url 'dashboard_video_list' %}" class="flex-grow-1" style="max-width: 400px;">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 bg-light shadow-none" placeholder="Search by title, category..." style="outline: none;">
+                {% if search_query %}
+                    <a href="{% url 'dashboard_video_list' %}" class="btn btn-outline-secondary"><i class="fas fa-times"></i></a>
+                {% endif %}
+            </div>
+        </form>
+        
+        <!-- Add Video Button -->
+        <a href="{% url 'dashboard_video_add' %}" class="btn btn-brand-primary">
+            <i class="fas fa-plus me-1"></i> Add Video Guide
+        </a>
+    </div>
+
+    <!-- Listings Table -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Video Details</th>
+                    <th>Category</th>
+                    <th>YouTube Video ID</th>
+                    <th>Status</th>
+                    <th>Created On</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for video in page_obj %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            {% if video.thumbnail_image %}
+                            <img src="{{ video.thumbnail_image.url }}" alt="{{ video.title }}" class="rounded" style="width: 60px; height: 40px; object-fit: cover;">
+                            {% elif video.youtube_video_id %}
+                            <img src="https://img.youtube.com/vi/{{ video.youtube_video_id }}/mqdefault.jpg" alt="YouTube Thumbnail" class="rounded" style="width: 60px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded bg-danger-light d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; background-color: rgba(220, 53, 69, 0.08);">
+                                <i class="fab fa-youtube text-danger"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <span class="fw-semibold text-slate-800 d-block text-truncate" style="max-width: 250px;">{{ video.title }}</span>
+                                <small class="text-muted text-truncate d-block" style="max-width: 250px;">{{ video.short_description }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge text-white" style="background-color: #dc3545 !important; font-weight: 500; font-size: 0.8rem;">{{ video.category }}</span></td>
+                    <td><code class="text-dark bg-light px-2 py-1 rounded small">{{ video.youtube_video_id|default:"N/A" }}</code></td>
+                    <td>
+                        {% if video.is_published %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Live</span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ video.created_date|date:"M d, Y" }}</small></td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'video_view' video.slug %}" target="_blank" class="btn btn-sm btn-outline-light border text-dark bg-white" title="Watch Video">
+                                <i class="far fa-eye"></i>
+                            </a>
+                            <a href="{% url 'dashboard_video_edit' video.pk %}" class="btn btn-sm btn-outline-primary" title="Edit Video Info">
+                                <i class="fas fa-pen-to-square"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete-video" data-pk="{{ video.pk }}" data-title="{{ video.title }}" title="Delete Video Registry">
+                                <i class="far fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-video-slash display-4 opacity-50 mb-3 d-block"></i>
+                        <h5>No video guides registered</h5>
+                        <p class="small">Try adding a new YouTube video guide link.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'dashboard/_pagination.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deleteButtons = document.querySelectorAll('.btn-delete-video');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const pk = button.getAttribute('data-pk');
+                const title = button.getAttribute('data-title');
+                
+                Swal.fire({
+                    title: 'Confirm Deletion',
+                    text: `Are you sure you want to permanently remove this video registry entry: "${title}"? This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        confirmButton: 'btn btn-danger px-4 rounded-pill me-2',
+                        cancelButton: 'btn btn-light border px-4 rounded-pill'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/dashboard/videos/delete/${pk}/`;
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = '{{ csrf_token }}';
+                        
+                        form.appendChild(csrfInput);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+

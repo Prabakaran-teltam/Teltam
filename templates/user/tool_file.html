@@ -1,0 +1,492 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Document Translator{% endblock %}
+{% block header_title %}Document Translation Workspace{% endblock %}
+{% block nav_tool_file %}active{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+    /* Styling Tom Select to fit premium dashboard design */
+    .ts-wrapper .ts-control {
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        border-color: #cbd5e1;
+        font-family: 'Inter', sans-serif;
+        box-shadow: none;
+    }
+    .ts-wrapper.focus .ts-control {
+        border-color: var(--brand-primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    }
+    .ts-wrapper .ts-dropdown {
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        border: 1px solid #e2e8f0;
+    }
+    .ts-dropdown .active {
+        background-color: var(--brand-primary) !important;
+        color: #ffffff !important;
+    }
+
+    .drag-drop-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        background-color: #f8fafc;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        padding: 3rem 2rem;
+    }
+    
+    .drag-drop-zone:hover {
+        border-color: var(--brand-primary);
+        background-color: rgba(99, 102, 241, 0.02);
+    }
+    
+    .drag-drop-zone i {
+        transition: transform 0.2s ease;
+    }
+    
+    .drag-drop-zone:hover i {
+        transform: translateY(-4px);
+    }
+
+    .file-pill {
+        background: #f1f5f9;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .progress-step-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        background: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-12">
+        <div class="dashboard-card p-4">
+            <h5 class="fw-bold mb-3 text-slate-800"><i class="fas fa-file-pdf text-indigo-500 me-2"></i> AI Document Translator</h5>
+            <p class="text-muted small mb-4">Upload documents in PDF, DOCX, TXT, or Image format (PNG, JPG) up to 15MB. Our AI engine will extract, translate, and format the output for you.</p>
+
+            <!-- Uploader Dropzone -->
+            <div id="docDropzone" class="drag-drop-zone text-center mb-4">
+                <input type="file" id="docFileInput" class="d-none" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
+                <div id="docUploadContent">
+                    <div class="rounded-circle bg-indigo-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="fas fa-cloud-upload-alt text-indigo-600 fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1">Drag and drop your file here</h5>
+                    <p class="text-muted small mb-3">or click to browse from your computer</p>
+                    <span class="badge bg-slate-200 text-slate-700 px-3 py-2">PDF, DOCX, TXT, JPG, PNG (Max 15MB)</span>
+                </div>
+
+                <!-- Selected File Info -->
+                <div id="docSelectedFileInfo" class="d-none animate-fade-in">
+                    <div class="rounded-circle bg-emerald-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="fas fa-file-invoice text-emerald-600 fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1 text-slate-800" id="docFileName">filename.pdf</h5>
+                    <p class="text-muted small mb-3" id="docFileSize">0.00 MB</p>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="removeDocFileBtn">
+                        <i class="fas fa-trash me-1"></i> Remove File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuration & Options Grid -->
+            <div id="docTranslateOptions" class="d-none animate-fade-in border-top pt-4">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <label for="docSourceLanguage" class="form-label fw-semibold">Source Language</label>
+                        <select id="docSourceLanguage" class="form-select shadow-none">
+                            <option value="auto" selected>Detect Language (Auto)</option>
+                            {% for lang in languages %}
+                                <option value="{{ lang.code }}">{{ lang.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="docTargetLanguage" class="form-label fw-semibold">Target Language</label>
+                        <select id="docTargetLanguage" class="form-select shadow-none">
+                            {% for lang in languages %}
+                                <option value="{{ lang.code }}" {% if lang.code == 'es' %}selected{% endif %}>{{ lang.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="docOutputFormat" class="form-label fw-semibold">Output File Format</label>
+                        <select id="docOutputFormat" class="form-select shadow-none">
+                            <option value="pdf" selected>Portable Document Format (.pdf)</option>
+                            <option value="txt">Plain Text File (.txt)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end border-top pt-4">
+                    <button id="startDocTranslateBtn" class="btn btn-brand-primary px-5 py-2.5">
+                        <i class="fas fa-language me-2"></i> Translate Document
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div id="docProgressIndicator" class="d-none text-center py-5">
+                <div class="spinner-border text-indigo-600 mb-3" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="fw-bold mb-1" id="docProgressHeading">Processing your document</h5>
+                <p class="text-muted" id="docProgressText">Uploading document to server...</p>
+            </div>
+
+            <!-- Complete Indicator & Preview -->
+            <div id="docCompleteIndicator" class="d-none animate-fade-in border-top pt-4">
+                <div class="text-center py-4 bg-light rounded-4 mb-4 border">
+                    <div class="rounded-circle bg-emerald-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px;">
+                        <i class="fas fa-check-circle text-emerald-600 fs-3"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">Translation Successful!</h4>
+                    <p class="text-muted small mb-4">Your translated document is ready for download.</p>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <a id="downloadTranslatedBtn" href="#" class="btn btn-brand-primary px-4 py-2" download>
+                            <i class="fas fa-download me-2"></i> Download Translated Document
+                        </a>
+                        <button id="translateAnotherDocBtn" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                            Translate Another
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Splitted View of Content -->
+                <div class="row g-4 mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-slate-700">Extracted Source Text</label>
+                        <textarea id="extractedTextPreview" class="form-control bg-light shadow-none" rows="12" readonly style="font-size: 0.9rem; resize: none;"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-slate-700">Translated Text Preview</label>
+                        <textarea id="translatedTextPreview" class="form-control bg-light shadow-none" rows="12" readonly style="font-size: 0.9rem; resize: none;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initialize Tom Select on language selectors
+        new TomSelect("#docSourceLanguage", {
+            create: false,
+            placeholder: "Search language...",
+            controlInput: '<input>',
+            dropdownParent: 'body'
+        });
+        
+        new TomSelect("#docTargetLanguage", {
+            create: false,
+            placeholder: "Search language...",
+            controlInput: '<input>',
+            dropdownParent: 'body'
+        });
+        const docFileInput = document.getElementById('docFileInput');
+        const docDropzone = document.getElementById('docDropzone');
+        const docUploadContent = document.getElementById('docUploadContent');
+        const docSelectedFileInfo = document.getElementById('docSelectedFileInfo');
+        const docFileName = document.getElementById('docFileName');
+        const docFileSize = document.getElementById('docFileSize');
+        const removeDocFileBtn = document.getElementById('removeDocFileBtn');
+        const docTranslateOptions = document.getElementById('docTranslateOptions');
+        const startDocTranslateBtn = document.getElementById('startDocTranslateBtn');
+        const docProgressIndicator = document.getElementById('docProgressIndicator');
+        const docProgressText = document.getElementById('docProgressText');
+        const docCompleteIndicator = document.getElementById('docCompleteIndicator');
+        const translateAnotherDocBtn = document.getElementById('translateAnotherDocBtn');
+        const downloadTranslatedBtn = document.getElementById('downloadTranslatedBtn');
+        const extractedTextPreview = document.getElementById('extractedTextPreview');
+        const translatedTextPreview = document.getElementById('translatedTextPreview');
+
+        const docSourceLanguage = document.getElementById('docSourceLanguage');
+        const docTargetLanguage = document.getElementById('docTargetLanguage');
+        const docOutputFormat = document.getElementById('docOutputFormat');
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Helper: fetch with timeout support
+        function fetchWithTimeout(resource, options = {}) {
+            const { timeout = 30000 } = options;
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            
+            return fetch(resource, {
+                ...options,
+                signal: controller.signal
+            }).then(response => {
+                clearTimeout(id);
+                return response;
+            }).catch(error => {
+                clearTimeout(id);
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timed out. Please try again.');
+                }
+                throw error;
+            });
+        }
+
+        function handleDocSelect(file) {
+            if (file) {
+                docFileName.innerText = file.name;
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                docFileSize.innerText = `${sizeMB} MB`;
+                
+                docUploadContent.classList.add('d-none');
+                docSelectedFileInfo.classList.remove('d-none');
+                docTranslateOptions.classList.remove('d-none');
+            }
+        }
+
+        // Click zone trigger file input
+        docDropzone.addEventListener('click', () => {
+            if (docFileInput.files.length === 0) {
+                docFileInput.click();
+            }
+        });
+
+        docFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleDocSelect(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop event handlers
+        ['dragenter', 'dragover'].forEach(eventName => {
+            docDropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                docDropzone.style.borderColor = '#6366f1';
+                docDropzone.style.background = 'rgba(99, 102, 241, 0.03)';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            docDropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                docDropzone.style.borderColor = '#cbd5e1';
+                docDropzone.style.background = '#f8fafc';
+            }, false);
+        });
+
+        docDropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                docFileInput.files = files;
+                handleDocSelect(files[0]);
+            }
+        });
+
+        removeDocFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            docFileInput.value = '';
+            docSelectedFileInfo.classList.add('d-none');
+            docTranslateOptions.classList.add('d-none');
+            docUploadContent.classList.remove('d-none');
+        });
+
+        const maxDocPollAttempts = 60; // 60 seconds max
+
+        function pollDocStatus(taskId, pollAttempts = 0) {
+            if (pollAttempts >= maxDocPollAttempts) {
+                docProgressIndicator.classList.add('d-none');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Timeout',
+                    text: 'Document translation timed out. The server took too long to respond.',
+                    confirmButtonColor: '#ef4444'
+                });
+                docDropzone.classList.remove('d-none');
+                docTranslateOptions.classList.remove('d-none');
+                return;
+            }
+
+            const url = `/api/task-status/${taskId}/`;
+            fetchWithTimeout(url, { timeout: 10000 })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`Server returned HTTP ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.status === 'PENDING' || data.status === 'PROGRESS') {
+                        docProgressText.innerText = data.progress || "Processing document text...";
+                        setTimeout(() => pollDocStatus(taskId, pollAttempts + 1), 1000);
+                    } else if (data.status === 'SUCCESS') {
+                        docProgressIndicator.classList.add('d-none');
+                        docCompleteIndicator.classList.remove('d-none');
+                        
+                        if (data.result.download_url) {
+                            downloadTranslatedBtn.href = data.result.download_url;
+                        }
+                        
+                        extractedTextPreview.value = data.result.extracted_text || "";
+                        translatedTextPreview.value = data.result.translated_text || "";
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Document translated successfully!',
+                            confirmButtonColor: '#10b981'
+                        });
+                    } else {
+                        docProgressIndicator.classList.add('d-none');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Translation Failed',
+                            text: 'Failed: ' + (data.error || "Unknown error"),
+                            confirmButtonColor: '#ef4444'
+                        });
+                        docDropzone.classList.remove('d-none');
+                        docTranslateOptions.classList.remove('d-none');
+                    }
+                })
+                .catch(err => {
+                    console.error("Polling error:", err);
+                    if (pollAttempts < maxDocPollAttempts - 1) {
+                        setTimeout(() => pollDocStatus(taskId, pollAttempts + 1), 2000);
+                    } else {
+                        docProgressIndicator.classList.add('d-none');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Connection Error',
+                            text: 'Connection lost: ' + err.message,
+                            confirmButtonColor: '#ef4444'
+                        });
+                        docDropzone.classList.remove('d-none');
+                        docTranslateOptions.classList.remove('d-none');
+                    }
+                });
+        }
+
+        startDocTranslateBtn.addEventListener('click', () => {
+            const file = docFileInput.files[0];
+            if (!file) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No File Selected',
+                    text: 'Please select a document to translate first.',
+                    confirmButtonColor: '#fbbf24'
+                });
+                return;
+            }
+
+            const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            if (!allowedExtensions.includes(ext)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Unsupported Format',
+                    text: `Format "${ext}" is not supported. Allowed formats: PDF, DOCX, TXT, JPG, PNG`,
+                    confirmButtonColor: '#fbbf24'
+                });
+                return;
+            }
+
+            const maxDocSize = 15 * 1024 * 1024; // 15MB
+            if (file.size > maxDocSize) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'File Too Large',
+                    text: `File exceeds the 15MB maximum size limit.`,
+                    confirmButtonColor: '#fbbf24'
+                });
+                return;
+            }
+
+            docTranslateOptions.classList.add('d-none');
+            docDropzone.classList.add('d-none');
+            docProgressIndicator.classList.remove('d-none');
+            docProgressText.innerText = "Uploading document to Teltam server...";
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('source_lang', docSourceLanguage.value);
+            formData.append('target_lang', docTargetLanguage.value);
+            formData.append('output_format', docOutputFormat.value);
+
+            fetchWithTimeout('/api/upload-document/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: formData,
+                timeout: 60000
+            })
+            .then(res => {
+                return res.json().then(data => {
+                    if (!res.ok) {
+                        throw new Error(data.error || `Server returned error ${res.status}`);
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                docProgressText.innerText = "Analyzing and translating document...";
+                pollDocStatus(data.task_id);
+            })
+            .catch(err => {
+                console.error("Upload error:", err);
+                docProgressIndicator.classList.add('d-none');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Upload Failed',
+                    text: err.message,
+                    confirmButtonColor: '#ef4444'
+                });
+                docDropzone.classList.remove('d-none');
+                docTranslateOptions.classList.remove('d-none');
+            });
+        });
+
+        translateAnotherDocBtn.addEventListener('click', () => {
+            docFileInput.value = '';
+            docCompleteIndicator.classList.add('d-none');
+            docSelectedFileInfo.classList.add('d-none');
+            docUploadContent.classList.remove('d-none');
+            docDropzone.classList.remove('d-none');
+            extractedTextPreview.value = "";
+            translatedTextPreview.value = "";
+        });
+    });
+</script>
+{% endblock %}

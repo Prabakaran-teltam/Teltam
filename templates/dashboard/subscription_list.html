@@ -1,0 +1,109 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Subscriptions{% endblock %}
+{% block header_title %}User Subscriptions{% endblock %}
+{% block nav_subscriptions %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-card p-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-id-badge text-indigo-600 me-2"></i> Subscription Registry</h5>
+        
+        <!-- Search bar -->
+        <form method="GET" action="{% url 'dashboard_subscription_list' %}" class="flex-grow-1" style="max-width: 400px;">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 bg-light shadow-none" placeholder="Search user email or transaction ID..." style="outline: none;">
+                {% if search_query %}
+                    <a href="{% url 'dashboard_subscription_list' %}" class="btn btn-outline-secondary border"><i class="fas fa-times"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Subscriptions Table -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Type / Upgrade</th>
+                    <th>Start Date</th>
+                    <th>Expiry Date</th>
+                    <th>Payment ID / Txn</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in page_obj %}
+                <tr>
+                    <td>
+                        <span class="fw-semibold text-slate-800 d-block">{% if sub.user.first_name %}{{ sub.user.first_name }}{% else %}{{ sub.user.username }}{% endif %}</span>
+                        <small class="text-muted">{{ sub.user.email }}</small>
+                    </td>
+                    <td>
+                        {% if sub.plan %}
+                            <span class="badge bg-indigo-light text-indigo border border-indigo-light rounded-pill px-2.5">{{ sub.plan.name }}</span>
+                        {% else %}
+                            <span class="text-muted small">No Plan Associated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sub.status == 'active' %}
+                            <span class="badge bg-emerald-light text-emerald rounded-pill px-2.5"><i class="fas fa-circle-check me-1"></i> Active</span>
+                        {% elif sub.status == 'expired' %}
+                            <span class="badge bg-light text-muted border rounded-pill px-2.5"><i class="fas fa-history me-1"></i> Expired</span>
+                        {% elif sub.status == 'cancelled' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5"><i class="fas fa-circle-xmark me-1"></i> Cancelled</span>
+                        {% else %}
+                            <span class="badge bg-amber-light text-amber rounded-pill px-2.5"><i class="fas fa-circle-notch fa-spin me-1"></i> Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sub.is_upgrade %}
+                            <span class="badge bg-purple-light text-purple rounded-pill px-2.5 d-inline-block mb-1"><i class="fas fa-circle-up me-1"></i> Upgrade</span>
+                            {% if sub.previous_plan %}
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">From: {{ sub.previous_plan.name }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-light text-slate-600 border rounded-pill px-2.5"><i class="fas fa-cart-shopping me-1"></i> New Purchase</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-slate-700">{% if sub.start_date %}{{ sub.start_date|date:"M d, Y" }}{% else %}-{% endif %}</small></td>
+                    <td>
+                        <small class="text-slate-700">
+                             {% if sub.end_date %}
+                                 {{ sub.end_date|date:"M d, Y" }}
+                             {% else %}
+                                 -
+                             {% endif %}
+                        </small>
+                    </td>
+                    <td>
+                        {% if sub.payment_transaction %}
+                            <span class="d-block small text-slate-700 font-monospace" style="font-size: 0.8rem;">Order: {{ sub.payment_transaction.merchant_order_id }}</span>
+                            {% if sub.payment_transaction.phonepe_order_id %}
+                                <small class="text-muted font-monospace" style="font-size: 0.75rem;">PhonePe: {{ sub.payment_transaction.phonepe_order_id }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted small">No payment txn</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-id-card-clip display-4 opacity-50 mb-3 d-block"></i>
+                        <h5>No subscriptions found</h5>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'dashboard/_pagination.html' %}
+</div>
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Overview{% endblock %}
+{% block header_title %}System Overview{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-5">
+    <!-- Card: Registered Users -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Total Users</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ total_users }}</h3>
+                </div>
+                <div class="card-icon-container bg-indigo-light">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="text-indigo small font-semibold">
+                <i class="fas fa-arrow-trend-up me-1"></i> Registered accounts
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Blogs Published -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Published Blogs</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ published_blogs }} <span class="fs-6 text-muted fw-normal">/ {{ total_blogs }}</span></h3>
+                </div>
+                <div class="card-icon-container bg-violet-light">
+                    <i class="fas fa-blog"></i>
+                </div>
+            </div>
+            <div class="text-violet small font-semibold">
+                <i class="fas fa-circle-check me-1"></i> Live articles online
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Videos Registered -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Active Videos</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ published_videos }} <span class="fs-6 text-muted fw-normal">/ {{ total_videos }}</span></h3>
+                </div>
+                <div class="card-icon-container bg-emerald-light">
+                    <i class="fab fa-youtube"></i>
+                </div>
+            </div>
+            <div class="text-emerald small font-semibold">
+                <i class="fas fa-play-circle me-1"></i> Embedded video 
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Unread Inbox -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Unread Messages</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ unread_messages }} <span class="fs-6 text-muted fw-normal">/ {{ total_messages }}</span></h3>
+                </div>
+                <div class="card-icon-container bg-amber-light">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+            </div>
+            <div class="text-amber small font-semibold">
+                <i class="fas fa-bell me-1"></i> Message inquiries
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Stats Row -->
+<div class="row g-4 mb-5">
+    <!-- Card: Total Revenue -->
+    <div class="col-sm-6 col-xl-4">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Total Revenue</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">₹{{ total_revenue|floatformat:2 }}</h3>
+                </div>
+                <div class="card-icon-container" style="color: #10b981; background-color: rgba(16,185,129,0.08); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fas fa-indian-rupee-sign"></i>
+                </div>
+            </div>
+            <div class="text-success small font-semibold">
+                <i class="fas fa-money-bill-wave me-1"></i> PhonePe V2 Standard
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Active Subscriptions -->
+    <div class="col-sm-6 col-xl-4">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Active Subscriptions</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ active_subscriptions }}</h3>
+                </div>
+                <div class="card-icon-container bg-indigo-light">
+                    <i class="fas fa-id-badge"></i>
+                </div>
+            </div>
+            <div class="text-indigo small font-semibold">
+                <i class="fas fa-sparkles me-1 text-warning"></i> Active premium plans
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Pending Payments -->
+    <div class="col-sm-6 col-xl-4">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Pending Transactions</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ pending_transactions }}</h3>
+                </div>
+                <div class="card-icon-container bg-amber-light">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="text-amber small font-semibold">
+                <i class="fas fa-circle-notch fa-spin me-1"></i> Awaiting gateway updates
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Recent Blogs -->
+    <div class="col-xl-6">
+        <div class="dashboard-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-blog text-violet me-2"></i> Recent Blogs</h5>
+                <a href="{% url 'dashboard_blog_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View All</a>
+            </div>
+            <div class="table-responsive border-0 shadow-none">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for blog in latest_blogs %}
+                        <tr>
+                            <td>
+                                <span class="fw-semibold text-slate-800 d-block text-truncate" style="max-width: 200px;">{{ blog.title }}</span>
+                                <small class="text-muted">{{ blog.created_date|date:"M d, Y" }}</small>
+                            </td>
+                            <td><span class="badge text-white" style="background-color: #4f46e5 !important; font-weight: 500; font-size: 0.8rem;">{{ blog.category }}</span></td>
+                            <td>
+                                {% if blog.is_published %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Published</span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2">Draft</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">No blogs found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Videos -->
+    <div class="col-xl-6">
+        <div class="dashboard-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0 text-slate-800"><i class="fab fa-youtube text-danger me-2"></i> Recent Video Guides</h5>
+                <a href="{% url 'dashboard_video_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View All</a>
+            </div>
+            <div class="table-responsive border-0 shadow-none">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Video Guide</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for video in latest_videos %}
+                        <tr>
+                            <td>
+                                <span class="fw-semibold text-slate-800 d-block text-truncate" style="max-width: 200px;">{{ video.title }}</span>
+                                <small class="text-muted">{{ video.created_date|date:"M d, Y" }}</small>
+                            </td>
+                            <td><span class="badge text-white" style="background-color: #dc3545 !important; font-weight: 500; font-size: 0.8rem;">{{ video.category }}</span></td>
+                            <td>
+                                {% if video.is_published %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Live</span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2">Draft</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">No video guides found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Inbox inquiries -->
+    <div class="col-xl-6">
+        <div class="dashboard-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-envelope-open-text text-amber me-2"></i> Contact Inbox (Latest)</h5>
+                <a href="{% url 'dashboard_contact_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View Inbox</a>
+            </div>
+            <div class="table-responsive border-0 shadow-none">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Subject</th>
+                            <th>Inbox Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msg in latest_messages %}
+                        <tr>
+                            <td>
+                                <span class="fw-semibold text-slate-800 d-block">{{ msg.name }}</span>
+                                <small class="text-muted">{{ msg.email }}</small>
+                            </td>
+                            <td>
+                                <span class="text-slate-800 text-truncate d-block" style="max-width: 180px;">{{ msg.subject }}</span>
+                                <small class="text-muted">{{ msg.created_date|date:"M d, g:i A" }}</small>
+                            </td>
+                            <td>
+                                {% if msg.is_read %}
+                                    <span class="badge bg-light text-muted border rounded-pill px-2">Reviewed</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2">Unread</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">Inbox is empty.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Registered Users -->
+    <div class="col-xl-6">
+        <div class="dashboard-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-users-cog text-indigo me-2"></i> System Users</h5>
+                <a href="{% url 'dashboard_user_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View Users</a>
+            </div>
+            <div class="table-responsive border-0 shadow-none">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>User Profile</th>
+                            <th>Username / Email</th>
+                            <th>Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usr in latest_users %}
+                        <tr>
+                            <td>
+                                <span class="fw-semibold text-slate-800 d-block">{% if usr.first_name %}{{ usr.first_name }}{% else %}{{ usr.username }}{% endif %}</span>
+                                <small class="text-muted">{% if usr.is_staff %}<span class="text-danger"><i class="fas fa-shield-halved"></i> Staff</span>{% else %}<span class="text-success"><i class="far fa-circle-dot"></i> Member</span>{% endif %}</small>
+                            </td>
+                            <td><span class="text-muted">{{ usr.email }}</span></td>
+                            <td><small class="text-muted">{{ usr.date_joined|date:"M d, Y" }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

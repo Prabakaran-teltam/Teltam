@@ -1,0 +1,148 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Manage Blogs{% endblock %}
+{% block header_title %}Manage Blog Articles{% endblock %}
+{% block nav_blogs %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-card p-4">
+    <!-- Top actions bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <!-- Search bar -->
+        <form method="GET" action="{% url 'dashboard_blog_list' %}" class="flex-grow-1" style="max-width: 400px;">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 bg-light shadow-none" placeholder="Search by title, category, author..." style="outline: none;">
+                {% if search_query %}
+                    <a href="{% url 'dashboard_blog_list' %}" class="btn btn-outline-secondary"><i class="fas fa-times"></i></a>
+                {% endif %}
+            </div>
+        </form>
+        
+        <!-- Add Blog Button -->
+        <a href="{% url 'dashboard_blog_add' %}" class="btn btn-brand-primary">
+            <i class="fas fa-plus me-1"></i> Write New Article
+        </a>
+    </div>
+
+    <!-- Listings Table -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Article Details</th>
+                    <th>Category</th>
+                    <th>Author</th>
+                    <th>Status</th>
+                    <th>Created On</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for blog in page_obj %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            {% if blog.featured_image %}
+                            <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" class="rounded" style="width: 50px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded bg-indigo-light d-flex align-items-center justify-content-center" style="width: 50px; height: 40px;">
+                                <i class="fas fa-image text-indigo"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <span class="fw-semibold text-slate-800 d-block text-truncate" style="max-width: 250px;">{{ blog.title }}</span>
+                                <small class="text-muted text-truncate d-block" style="max-width: 250px;">{{ blog.short_description }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge text-white" style="background-color: #4f46e5 !important; font-weight: 500; font-size: 0.8rem;">{{ blog.category }}</span></td>
+                    <td><span class="text-slate-700 font-medium">{{ blog.author }}</span></td>
+                    <td>
+                        {% if blog.is_published %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Published</span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ blog.created_date|date:"M d, Y" }}</small></td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            {% if blog.is_published %}
+                            <a href="{% url 'blog_view' blog.slug %}" target="_blank" class="btn btn-sm btn-outline-light border text-dark bg-white" title="Preview Article">
+                                <i class="far fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'dashboard_blog_edit' blog.pk %}" class="btn btn-sm btn-outline-primary" title="Edit Article">
+                                <i class="fas fa-pen-to-square"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete-blog" data-pk="{{ blog.pk }}" data-title="{{ blog.title }}" title="Delete Article">
+                                <i class="far fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-folder-open display-4 opacity-50 mb-3 d-block"></i>
+                        <h5>No blog articles found</h5>
+                        <p class="small">Try creating a new blog or clearing filters.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'dashboard/_pagination.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deleteButtons = document.querySelectorAll('.btn-delete-blog');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const pk = button.getAttribute('data-pk');
+                const title = button.getAttribute('data-title');
+                
+                Swal.fire({
+                    title: 'Confirm Deletion',
+                    text: `Are you sure you want to permanently delete the blog article: "${title}"? This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        confirmButton: 'btn btn-danger px-4 rounded-pill me-2',
+                        cancelButton: 'btn btn-light border px-4 rounded-pill'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/dashboard/blogs/delete/${pk}/`;
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = '{{ csrf_token }}';
+                        
+                        form.appendChild(csrfInput);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+

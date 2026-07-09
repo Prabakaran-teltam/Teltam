@@ -1,0 +1,490 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Plans - Teltam AI Translation</title>
+    <meta name="description" content="Compare pricing plans for Teltam AI: Free, Pro, and Enterprise options. Choose the plan that fits your translation, transliteration, and document parsing needs.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero Section -->
+    <section class="py-5 bg-white border-bottom animate-fade-in-up">
+        <div class="container text-center py-4">
+            <span class="hero-badge"><i class="fas fa-tags"></i> Pricing Plans</span>
+            <h1 class="display-4 fw-bold">Simple, <span class="text-gradient-primary">Predictable Pricing</span></h1>
+            <p class="lead text-slate-700 mx-auto" style="max-width: 600px; font-size: 1.1rem;">
+                No hidden charges. Choose a billing cycle that suits your personal or business translation goals.
+            </p>
+            
+            <!-- Monthly/Yearly Toggle -->
+            <div class="pricing-switch-container mt-4">
+                <span class="fw-semibold text-slate-800">Monthly Billing</span>
+                <label class="switch-custom">
+                    <input type="checkbox" id="billingSwitch">
+                    <span class="slider-custom"></span>
+                </label>
+                <span class="fw-semibold text-slate-800">Yearly Billing <span class="badge bg-success text-white ms-1" style="font-size: 0.75rem;">Save 20%</span></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Cards Section -->
+    <section class="py-5">
+        <style>
+            .pricing-card-modern {
+                border-radius: 24px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid #e2e8f0;
+                background: #ffffff;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+                position: relative;
+                overflow: hidden;
+            }
+            .pricing-card-modern:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(79, 70, 229, 0.12);
+                border-color: rgba(79, 70, 229, 0.2);
+            }
+            .pricing-card-modern.popular-card {
+                border: 1px solid transparent;
+                background-image: linear-gradient(#ffffff, #ffffff), linear-gradient(135deg, #7c3aed, #ec4899, #f97316);
+                background-origin: border-box;
+                background-clip: padding-box, border-box;
+                box-shadow: 0 20px 40px rgba(124, 58, 237, 0.08);
+            }
+            .pricing-card-modern.popular-card:hover {
+                box-shadow: 0 25px 50px rgba(124, 58, 237, 0.20);
+                transform: translateY(-10px);
+            }
+            .btn-pro-gradient {
+                background: linear-gradient(135deg, #7c3aed, #ec4899);
+                color: #ffffff !important;
+                border: none;
+                font-weight: 700;
+                font-size: 1rem;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+                border-radius: 50px;
+                padding: 12px 24px;
+                display: inline-block;
+                text-decoration: none;
+            }
+            .btn-pro-gradient:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 28px rgba(236, 72, 153, 0.4);
+                background: linear-gradient(135deg, #6d28d9, #d946ef);
+                color: #ffffff !important;
+            }
+            .btn-pro-gradient:active {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 15px rgba(236, 72, 153, 0.3);
+            }
+            .pricing-card-features li {
+                margin-bottom: 12px;
+                font-size: 0.95rem;
+                color: #475569;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .pricing-card-features i.fa-check {
+                color: #10b981;
+                background: rgba(16, 185, 129, 0.1);
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+            }
+            .pricing-card-features i.fa-times {
+                color: #94a3b8;
+                background: #f1f5f9;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+            }
+        </style>
+        <div class="container py-3">
+            <div class="row g-4 justify-content-center">
+                <!-- Basic Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card-modern p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-1 text-slate-800">Basic</h3>
+                            <p class="text-muted small">For casual translation and learning</p>
+                            <div class="my-4 price-wrapper">
+                                <div class="monthly-price-block">
+                                    <span class="display-5 fw-bold text-slate-900">₹97</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <div class="yearly-price-block d-none">
+                                    <span class="text-muted text-decoration-line-through me-2" style="font-size: 1.25rem;">₹97</span>
+                                    <span class="display-5 fw-bold text-success">₹78</span>
+                                    <span class="text-muted">/month</span>
+                                    <div class="mt-1"><span class="badge bg-success text-white" style="font-size: 0.75rem;">Save 20%</span></div>
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Billed ₹936/year</small>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-3 border-top pt-4">
+                                <li><i class="fas fa-check"></i> 50,000 words per month</li>
+                                <li><i class="fas fa-check"></i> 30 supported languages</li>
+                                <li><i class="fas fa-check"></i> Standard voice output</li>
+                                <li><i class="fas fa-check"></i> Basic transliteration guides</li>
+                                <li class="text-muted"><i class="fas fa-times"></i> Document upload processing</li>
+                                <li class="text-muted"><i class="fas fa-times"></i> Developer API Access</li>
+                            </ul>
+                        </div>
+                        {% if not request.user.is_authenticated %}
+                            <a href="{% url 'pricing_select' 'basic' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Choose Basic</a>
+                        {% else %}
+                            {% if active_plan_slug == 'basic' %}
+                                <button class="btn btn-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled><i class="fas fa-check-circle me-1"></i> Current Plan</button>
+                            {% elif active_plan_order > 1 %}
+                                {% if active_plan_slug == 'business' %}
+                                    <button class="btn btn-outline-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled>Contact Support</button>
+                                {% else %}
+                                    {% if allow_downgrade %}
+                                        <a href="{% url 'pricing_select' 'basic' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Downgrade Plan</a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled>Not Available</button>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'pricing_select' 'basic' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Choose Basic</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card-modern popular-card p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="badge bg-primary text-white mb-2 py-2 px-3 rounded-pill" style="background: var(--brand-primary-gradient) !important;">Most Popular</div>
+                            <h3 class="fw-bold mb-1 text-slate-800">Pro</h3>
+                            <p class="text-muted small">For creators, professionals, and writers</p>
+                            <div class="my-4 price-wrapper">
+                                <div class="monthly-price-block">
+                                    <span class="display-5 fw-bold text-slate-900">₹699</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <div class="yearly-price-block d-none">
+                                    <span class="text-muted text-decoration-line-through me-2" style="font-size: 1.25rem;">₹699</span>
+                                    <span class="display-5 fw-bold text-success">₹559</span>
+                                    <span class="text-muted">/month</span>
+                                    <div class="mt-1"><span class="badge bg-success text-white" style="font-size: 0.75rem;">Save 20%</span></div>
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Billed ₹6,708/year</small>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-3 border-top pt-4">
+                                <li><i class="fas fa-check"></i> 500,000 words per month</li>
+                                <li><i class="fas fa-check"></i> 120+ supported languages</li>
+                                <li><i class="fas fa-check"></i> High-fidelity voice synthesis</li>
+                                <li><i class="fas fa-check"></i> Advanced phonetic transliteration</li>
+                                <li><i class="fas fa-check"></i> Translate PDFs, DOCX (100 files/mo)</li>
+                                <li class="text-muted"><i class="fas fa-times"></i> Developer API Access</li>
+                            </ul>
+                        </div>
+                        {% if not request.user.is_authenticated %}
+                            <a href="{% url 'pricing_select' 'pro' %}" class="btn btn-pro-gradient w-100 mt-4 py-2.5">Start Pro Now</a>
+                        {% else %}
+                            {% if active_plan_slug == 'pro' %}
+                                <button class="btn btn-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled><i class="fas fa-check-circle me-1"></i> Current Plan</button>
+                            {% elif active_plan_order == 1 %}
+                                <a href="{% url 'pricing_select' 'pro' %}" class="btn btn-pro-gradient w-100 mt-4 py-2.5 text-center">Upgrade Plan</a>
+                            {% elif active_plan_order > 2 %}
+                                {% if active_plan_slug == 'business' %}
+                                    <button class="btn btn-outline-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled>Contact Support</button>
+                                {% else %}
+                                    {% if allow_downgrade %}
+                                        <a href="{% url 'pricing_select' 'pro' %}" class="btn btn-pro-gradient w-100 mt-4 py-2.5">Downgrade Plan</a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled>Not Available</button>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'pricing_select' 'pro' %}" class="btn btn-pro-gradient w-100 mt-4 py-2.5">Start Pro Now</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card-modern p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-1 text-slate-800">Business</h3>
+                            <p class="text-muted small">For business teams and API usage</p>
+                            <div class="my-4 price-wrapper">
+                                <div class="monthly-price-block">
+                                    <span class="display-5 fw-bold text-slate-900">₹1999</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <div class="yearly-price-block d-none">
+                                    <span class="text-muted text-decoration-line-through me-2" style="font-size: 1.25rem;">₹1999</span>
+                                    <span class="display-5 fw-bold text-success">₹1599</span>
+                                    <span class="text-muted">/month</span>
+                                    <div class="mt-1"><span class="badge bg-success text-white" style="font-size: 0.75rem;">Save 20%</span></div>
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Billed ₹19,188/year</small>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-3 border-top pt-4">
+                                <li><i class="fas fa-check"></i> Unlimited words translation</li>
+                                <li><i class="fas fa-check"></i> All supported languages</li>
+                                <li><i class="fas fa-check"></i> Dedicated GPU priority speed</li>
+                                <li><i class="fas fa-check"></i> Unlimited document translation</li>
+                                <li><i class="fas fa-check"></i> REST API keys (20 req/sec)</li>
+                                <li><i class="fas fa-check"></i> 24/7 Priority support channel</li>
+                            </ul>
+                        </div>
+                        {% if not request.user.is_authenticated %}
+                            <a href="{% url 'pricing_select' 'business' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Choose Business</a>
+                        {% else %}
+                            {% if active_plan_slug == 'business' %}
+                                <button class="btn btn-secondary w-100 mt-4 py-2.5 rounded-pill shadow-none" style="cursor: not-allowed; border-radius: 50px;" disabled><i class="fas fa-check-circle me-1"></i> Current Plan</button>
+                            {% elif active_plan_order == 1 or active_plan_order == 2 %}
+                                <a href="{% url 'pricing_select' 'business' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Upgrade Plan</a>
+                            {% else %}
+                                <a href="{% url 'pricing_select' 'business' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Choose Business</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed Features Comparison Matrix Table -->
+    <section class="py-5 bg-white premium-matrix-section">
+        <style>
+            /* Premium Comparison Table Styles */
+            .premium-matrix-container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            .premium-table-wrapper {
+                position: relative;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 15px 40px rgba(15, 23, 42, 0.05);
+                border: 1px solid #e2e8f0;
+                background: #ffffff;
+            }
+            .premium-table {
+                margin-bottom: 0 !important;
+                border-collapse: separate;
+                border-spacing: 0;
+                width: 100%;
+            }
+            
+            /* Gradient Header */
+            .premium-table thead tr {
+                background: linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899);
+            }
+            .premium-table thead th {
+                color: #ffffff !important;
+                font-weight: 700;
+                font-family: var(--font-headings);
+                padding: 20px 16px !important;
+                border: none !important;
+                font-size: 1.02rem;
+            }
+            .premium-table thead th:not(:last-child) {
+                border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+            }
+            
+            /* Sticky left column */
+            .premium-table th.sticky-col,
+            .premium-table td.sticky-col {
+                position: sticky;
+                left: 0;
+                background-color: #ffffff;
+                z-index: 5;
+                border-right: 2px solid #e2e8f0 !important;
+            }
+            .premium-table thead th.sticky-col {
+                background: #4f46e5;
+                z-index: 6;
+            }
+            
+            /* Alternating rows and hover effects */
+            .premium-table tbody tr:nth-of-type(odd) {
+                background-color: #f8fafc;
+            }
+            .premium-table tbody tr:nth-of-type(odd) td.sticky-col {
+                background-color: #f8fafc;
+            }
+            .premium-table tbody tr:nth-of-type(even) {
+                background-color: #ffffff;
+            }
+            .premium-table tbody tr:nth-of-type(even) td.sticky-col {
+                background-color: #ffffff;
+            }
+            .premium-table tbody tr {
+                transition: background-color 0.2s ease;
+            }
+            .premium-table tbody tr:hover {
+                background-color: #f1f5f9 !important;
+            }
+            .premium-table tbody tr:hover td {
+                background-color: #f1f5f9 !important;
+            }
+            
+            /* Highlight popular column (Pro column) */
+            .premium-table td.highlight-popular {
+                background-color: rgba(124, 58, 237, 0.025) !important;
+                font-weight: 600;
+                color: #0f172a;
+            }
+            .premium-table tbody tr:nth-of-type(odd):hover td.highlight-popular,
+            .premium-table tbody tr:nth-of-type(even):hover td.highlight-popular {
+                background-color: rgba(124, 58, 237, 0.06) !important;
+            }
+            .premium-table th.highlight-popular {
+                background: linear-gradient(135deg, #7c3aed, #ec4899) !important;
+                position: relative;
+            }
+            .premium-table th.highlight-popular::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: #ec4899;
+            }
+            
+            /* Borders and alignments */
+            .premium-table td {
+                padding: 18px 16px !important;
+                border: none !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                color: #475569;
+                font-size: 0.95rem;
+            }
+            .premium-table td:not(:last-child) {
+                border-right: 1px solid #e2e8f0 !important;
+            }
+            .premium-table tbody tr:last-child td {
+                border-bottom: none !important;
+            }
+            
+            /* Status Badges */
+            .premium-icon-check {
+                color: #10b981;
+                background-color: rgba(16, 185, 129, 0.09);
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.82rem;
+            }
+            .premium-icon-cross {
+                color: #ef4444;
+                background-color: rgba(239, 68, 68, 0.08);
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.82rem;
+            }
+        </style>
+        <div class="container py-4 premium-matrix-container">
+            <div class="text-center mb-5">
+                <span class="badge bg-indigo-50 text-indigo-700 px-3 py-2 rounded-pill mb-2" style="background-color: rgba(79, 70, 229, 0.06); color: #4f46e5; font-weight: 500;"><i class="fas fa-list-check me-1.5"></i> Detailed Matrix</span>
+                <h2 class="display-6 fw-bold">Compare Features Plan Matrix</h2>
+                <p class="text-slate-700">Find the perfect level of capabilities for your workloads.</p>
+            </div>
+            
+            <div class="table-responsive" style="border-radius: 20px; overflow: visible;">
+                <div class="premium-table-wrapper">
+                    <table class="table premium-table text-center align-middle">
+                        <thead>
+                            <tr>
+                                <th class="text-start sticky-col" style="width: 40%;">Feature</th>
+                                <th style="width: 20%;">Basic</th>
+                                <th class="highlight-popular" style="width: 20%;"><i class="fas fa-crown me-1.5 small"></i> Pro</th>
+                                <th style="width: 20%;">Business</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">Monthly Word Limit</td>
+                                <td>50,000</td>
+                                <td class="highlight-popular">500,000</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">LLM Translation Context</td>
+                                <td>Standard</td>
+                                <td class="highlight-popular">High-Accuracy (Lrg Model)</td>
+                                <td>Custom Fine-Tuning Option</td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">Transliteration Engine</td>
+                                <td>Basic guide</td>
+                                <td class="highlight-popular"><span class="premium-icon-check"><i class="fas fa-check"></i></span></td>
+                                <td><span class="premium-icon-check"><i class="fas fa-check"></i></span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">Supported Languages</td>
+                                <td>30 Languages</td>
+                                <td class="highlight-popular">120+ Languages</td>
+                                <td>All Languages</td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">Document Formats (PDF, DOCX)</td>
+                                <td><span class="premium-icon-cross"><i class="fas fa-times"></i></span></td>
+                                <td class="highlight-popular">100 Files/mo</td>
+                                <td>Unlimited Files</td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">API Keys Access</td>
+                                <td><span class="premium-icon-cross"><i class="fas fa-times"></i></span></td>
+                                <td class="highlight-popular"><span class="premium-icon-cross"><i class="fas fa-times"></i></span></td>
+                                <td><span class="premium-icon-check"><i class="fas fa-check"></i></span> (20 req/s)</td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">Customer Support</td>
+                                <td>Email (48h response)</td>
+                                <td class="highlight-popular">Priority (12h response)</td>
+                                <td>24/7 Slack & Account Manager</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

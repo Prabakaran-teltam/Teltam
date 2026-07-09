@@ -1,0 +1,307 @@
+{% extends 'user/base.html' %}
+
+{% block title %}Overview{% endblock %}
+{% block header_title %}Dashboard Overview{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner & Subscription Info -->
+<div class="row mb-4 g-4 animate-fade-in-up">
+    <div class="col-lg-8">
+        <div class="p-4 p-md-5 rounded-4 h-100 text-white position-relative overflow-hidden d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); box-shadow: 0 10px 30px rgba(79,70,229,0.15); min-height: 220px;">
+            <!-- Decorative circle -->
+            <div class="position-absolute rounded-circle" style="width: 250px; height: 250px; background: rgba(255,255,255,0.06); top: -80px; right: -80px;"></div>
+            
+            <div class="position-relative z-1">
+                <h1 class="display-6 fw-bold mb-2">Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+                <p class="lead mb-0 opacity-80" style="max-width: 600px; font-size: 1.05rem;">
+                    Access real-time translations, OCR document processing, and contextual audio transcription tools instantly from your workspaces.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between" style="border: 1px solid #e2e8f0; border-radius: 20px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03); background: #ffffff;">
+            <div>
+                <h6 class="fw-bold mb-3 text-slate-800"><i class="fas fa-id-card text-indigo-600 me-2"></i> Subscription Details</h6>
+                <hr class="my-2 text-slate-200">
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Current Plan</span>
+                        {% if subscription %}
+                            <span class="badge bg-indigo-light text-indigo border border-indigo-light rounded-pill px-2.5 fw-bold">{{ subscription.plan.name }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 fw-bold">Free Tier</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Start Date</span>
+                        <span class="text-slate-700 fw-medium small">{% if subscription.start_date %}{{ subscription.start_date|date:"M d, Y" }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Expiry Date</span>
+                        <span class="text-slate-700 fw-medium small">{% if subscription.end_date %}{{ subscription.end_date|date:"M d, Y" }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Status</span>
+                        {% if subscription and subscription.status == 'active' %}
+                            <span class="badge bg-emerald-light text-emerald rounded-pill px-2.5 fw-semibold small"><i class="fas fa-circle-check me-1"></i> Active</span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border rounded-pill px-2.5 fw-semibold small">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                {% if subscription %}
+                    {% if subscription.plan.plan_order < 3 %}
+                        <a href="{% url 'pricing' %}" class="btn btn-brand-primary btn-sm w-100 rounded-pill py-2 text-center fw-bold"><i class="fas fa-circle-arrow-up me-1"></i> Upgrade Plan</a>
+                    {% else %}
+                        <button class="btn btn-outline-secondary btn-sm w-100 rounded-pill py-2" disabled><i class="fas fa-check-double me-1"></i> Maximum Plan Reached</button>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'pricing' %}" class="btn btn-brand-primary btn-sm w-100 rounded-pill py-2 text-center fw-bold"><i class="fas fa-circle-arrow-up me-1"></i> Upgrade Plan</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Widgets -->
+<div class="row g-4 mb-5">
+    <!-- Card: Total Translations -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Total Translations</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ total_translations }}</h3>
+                </div>
+                <div class="card-icon-container bg-indigo-light">
+                    <i class="fas fa-language"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Text Translations -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Text Translations</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ text_count }}</h3>
+                </div>
+                <div class="card-icon-container bg-purple-light">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Document Translations -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Documents Translated</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ file_count }}</h3>
+                </div>
+                <div class="card-icon-container bg-emerald-light">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card: Voice Translations -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="dashboard-card p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted d-block mb-1 fw-medium small">Voice Transcriptions</span>
+                    <h3 class="mb-0 fw-bold display-font text-slate-800">{{ voice_count }}</h3>
+                </div>
+                <div class="card-icon-container bg-amber-light" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;">
+                    <i class="fas fa-microphone"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Translation Tools Quick Launch Grid -->
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <h4 class="fw-bold mb-3 text-slate-800"><i class="fas fa-bolt me-2 text-warning"></i> Quick Access Translation Workspaces</h4>
+    </div>
+    
+    <!-- Tool Launch: Text -->
+    <div class="col-md-4">
+        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="card-icon-container bg-purple-light mb-3">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800">Text Translator</h5>
+                <p class="text-muted small">Translate phrases instantly with pronunciation analysis and context grammar notes.</p>
+            </div>
+            <a href="{% url 'user_tool_text' %}" class="btn btn-brand-primary mt-3 d-block text-center">Open Workspace</a>
+        </div>
+    </div>
+
+    <!-- Tool Launch: File -->
+    <div class="col-md-4">
+        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="card-icon-container bg-emerald-light mb-3">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800">Document Translator</h5>
+                <p class="text-muted small">Translate PDFs, DOCX, TXT, or images (OCR) while preserving layouts and download localized files.</p>
+            </div>
+            <a href="{% url 'user_tool_file' %}" class="btn btn-brand-primary mt-3 d-block text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16,185,129,0.2);">Open Workspace</a>
+        </div>
+    </div>
+
+    <!-- Tool Launch: Voice -->
+    <div class="col-md-4">
+        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="card-icon-container bg-amber-light mb-3" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800">Voice Translator</h5>
+                <p class="text-muted small">Record speech directly or upload voice audio files to transcribe and translate them immediately.</p>
+            </div>
+            <a href="{% url 'user_tool_voice' %}" class="btn btn-brand-primary mt-3 d-block text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 12px rgba(245,158,11,0.2);">Open Workspace</a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Translation Log Feed -->
+<div class="row">
+    <div class="col-12">
+        <div class="dashboard-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-clock-rotate-left text-indigo-600 me-2"></i> Recent Activity Log</h5>
+                {% if recent_history %}
+                    <a href="{% url 'user_history_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View All History</a>
+                {% endif %}
+            </div>
+            
+            <div class="table-responsive border-0 shadow-none">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tool Type</th>
+                            <th>Source Text / File Name</th>
+                            <th>Languages</th>
+                            <th>Date / Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_history %}
+                        <tr>
+                            <td>
+                                {% if log.tool_type == 'text' %}
+                                    <span class="badge bg-purple-light border-0"><i class="fas fa-keyboard me-1"></i> Text</span>
+                                {% elif log.tool_type == 'file' %}
+                                    <span class="badge bg-emerald-light border-0"><i class="fas fa-file-pdf me-1"></i> Document</span>
+                                {% else %}
+                                    <span class="badge bg-amber-light border-0" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;"><i class="fas fa-microphone me-1"></i> Voice</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-slate-800 d-block text-truncate" style="max-width: 350px;">{{ log.source_text }}</span>
+                                {% if log.translated_text %}
+                                    <span class="text-muted small text-truncate d-block" style="max-width: 350px;">{{ log.translated_text }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-slate-700 border">{{ log.source_lang|upper }}</span>
+                                <i class="fas fa-arrow-right mx-1 text-muted small"></i>
+                                <span class="badge bg-light text-indigo-700 border">{{ log.target_lang|upper }}</span>
+                            </td>
+                            <td><small class="text-muted">{{ log.created_date|date:"M d, Y, g:i A" }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open display-4 opacity-50 mb-3 d-block"></i>
+                                <h5>No translation logs found</h5>
+                                <p class="small mb-0">Use any of the translation workspaces above to get started!</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment & Billing History Log -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="dashboard-card p-4">
+            <h5 class="fw-bold mb-4 text-slate-800"><i class="fas fa-credit-card text-indigo-600 me-2"></i> Payment &amp; Subscription History</h5>
+            
+            <div class="table-responsive border-0 shadow-none">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Billing Cycle / Expiry</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pt in payment_history %}
+                        <tr>
+                            <td><span class="font-monospace fw-semibold text-slate-800" style="font-size: 0.85rem;">{{ pt.merchant_order_id }}</span></td>
+                            <td><span class="badge bg-indigo-light text-indigo border border-indigo-light rounded-pill px-2.5">{{ pt.plan.name }}</span></td>
+                            <td><span class="fw-bold text-slate-800">₹{{ pt.amount }}</span></td>
+                            <td>
+                                {% if pt.status == 'success' %}
+                                    <span class="badge bg-emerald-light text-emerald rounded-pill px-2.5"><i class="fas fa-circle-check me-1"></i> Success</span>
+                                {% elif pt.status == 'pending' %}
+                                    <span class="badge bg-amber-light text-amber rounded-pill px-2.5"><i class="fas fa-circle-notch fa-spin me-1"></i> Pending</span>
+                                {% elif pt.status == 'failed' %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5"><i class="fas fa-circle-xmark me-1"></i> Failed</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted border rounded-pill px-2.5"><i class="fas fa-ban me-1"></i> Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if pt.status == 'success' %}
+                                    {% for sub in pt.subscriptions.all %}
+                                        <small class="text-slate-700">Expires: {{ sub.end_date|date:"M d, Y" }}</small>
+                                    {% empty %}
+                                        <small class="text-muted">-</small>
+                                    {% endfor %}
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td><small class="text-muted">{{ pt.created_at|date:"M d, Y, g:i A" }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="fas fa-credit-card-slash display-6 opacity-40 mb-2 d-block"></i>
+                                <span>No payment transaction history found.</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

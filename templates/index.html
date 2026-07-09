@@ -1,0 +1,1485 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teltam AI - AI-Powered Translation & Transliteration Platform using LLM</title>
+    <meta name="description" content="Teltam is a state-of-the-art AI Translation & Transliteration tool powered by LLM. Translate text, documents, and content into multiple languages with precise contextual meaning, transliteration guides, and voice pronunciation.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Redesigned Hero Section -->
+    <section class="hero-redesign py-5 py-lg-6 position-relative overflow-hidden animate-fade-in-up">
+        <!-- Background Blur Shapes -->
+        <div class="blur-shape blur-shape-1"></div>
+        <div class="blur-shape blur-shape-2"></div>
+        
+        <div class="container position-relative" style="z-index: 2;">
+            <div class="row align-items-center py-4">
+                <!-- Left Side: Content Area -->
+                <div class="col-lg-6 col-md-12 mb-5 mb-lg-0 text-start">
+                    <span class="hero-badge"><i class="fas fa-sparkles text-indigo-600"></i> AI-Powered Translation Platform</span>
+                    <h1 class="display-4 fw-bold mb-3 text-slate-900" style="letter-spacing: -1.5px; line-height: 1.15; font-size: clamp(2.5rem, 5vw, 3.5rem);">
+                        Translate, Transliterate &amp; <span class="text-gradient-primary">Communicate Globally</span> with AI
+                    </h1>
+                    <p class="lead text-slate-700 mb-4" style="font-size: 1.08rem; line-height: 1.7;">
+                        Teltam utilizes advanced LLM-powered context mapping to translate text, scan documents, and build phonetic transliteration guides across scripts with accurate meaning and zero nuance loss.
+                    </p>
+                    <div class="d-flex gap-3 mb-4 flex-wrap">
+                        <a href="#playground" class="btn btn-primary-gradient px-4 py-3 rounded-pill">Start Translating</a>
+                        <a href="/videos/detail/" class="btn btn-outline-custom px-4 py-3 rounded-pill"><i class="fas fa-play me-2 text-danger"></i>Watch Demo</a>
+                    </div>
+                    <!-- Trust Indicators -->
+                    <div class="d-flex gap-3 flex-wrap border-top pt-4 text-slate-800" style="border-color: rgba(226, 232, 240, 0.8) !important;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-check-circle text-success" style="font-size: 1.1rem;"></i>
+                            <span class="fw-semibold">150+ Languages</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-check-circle text-success" style="font-size: 1.1rem;"></i>
+                            <span class="fw-semibold">AI Powered</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-check-circle text-success" style="font-size: 1.1rem;"></i>
+                            <span class="fw-semibold">Fast &amp; Accurate</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Side: AI Translation Illustration -->
+                <div class="col-lg-6 col-md-12 text-center">
+                    <div class="hero-illustration-wrapper py-4">
+                        <!-- Central Glow Orb -->
+                        <div class="central-glow-orb"></div>
+                        
+                        <!-- Dashboard Mockup Console -->
+                        <div class="glass-card main-dashboard-mockup p-4 shadow-lg text-start">
+                            <div class="d-flex align-items-center gap-2 mb-3 border-bottom pb-2" style="border-color: rgba(226, 232, 240, 0.4) !important;">
+                                <span style="width: 10px; height: 10px; background: #ef4444; border-radius: 50%;"></span>
+                                <span style="width: 10px; height: 10px; background: #fbbf24; border-radius: 50%;"></span>
+                                <span style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></span>
+                                <small class="text-muted ms-2" style="font-size:0.75rem; font-family: monospace;">teltam-translator-console</small>
+                            </div>
+                            <div class="font-monospace text-slate-600 small mb-2" style="font-size:0.8rem;">
+                                <span class="text-indigo-600">&gt;</span> initializing teltam-llm-v3...
+                            </div>
+                            <div class="font-monospace text-slate-600 small mb-3" style="font-size:0.8rem;">
+                                <span class="text-indigo-600">&gt;</span> context mapping analytics online.
+                            </div>
+                            <!-- UI translation visual link waves -->
+                            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-2" style="font-size: 0.8rem; border: 1px solid rgba(226, 232, 240, 0.6);">
+                                <span class="fw-semibold text-slate-700">Source Text</span>
+                                <i class="fas fa-exchange-alt text-indigo-600"></i>
+                                <span class="fw-semibold text-indigo-700">AI Context Output</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Floating Language Card 1: English -> Tamil -->
+                        <div class="glass-card hero-floating-card card-en-ta p-3 shadow-sm text-start float-ani-1">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-primary-subtle text-indigo-700 px-2 py-1" style="font-size: 0.7rem;">EN ➔ TA</span>
+                                <span class="stars-rating"><i class="fas fa-sparkles text-indigo-600"></i> AI Match</span>
+                            </div>
+                            <div class="small fw-semibold text-slate-800">"Hello"</div>
+                            <div class="small fw-bold text-indigo-600">"வணக்கம்"</div>
+                            <div class="text-muted mt-1" style="font-size: 0.65rem; font-family: monospace;">phonetic: Va-nak-kam</div>
+                        </div>
+
+                        <!-- Floating Language Card 2: Hindi -> English -->
+                        <div class="glass-card hero-floating-card card-hi-en p-3 shadow-sm text-start float-ani-2">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-success-subtle text-success px-2 py-1" style="font-size: 0.7rem;">HI ➔ EN</span>
+                                <span class="stars-rating" style="font-size: 0.65rem; color: #10b981;"><i class="fas fa-bolt"></i> Live</span>
+                            </div>
+                            <div class="small fw-semibold text-slate-800">"नमस्ते"</div>
+                            <div class="small fw-bold text-success">"Hello"</div>
+                            <div class="text-muted mt-1" style="font-size: 0.65rem; font-family: monospace;">translit: namaste</div>
+                        </div>
+
+                        <!-- Floating Language Card 3: Spanish -> French -->
+                        <div class="glass-card hero-floating-card card-es-fr p-3 shadow-sm text-start float-ani-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-warning-subtle text-warning px-2 py-1" style="font-size: 0.7rem; color: #d97706 !important;">ES ➔ FR</span>
+                                <span class="stars-rating" style="font-size: 0.65rem; color: #fbbf24;"><i class="fas fa-check-circle"></i> 99.8%</span>
+                            </div>
+                            <div class="small fw-semibold text-slate-800">"Buenos días"</div>
+                            <div class="small fw-bold text-warning" style="color: #d97706 !important;">"Bonjour"</div>
+                            <div class="text-muted mt-1" style="font-size: 0.65rem; font-family: monospace;">pron: /bɔ̃ʒuʁ/</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Translation Tool Playground Section -->
+    <section id="playground" class="py-5 px-1 px-md-3 px-lg-5">
+        {% csrf_token %}
+        <style>
+            /* Custom Scoped Styles for Redesigned Playground */
+            .playground-section-wrapper {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .playground-section-wrapper .gradient-border-wrapper {
+                padding: 2px;
+                background: linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899);
+                border-radius: 24px;
+                box-shadow: 0 20px 40px rgba(79, 70, 229, 0.08);
+            }
+            .playground-section-wrapper .translation-widget-premium {
+                background: #ffffff;
+                border-radius: 22px;
+                padding: 2.5rem;
+            }
+            @media (max-width: 768px) {
+                .playground-section-wrapper .translation-widget-premium {
+                    padding: 1.5rem 1rem;
+                }
+            }
+            .playground-section-wrapper .swap-btn-wrapper {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+            .playground-section-wrapper .swap-btn-custom {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: #f8fafc;
+                border: 1.5px solid #e2e8f0;
+                color: #4f46e5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            }
+            .playground-section-wrapper .swap-btn-custom:hover {
+                background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                color: #ffffff;
+                border-color: transparent;
+                transform: rotate(180deg);
+                box-shadow: 0 6px 15px rgba(79, 70, 229, 0.2);
+            }
+            .playground-section-wrapper .premium-dropdown-btn {
+                background: #ffffff;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 10px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+            }
+            .playground-section-wrapper .premium-dropdown-btn:hover {
+                border-color: #6366f1;
+                background: #f8fafc;
+                box-shadow: 0 4px 10px rgba(99, 102, 241, 0.05);
+            }
+            .playground-section-wrapper .premium-dropdown-btn:focus {
+                border-color: #6366f1;
+                background: #ffffff;
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+            }
+            .playground-section-wrapper .custom-dropdown-menu {
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+                width: 420px;
+                padding: 16px;
+                margin-top: 6px !important;
+                background: #ffffff;
+                z-index: 1050;
+                border-top: 3px solid #6366f1;
+            }
+            @media (max-width: 576px) {
+                .playground-section-wrapper .custom-dropdown-menu {
+                    width: calc(100vw - 32px);
+                }
+            }
+            .playground-section-wrapper .dropdown-search-wrapper {
+                position: relative;
+                margin-bottom: 12px;
+            }
+            .playground-section-wrapper .dropdown-search-wrapper i {
+                position: absolute;
+                top: 50%;
+                left: 12px;
+                transform: translateY(-50%);
+                color: #94a3b8;
+                font-size: 0.9rem;
+            }
+            .playground-section-wrapper .dropdown-search-input {
+                width: 100%;
+                padding: 8px 12px 8px 36px;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                outline: none;
+                transition: all 0.2s;
+            }
+            .playground-section-wrapper .dropdown-search-input:focus {
+                border-color: #6366f1;
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            }
+            .playground-section-wrapper .dropdown-options-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px 10px;
+                max-height: 250px;
+                overflow-y: auto;
+                padding-right: 4px;
+            }
+            @media (max-width: 576px) {
+                .playground-section-wrapper .dropdown-options-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .playground-section-wrapper .lang-option {
+                border: none;
+                background: transparent;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 12px;
+                width: 100%;
+                border-radius: 8px;
+                transition: all 0.2s;
+                cursor: pointer;
+                text-align: left;
+            }
+            .playground-section-wrapper .lang-option:hover {
+                background: #f1f5f9;
+            }
+            .playground-section-wrapper .lang-option.active {
+                background: rgba(79, 70, 229, 0.08);
+                color: #4f46e5;
+            }
+            .playground-section-wrapper .lang-option .lang-name {
+                font-weight: 500;
+                color: #1e293b;
+                font-size: 0.88rem;
+                line-height: 1.2;
+            }
+            .playground-section-wrapper .lang-option.active .lang-name {
+                color: #4f46e5;
+                font-weight: 600;
+            }
+            .playground-section-wrapper .lang-option .lang-native {
+                font-size: 0.72rem;
+                color: #64748b;
+                margin-top: 1px;
+            }
+            .playground-section-wrapper .lang-option.active .lang-native {
+                color: #6366f1;
+                opacity: 0.9;
+            }
+            .playground-section-wrapper .lang-flag {
+                font-size: 1.15rem;
+                line-height: 1;
+            }
+            .playground-section-wrapper .dropdown-options-grid::-webkit-scrollbar {
+                width: 5px;
+            }
+            .playground-section-wrapper .dropdown-options-grid::-webkit-scrollbar-track {
+                background: #f8fafc;
+                border-radius: 10px;
+            }
+            .playground-section-wrapper .dropdown-options-grid::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 10px;
+            }
+            .playground-section-wrapper .dropdown-options-grid::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+            .playground-section-wrapper .textarea-container-custom {
+                border: 1.5px solid #e2e8f0;
+                border-radius: 14px;
+                background: #ffffff;
+                padding: 16px;
+                position: relative;
+                transition: all 0.25s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+                min-height: 220px;
+            }
+            .playground-section-wrapper .textarea-container-custom:focus-within {
+                border-color: #6366f1;
+                box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.1);
+            }
+            .playground-section-wrapper .output-textarea-container {
+                background: #f8fafc;
+                border-style: solid;
+            }
+            .playground-section-wrapper .textarea-custom {
+                border: none !important;
+                background: transparent !important;
+                resize: none;
+                width: 100%;
+                padding: 0 !important;
+                color: #0f172a;
+                font-size: 1.05rem;
+                line-height: 1.6;
+                outline: none !important;
+                box-shadow: none !important;
+            }
+            .playground-section-wrapper .textarea-custom::placeholder {
+                color: #94a3b8;
+            }
+            .playground-section-wrapper .textarea-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #f1f5f9;
+            }
+            .playground-section-wrapper .btn-light-custom {
+                background: #f1f5f9;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                transition: all 0.2s;
+            }
+            .playground-section-wrapper .btn-light-custom:hover {
+                background: #e2e8f0;
+                color: #0f172a;
+            }
+            .playground-section-wrapper .btn-translate-gradient {
+                background: linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899);
+                color: #ffffff;
+                border: none;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 1.05rem;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
+                padding: 14px 44px;
+            }
+            .playground-section-wrapper .btn-translate-gradient:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 24px rgba(124, 58, 237, 0.3);
+                background: linear-gradient(135deg, #4338ca, #6d28d9, #d946ef);
+                color: #ffffff;
+            }
+            .playground-section-wrapper .btn-translate-gradient:active {
+                transform: translateY(0);
+                box-shadow: 0 5px 12px rgba(124, 58, 237, 0.2);
+            }
+        </style>
+
+        <div class="playground-section-wrapper">
+            <div class="gradient-border-wrapper">
+                <div class="translation-widget-premium">
+                    <!-- Title Block -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-slate-100">
+                        <div>
+                            <h3 class="fw-bold text-slate-900 mb-1" style="font-size: 1.35rem; letter-spacing: -0.5px;">Interactive AI Translation Playground</h3>
+                            <p class="text-muted small mb-0">Experience real-time LLM-powered context mapping & translation</p>
+                        </div>
+                        <span class="badge bg-indigo-50 text-indigo-700 px-3 py-2 rounded-pill border border-indigo-100 small d-inline-flex align-items-center gap-1.5" style="font-weight: 500; background-color: rgba(79, 70, 229, 0.06); border-color: rgba(79, 70, 229, 0.12) !important;">
+                            <i class="fas fa-sparkles text-indigo-600"></i> Teltam LLM-v3 Active
+                        </span>
+                    </div>
+
+                    <!-- Hidden Select Elements for main.js compatibility -->
+                    <select id="sourceLanguage" style="display: none;"></select>
+                    <select id="targetLanguage" style="display: none;"></select>
+
+                    <!-- Language Selector Row -->
+                    <div class="row align-items-center mb-4 g-3">
+                        <div class="col-12 col-md-5">
+                            <div class="d-flex flex-column gap-1.5">
+                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-arrow-right text-indigo-500 me-1.5"></i> SOURCE LANGUAGE</label>
+                                
+                                <!-- Custom Source Dropdown -->
+                                <div class="custom-dropdown-container dropdown" id="sourceDropdownContainer">
+                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="sourceLangBtn">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="selected-flag fs-5">🔍</span>
+                                            <div class="text-start">
+                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Detect Language</div>
+                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Auto Detect</div>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                    </button>
+                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                        <div class="dropdown-search-wrapper mb-2">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                        </div>
+                                        <div class="dropdown-options-grid custom-scrollbar" id="sourceOptionsGrid"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-md-2 text-center my-2 my-md-0">
+                            <div class="swap-btn-wrapper pt-md-3">
+                                <button id="swapLanguagesBtn" type="button" class="swap-btn-custom" title="Swap languages">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-md-5">
+                            <div class="d-flex flex-column gap-1.5">
+                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-globe text-indigo-500 me-1.5"></i> TARGET LANGUAGE</label>
+                                
+                                <!-- Custom Target Dropdown -->
+                                <div class="custom-dropdown-container dropdown" id="targetDropdownContainer">
+                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="targetLangBtn">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="selected-flag fs-5">🇪🇸</span>
+                                            <div class="text-start">
+                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Spanish</div>
+                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Español</div>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                    </button>
+                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                        <div class="dropdown-search-wrapper mb-2">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                        </div>
+                                        <div class="dropdown-options-grid custom-scrollbar" id="targetOptionsGrid"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Textarea Inputs Row -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-6 col-12">
+                            <div class="textarea-container-custom d-flex flex-column justify-content-between h-100">
+                                <div class="position-relative flex-grow-1">
+                                    <textarea id="sourceText" class="textarea-custom" placeholder="Type or paste text here (e.g. 'Hello, how are you?')..." style="min-height: 120px; padding-right: 25px !important;"></textarea>
+                                    <button id="clearSourceBtn" class="position-absolute top-0 end-0 border-0 bg-transparent text-slate-400 hover-text-slate-700 d-none" style="padding: 0; font-size: 1.1rem; line-height: 1;"><i class="fas fa-times-circle"></i></button>
+                                </div>
+                                <div class="textarea-footer">
+                                    <span class="small text-muted" style="font-size: 0.8rem;"><i class="far fa-keyboard me-1"></i> Press Ctrl + Enter to translate</span>
+                                    <span id="charCounter" class="small text-muted" style="font-size: 0.8rem;">0 / 5000</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6 col-12">
+                            <div class="textarea-container-custom output-textarea-container d-flex flex-column justify-content-between h-100">
+                                <div class="position-relative flex-grow-1">
+                                    <!-- Spinner Overlay -->
+                                    <div id="translationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="z-index: 10; background: rgba(248, 250, 252, 0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px;">
+                                        <div class="spinner-border text-indigo-600 mb-2" role="status" style="width: 2.2rem; height: 2.2rem; border-width: 0.22em;">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="small fw-semibold text-indigo-600" style="font-size: 0.85rem;">Contextual translation mapping...</div>
+                                    </div>
+                                    
+                                    <textarea id="outputText" class="textarea-custom" readonly placeholder="Translation will appear here..." style="min-height: 120px;"></textarea>
+                                </div>
+
+                                
+                                <div class="textarea-footer">
+                                    <div class="footer-left-info">
+                                        <span class="badge px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background-color: rgba(16, 185, 129, 0.08); color: #10b981; font-weight: 500; font-size: 0.75rem;"><i class="fas fa-circle-check"></i> AI Context Synced</span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button id="speakBtn" class="btn btn-light-custom btn-sm text-slate-700" title="Speak translation"><i class="fas fa-volume-up me-1"></i> Speak</button>
+                                        <button id="copyBtn" class="btn btn-light-custom btn-sm text-slate-700" title="Copy Translation"><i class="fas fa-copy me-1"></i> Copy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Translate Button Container -->
+                    <div class="text-center">
+                        <button id="translateBtn" class="btn btn-translate-gradient px-5 py-3">
+                            <i class="fas fa-sparkles me-2"></i> Translate with Teltam LLM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function() {
+                // 1. Language Database Definition (150+ unique languages)
+                const allLanguagesList = [
+                    { code: "en", name: "English", native: "English", flag: "🇺🇸" },
+                    { code: "es", name: "Spanish", native: "Español", flag: "🇪🇸" },
+                    { code: "fr", name: "French", native: "Français", flag: "🇫🇷" },
+                    { code: "de", name: "German", native: "Deutsch", flag: "🇩🇪" },
+                    { code: "ta", name: "Tamil", native: "தமிழ்", flag: "🇮🇳" },
+                    { code: "hi", name: "Hindi", native: "हिन्दी", flag: "🇮🇳" },
+                    { code: "zh", name: "Chinese", native: "中文", flag: "🇨🇳" },
+                    { code: "ar", name: "Arabic", native: "العربية", flag: "🇸🇦" },
+                    { code: "pt", name: "Portuguese", native: "Português", flag: "🇵🇹" },
+                    { code: "ru", name: "Russian", native: "Русский", flag: "🇷🇺" },
+                    { code: "ja", name: "Japanese", native: "日本語", flag: "🇯🇵" },
+                    { code: "ko", name: "Korean", native: "한국어", flag: "🇰🇷" },
+                    { code: "it", name: "Italian", native: "Italiano", flag: "🇮🇹" },
+                    { code: "nl", name: "Dutch", native: "Nederlands", flag: "🇳🇱" },
+                    { code: "tr", name: "Turkish", native: "Türkçe", flag: "🇹🇷" },
+                    { code: "vi", name: "Vietnamese", native: "Tiếng Việt", flag: "🇻🇳" },
+                    { code: "pl", name: "Polish", native: "Polski", flag: "🇵🇱" },
+                    { code: "sv", name: "Swedish", native: "Svenska", flag: "🇸🇪" },
+                    { code: "uk", name: "Ukrainian", native: "Українська", flag: "🇺🇦" },
+                    { code: "id", name: "Indonesian", native: "Bahasa Indonesia", flag: "🇮🇩" },
+                    { code: "he", name: "Hebrew", native: "עברית", flag: "🇮🇱" },
+                    { code: "el", name: "Greek", native: "Ελληνικά", flag: "🇬🇷" },
+                    { code: "no", name: "Norwegian", native: "Norsk", flag: "🇳🇴" },
+                    { code: "da", name: "Danish", native: "Dansk", flag: "🇩🇰" },
+                    { code: "fi", name: "Finnish", native: "Suomi", flag: "🇫🇮" },
+                    { code: "cs", name: "Czech", native: "Čeština", flag: "🇨🇿" },
+                    { code: "hu", name: "Hungarian", native: "Magyar", flag: "🇭🇺" },
+                    { code: "th", name: "Thai", native: "ไทย", flag: "🇹🇭" },
+                    { code: "fa", name: "Persian", native: "فارسی", flag: "🇮🇷" },
+                    { code: "ro", name: "Romanian", native: "Română", flag: "🇷🇴" },
+                    { code: "bg", name: "Bulgarian", native: "Български", flag: "🇧🇬" },
+                    { code: "sk", name: "Slovak", native: "Slovenčina", flag: "🇸🇰" },
+                    { code: "ms", name: "Malay", native: "Bahasa Melayu", flag: "🇲🇾" },
+                    { code: "hr", name: "Croatian", native: "Hrvatski", flag: "🇭🇷" },
+                    { code: "sr", name: "Serbian", native: "Српски", flag: "🇷🇸" },
+                    { code: "lt", name: "Lithuanian", native: "Lietuvių", flag: "🇱🇹" },
+                    { code: "sl", name: "Slovenian", native: "Slovenščina", flag: "🇸🇮" },
+                    { code: "et", name: "Estonian", native: "Eesti", flag: "🇪🇪" },
+                    { code: "lv", name: "Latvian", native: "Latviešu", flag: "🇱🇻" },
+                    { code: "sw", name: "Swahili", native: "Kiswahili", flag: "🇰🇪" },
+                    { code: "ur", name: "Urdu", native: "اردو", flag: "🇵🇰" },
+                    { code: "bn", name: "Bengali", native: "বাংলা", flag: "🇧🇩" },
+                    { code: "pa", name: "Punjabi", native: "ਪੰਜਾਬੀ", flag: "🇮🇳" },
+                    { code: "te", name: "Telugu", native: "తెలుగు", flag: "🇮🇳" },
+                    { code: "mr", name: "Marathi", native: "मराठी", flag: "🇮🇳" },
+                    { code: "kn", name: "Kannada", native: "ಕನ್ನಡ", flag: "🇮🇳" },
+                    { code: "ml", name: "Malayalam", native: "മലയാളം", flag: "🇮🇳" },
+                    { code: "gu", name: "Gujarati", native: "ગુજરાતી", flag: "🇮🇳" },
+                    { code: "or", name: "Odia", native: "ଓଡ଼ିଆ", flag: "🇮🇳" },
+                    { code: "as", name: "Assamese", native: "অসমীয়া", flag: "🇮🇳" },
+                    { code: "af", name: "Afrikaans", native: "Afrikaans", flag: "🇿🇦" },
+                    { code: "sq", name: "Albanian", native: "Shqip", flag: "🇦🇱" },
+                    { code: "am", name: "Amharic", native: "አማርኛ", flag: "🇪🇹" },
+                    { code: "hy", name: "Armenian", native: "Հայերեն", flag: "🇦🇲" },
+                    { code: "az", name: "Azerbaijani", native: "Azərbaycanca", flag: "🇦🇿" },
+                    { code: "eu", name: "Basque", native: "Euskara", flag: "🇪🇸" },
+                    { code: "be", name: "Belarusian", native: "Беларуская", flag: "🇧🇾" },
+                    { code: "bs", name: "Bosnian", native: "Bosanski", flag: "🇧🇦" },
+                    { code: "ca", name: "Catalan", native: "Català", flag: "🇪🇸" },
+                    { code: "ceb", name: "Cebuano", native: "Cebuano", flag: "🇵🇭" },
+                    { code: "ny", name: "Chichewa", native: "Chichewa", flag: "🇲🇼" },
+                    { code: "co", name: "Corsican", native: "Corsu", flag: "🇫🇷" },
+                    { code: "eo", name: "Esperanto", native: "Esperanto", flag: "🌍" },
+                    { code: "tl", name: "Filipino", native: "Wikang Filipino", flag: "🇵🇭" },
+                    { code: "fy", name: "Frisian", native: "Frysk", flag: "🇳🇱" },
+                    { code: "gl", name: "Galician", native: "Galego", flag: "🇪🇸" },
+                    { code: "ka", name: "Georgian", native: "ქართული", flag: "🇬🇪" },
+                    { code: "ht", name: "Haitian Creole", native: "Kreyòl Ayisyen", flag: "🇭🇹" },
+                    { code: "ha", name: "Hausa", native: "Hausa", flag: "🇳🇬" },
+                    { code: "haw", name: "Hawaiian", native: "ʻŌlelo Hawaiʻi", flag: "🌺" },
+                    { code: "hmn", name: "Hmong", native: "Hmong", flag: "🇨🇳" },
+                    { code: "is", name: "Icelandic", native: "Íslenska", flag: "🇮🇸" },
+                    { code: "ig", name: "Igbo", native: "Asụsụ Igbo", flag: "🇳🇬" },
+                    { code: "ga", name: "Irish", native: "Gaeilge", flag: "🇮🇪" },
+                    { code: "jv", name: "Javanese", native: "Basa Jawa", flag: "🇮🇩" },
+                    { code: "kk", name: "Kazakh", native: "Қазақ Тілі", flag: "🇰🇿" },
+                    { code: "km", name: "Khmer", native: "ភាសាខ្មែរ", flag: "🇰🇭" },
+                    { code: "rw", name: "Kinyarwanda", native: "Ikinyarwanda", flag: "🇷🇼" },
+                    { code: "ku", name: "Kurdish", native: "Kurdî", flag: "🇮🇶" },
+                    { code: "ky", name: "Kyrgyz", native: "Кыргызча", flag: "🇰🇬" },
+                    { code: "lo", name: "Lao", native: "ພາສາລາວ", flag: "🇱🇦" },
+                    { code: "la", name: "Latin", native: "Latina", flag: "🏛️" },
+                    { code: "lb", name: "Luxembourgish", native: "Lëtzebuergesch", flag: "🇱🇺" },
+                    { code: "mk", name: "Macedonian", native: "Македонски", flag: "🇲🇰" },
+                    { code: "mg", name: "Malagasy", native: "Malagasy", flag: "🇲🇬" },
+                    { code: "mt", name: "Maltese", native: "Malti", flag: "🇲🇹" },
+                    { code: "mi", name: "Maori", native: "Te Reo Māori", flag: "🇳🇿" },
+                    { code: "mn", name: "Mongolian", native: "Монгол Хэл", flag: "🇲🇳" },
+                    { code: "my", name: "Myanmar (Burmese)", native: "မြန်မာဘာသာ", flag: "🇲🇲" },
+                    { code: "ne", name: "Nepali", native: "नेपाली", flag: "🇳🇵" },
+                    { code: "ps", name: "Pashto", native: "پښتو", flag: "🇦🇫" },
+                    { code: "sa", name: "Sanskrit", native: "संस्कृतम्", flag: "🏛️" },
+                    { code: "gd", name: "Scots Gaelic", native: "Gàidhlig", flag: "🇬🇧" },
+                    { code: "st", name: "Sesotho", native: "Sesotho", flag: "🇱🇸" },
+                    { code: "sn", name: "Shona", native: "chiShona", flag: "🇿🇼" },
+                    { code: "sd", name: "Sindhi", native: "سنڌي", flag: "🇵🇰" },
+                    { code: "si", name: "Sinhala", native: "සිංහල", flag: "🇱🇰" },
+                    { code: "so", name: "Somali", native: "Soomaaliga", flag: "🇸🇴" },
+                    { code: "su", name: "Sundanese", native: "Basa Sunda", flag: "🇮🇩" },
+                    { code: "tg", name: "Tajik", native: "Тоҷикӣ", flag: "🇹🇯" },
+                    { code: "tt", name: "Tatar", native: "Татарча", flag: "🇷🇺" },
+                    { code: "tk", name: "Turkmen", native: "Türkmençe", flag: "🇹🇲" },
+                    { code: "ug", name: "Uyghur", native: "ئۇيغۇرچە", flag: "🇨🇳" },
+                    { code: "uz", name: "Uzbek", native: "Oʻzbekcha", flag: "🇺🇿" },
+                    { code: "cy", name: "Welsh", native: "Cymraeg", flag: "🇬🇧" },
+                    { code: "xh", name: "Xhosa", native: "isiXhosa", flag: "🇿🇦" },
+                    { code: "yi", name: "Yiddish", native: "ייִדיש", flag: "🇮🇱" },
+                    { code: "yo", name: "Yoruba", native: "Èdè Yorùbá", flag: "🇳🇬" },
+                    { code: "zu", name: "Zulu", native: "isiZulu", flag: "🇿🇦" },
+                    { code: "ay", name: "Aymara", native: "Aymar aru", flag: "🇧🇴" },
+                    { code: "bm", name: "Bambara", native: "Bamanankan", flag: "🇲🇱" },
+                    { code: "bho", name: "Bhojpuri", native: "भोजपुरी", flag: "🇮🇳" },
+                    { code: "dv", name: "Dhivehi", native: "ދިވެހިބަސް", flag: "🇲🇻" },
+                    { code: "doi", name: "Dogri", native: "डोगरी", flag: "🇮🇳" },
+                    { code: "ee", name: "Ewe", native: "Ewegbe", flag: "🇬🇭" },
+                    { code: "gn", name: "Guarani", native: "Avañe'ẽ", flag: "🇵🇾" },
+                    { code: "ilo", name: "Ilocano", native: "Ilokano", flag: "🇵🇭" },
+                    { code: "gom", name: "Konkani", native: "कोंकणी", flag: "🇮🇳" },
+                    { code: "kri", name: "Krio", native: "Krio", flag: "🇸🇱" },
+                    { code: "ln", name: "Lingala", native: "Lingála", flag: "🇨🇩" },
+                    { code: "lg", name: "Luganda", native: "Luganda", flag: "🇺🇬" },
+                    { code: "mai", name: "Maithili", native: "मैथिली", flag: "🇮🇳" },
+                    { code: "mni", name: "Manipuri", native: "মৈতৈলোন", flag: "🇮🇳" },
+                    { code: "lus", name: "Mizo", native: "Mizo ṭawng", flag: "🇮🇳" },
+                    { code: "om", name: "Oromo", native: "Afaan Oromoo", flag: "🇪🇹" },
+                    { code: "qu", name: "Quechua", native: "Runa Simi", flag: "🇵🇪" },
+                    { code: "nso", name: "Sepedi", native: "Sesotho sa Leboa", flag: "🇿🇦" },
+                    { code: "ti", name: "Tigrinya", native: "ትግርኛ", flag: "🇪🇷" },
+                    { code: "ts", name: "Tsonga", native: "Xitsonga", flag: "🇿🇦" },
+                    { code: "ak", name: "Twi", native: "Twi", flag: "🇬🇭" },
+                    { code: "ve", name: "Venda", native: "Tshivenda", flag: "🇿🇦" },
+                    { code: "wo", name: "Wolof", native: "Wolof", flag: "🇸🇳" },
+                    { code: "am", name: "Amharic", native: "አማርኛ", flag: "🇪🇹" },
+                    { code: "ab", name: "Abkhazian", native: "Аҧсуа бызшәа", flag: "🇬🇪" },
+                    { code: "aa", name: "Afar", native: "Qafaraf", flag: "🇪🇹" },
+                    { code: "an", name: "Aragonese", native: "Aragonés", flag: "🇪🇸" },
+                    { code: "as", name: "Assamese", native: "অসমীয়া", flag: "🇮🇳" },
+                    { code: "av", name: "Avaric", native: "Авар мацӀ", flag: "🇷🇺" },
+                    { code: "ae", name: "Avestan", native: "Avesta", flag: "🇮🇷" },
+                    { code: "ba", name: "Bashkir", native: "Башҡорт теле", flag: "🇷🇺" },
+                    { code: "bi", name: "Bislama", native: "Bislama", flag: "🇻🇺" },
+                    { code: "ch", name: "Chamorro", native: "Chamoru", flag: "🇬🇺" },
+                    { code: "ce", name: "Chechen", native: "Нохчийн мотт", flag: "🇷🇺" },
+                    { code: "cv", name: "Chuvash", native: "Чӑваш чӗлхи", flag: "🇷🇺" },
+                    { code: "ee", name: "Ewe", native: "Eʋegbe", flag: "🇬🇭" },
+                    { code: "fo", name: "Faroese", native: "Føroyskt", flag: "🇫🇴" },
+                    { code: "fj", name: "Fijian", native: "Na Vosa Vakaviti", flag: "🇫🇯" },
+                    { code: "ff", name: "Fulah", native: "Fulfulde", flag: "🇸🇳" },
+                    { code: "gv", name: "Manx", native: "Gaelg", flag: "🇮🇲" },
+                    { code: "kl", name: "Greenlandic", native: "Kalaallisut", flag: "🇬🇱" },
+                    { code: "gn", name: "Guarani", native: "Avañe'ẽ", flag: "🇵🇾" },
+                    { code: "hz", name: "Herero", native: "Otjiherero", flag: "🇳🇦" },
+                    { code: "ho", name: "Hiri Motu", native: "Hiri Motu", flag: "🇵🇬" },
+                    { code: "iu", name: "Inuktitut", native: "ᐃᓄᒃᑎᑐᑦ", flag: "🇨🇦" },
+                    { code: "ik", name: "Inupiaq", native: "Iñupiatun", flag: "🇺🇸" },
+                    { code: "ia", name: "Interlingua", native: "Interlingua", flag: "🌍" },
+                    { code: "ie", name: "Interlingue", native: "Interlingue", flag: "🌍" },
+                    { code: "kg", name: "Kongo", native: "Kikongo", flag: "🇨🇩" },
+                    { code: "kj", name: "Kwanyama", native: "Kuanyama", flag: "🇦🇴" },
+                    { code: "kv", name: "Komi", native: "Коми кыв", flag: "🇷🇺" },
+                    { code: "kr", name: "Kanuri", native: "Kanuri", flag: "🇳🇬" },
+                    { code: "li", name: "Limburgish", native: "Limburgs", flag: "🇳🇱" },
+                    { code: "ln", name: "Lingala", native: "Lingála", flag: "🇨🇩" },
+                    { code: "lu", name: "Luba-Katanga", native: "Tshiluba", flag: "🇨🇩" },
+                    { code: "mh", name: "Marshallese", native: "Kajin M̧ajeļ", flag: "🇲🇭" },
+                    { code: "na", name: "Nauru", native: "Ekakairũ Naoero", flag: "🇳🇷" },
+                    { code: "nd", name: "North Ndebele", native: "isiNdebele", flag: "🇿🇼" },
+                    { code: "ng", name: "Ndonga", native: "Oshindonga", flag: "🇳🇦" },
+                    { code: "no", name: "Norwegian Bokmål", native: "Bokmål", flag: "🇳🇴" },
+                    { code: "nn", name: "Norwegian Nynorsk", native: "Nynorsk", flag: "🇳🇴" },
+                    { code: "ii", name: "Sichuan Yi", native: "ꆇꉙ", flag: "🇨🇳" },
+                    { code: "oc", name: "Occitan", native: "Occitan", flag: "🇫🇷" },
+                    { code: "oj", name: "Ojibwe", native: "Anishinaabemowin", flag: "🇨🇦" },
+                    { code: "om", name: "Oromo", native: "Oromoo", flag: "🇪🇹" },
+                    { code: "os", name: "Ossetian", native: "Ирон æвзаг", flag: "🇷🇺" },
+                    { code: "pi", name: "Pali", native: "Pāḷi", flag: "🇮🇳" },
+                    { code: "sc", name: "Sardinian", native: "Sardu", flag: "🇮🇹" },
+                    { code: "se", name: "Sami", native: "Davvisámegiella", flag: "🇳🇴" },
+                    { code: "sm", name: "Samoan", native: "Gagana Samoa", flag: "🇲🇸" },
+                    { code: "sg", name: "Sango", native: "Yângâ tî Sängö", flag: "🇨🇫" },
+                    { code: "sr", name: "Serbian", native: "Српски језик", flag: "🇷🇸" },
+                    { code: "sn", name: "Shona", native: "chiShona", flag: "🇿🇼" },
+                    { code: "st", name: "Southern Sotho", native: "Sesotho", flag: "🇱🇸" },
+                    { code: "tn", name: "Tswana", native: "Setswana", flag: "🇿🇦" },
+                    { code: "to", name: "Tongan", native: "Faka Tonga", flag: "🇹🇴" },
+                    { code: "ts", name: "Tsonga", native: "Xitsonga", flag: "🇿🇦" },
+                    { code: "tw", name: "Twi", native: "Twi", flag: "🇬🇭" },
+                    { code: "ty", name: "Tahitian", native: "Reo Tahiti", flag: "🇵🇫" },
+                    { code: "ve", name: "Venda", native: "Tshivenda", flag: "🇿🇦" },
+                    { code: "wa", name: "Walloon", native: "Walon", flag: "🇧🇪" },
+                    { code: "za", name: "Zhuang", native: "Vahcuengh", flag: "🇨🇳" }
+                ];
+
+                // 2. Filter duplicates to ensure uniqueness
+                const seenCodes = new Set();
+                const uniqueLanguages = allLanguagesList.filter(lang => {
+                    if (seenCodes.has(lang.code)) return false;
+                    seenCodes.add(lang.code);
+                    return true;
+                });
+
+                // Source has "Detect Language", Target does not
+                const sourceLanguages = [
+                    { code: "auto", name: "Detect Language", native: "Auto Detect", flag: "🔍" },
+                    ...uniqueLanguages
+                ];
+                const targetLanguages = uniqueLanguages;
+
+                // 3. Selection State
+                let currentSourceCode = "auto";
+                let currentTargetCode = "es";
+
+                // Initialize Elements
+                const sourceSelect = document.getElementById('sourceLanguage');
+                const targetSelect = document.getElementById('targetLanguage');
+                const sourceGrid = document.getElementById('sourceOptionsGrid');
+                const targetGrid = document.getElementById('targetOptionsGrid');
+                const swapBtn = document.getElementById('swapLanguagesBtn');
+                const sourceText = document.getElementById('sourceText');
+                const outputText = document.getElementById('outputText');
+                const clearSourceBtn = document.getElementById('clearSourceBtn');
+                const charCounter = document.getElementById('charCounter');
+
+                // Intercept outputText.innerText to map to value (main.js compatibility)
+                if (outputText) {
+                    Object.defineProperty(outputText, 'innerText', {
+                        get: function() { return this.value; },
+                        set: function(val) { 
+                            this.value = val;
+                            this.dispatchEvent(new Event('input'));
+                        },
+                        configurable: true
+                    });
+                }
+
+                // Populate hidden select elements
+                function populateHiddenSelects() {
+                    if (sourceSelect && targetSelect) {
+                        sourceSelect.innerHTML = '';
+                        targetSelect.innerHTML = '';
+
+                        sourceLanguages.forEach(lang => {
+                            const opt = document.createElement('option');
+                            opt.value = lang.code;
+                            opt.innerText = `${lang.name} (${lang.native})`;
+                            sourceSelect.appendChild(opt);
+                        });
+
+                        targetLanguages.forEach(lang => {
+                            const opt = document.createElement('option');
+                            opt.value = lang.code;
+                            opt.innerText = `${lang.name} (${lang.native})`;
+                            targetSelect.appendChild(opt);
+                        });
+
+                        // Set default values
+                        sourceSelect.value = "auto";
+                        targetSelect.value = "es";
+                    }
+                }
+
+                // Update Trigger UI
+                function updateTriggerBtn(isSource, lang) {
+                    const btnId = isSource ? 'sourceLangBtn' : 'targetLangBtn';
+                    const btn = document.getElementById(btnId);
+                    if (btn) {
+                        btn.querySelector('.selected-flag').innerText = lang.flag;
+                        btn.querySelector('.selected-lang-name').innerText = lang.name;
+                        btn.querySelector('.selected-lang-native').innerText = lang.native;
+                    }
+                }
+
+                // Render List of Languages
+                function renderList(gridEl, langList, isSource, selectedCode) {
+                    gridEl.innerHTML = '';
+                    langList.forEach(lang => {
+                        const isActive = lang.code === selectedCode;
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = `lang-option ${isActive ? 'active' : ''}`;
+                        btn.dataset.code = lang.code;
+                        btn.innerHTML = `
+                            <span class="lang-flag">${lang.flag}</span>
+                            <div class="d-flex flex-column text-start">
+                                <span class="lang-name">${lang.name}</span>
+                                <span class="lang-native">${lang.native}</span>
+                            </div>
+                        `;
+
+                        btn.addEventListener('click', () => {
+                            if (isSource) {
+                                currentSourceCode = lang.code;
+                                if (sourceSelect) {
+                                    sourceSelect.value = lang.code;
+                                    sourceSelect.dispatchEvent(new Event('change'));
+                                }
+                                updateTriggerBtn(true, lang);
+                                renderList(sourceGrid, sourceLanguages, true, currentSourceCode);
+                            } else {
+                                currentTargetCode = lang.code;
+                                if (targetSelect) {
+                                    targetSelect.value = lang.code;
+                                    targetSelect.dispatchEvent(new Event('change'));
+                                }
+                                updateTriggerBtn(false, lang);
+                                renderList(targetGrid, targetLanguages, false, currentTargetCode);
+                            }
+
+                            // Close Dropdown
+                            const dropdownToggle = gridEl.closest('.dropdown').querySelector('.btn[data-bs-toggle="dropdown"]');
+                            if (dropdownToggle) {
+                                const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(dropdownToggle);
+                                if (bsDropdown) bsDropdown.hide();
+                            }
+                        });
+
+                        gridEl.appendChild(btn);
+                    });
+                }
+
+                // Setup Live Search
+                function setupSearch(containerId, langList, isSource) {
+                    const container = document.getElementById(containerId);
+                    if (!container) return;
+                    const searchInput = container.querySelector('.dropdown-search-input');
+                    const grid = container.querySelector('.dropdown-options-grid');
+
+                    searchInput.addEventListener('input', () => {
+                        const query = searchInput.value.trim().toLowerCase();
+                        const filtered = langList.filter(lang => 
+                            lang.name.toLowerCase().includes(query) || 
+                            lang.native.toLowerCase().includes(query) || 
+                            lang.code.toLowerCase().includes(query)
+                        );
+                        const currentVal = isSource ? currentSourceCode : currentTargetCode;
+                        renderList(grid, filtered, isSource, currentVal);
+                    });
+
+                    // Clear search on dropdown hide
+                    container.addEventListener('hidden.bs.dropdown', () => {
+                        searchInput.value = '';
+                        const currentVal = isSource ? currentSourceCode : currentTargetCode;
+                        renderList(grid, langList, isSource, currentVal);
+                    });
+                }
+
+                // Initialize everything
+                populateHiddenSelects();
+                renderList(sourceGrid, sourceLanguages, true, currentSourceCode);
+                renderList(targetGrid, targetLanguages, false, currentTargetCode);
+
+                setupSearch('sourceDropdownContainer', sourceLanguages, true);
+                setupSearch('targetDropdownContainer', targetLanguages, false);
+
+                // Auto-focus search input when dropdown opens
+                document.querySelectorAll('.dropdown').forEach(dropdownEl => {
+                    dropdownEl.addEventListener('shown.bs.dropdown', () => {
+                        const searchInput = dropdownEl.querySelector('.dropdown-search-input');
+                        if (searchInput) searchInput.focus();
+                    });
+                });
+
+                // Swap Languages Functionality
+                if (swapBtn) {
+                    swapBtn.addEventListener('click', () => {
+                        // Toggle rotate animation class
+                        const icon = swapBtn.querySelector('i');
+                        icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+                        
+                        let srcCode = currentSourceCode;
+                        let tgtCode = currentTargetCode;
+
+                        // Swap values (excluding auto for target)
+                        if (srcCode === 'auto') {
+                            srcCode = 'en'; // default if swapping auto
+                        }
+
+                        currentSourceCode = tgtCode;
+                        currentTargetCode = srcCode;
+
+                        // Update selects
+                        if (sourceSelect) {
+                            sourceSelect.value = currentSourceCode;
+                            sourceSelect.dispatchEvent(new Event('change'));
+                        }
+                        if (targetSelect) {
+                            targetSelect.value = currentTargetCode;
+                            targetSelect.dispatchEvent(new Event('change'));
+                        }
+
+                        // Update buttons
+                        const newSrcLang = sourceLanguages.find(l => l.code === currentSourceCode) || sourceLanguages[0];
+                        const newTgtLang = targetLanguages.find(l => l.code === currentTargetCode) || targetLanguages[0];
+
+                        updateTriggerBtn(true, newSrcLang);
+                        updateTriggerBtn(false, newTgtLang);
+
+                        // Re-render grids
+                        renderList(sourceGrid, sourceLanguages, true, currentSourceCode);
+                        renderList(targetGrid, targetLanguages, false, currentTargetCode);
+                    });
+                }
+
+                // Textarea utility handlers (character count, clear button)
+                if (sourceText) {
+                    sourceText.addEventListener('input', () => {
+                        const len = sourceText.value.length;
+                        if (charCounter) charCounter.innerText = `${len} / 5000`;
+                        
+                        if (len > 0) {
+                            if (clearSourceBtn) clearSourceBtn.classList.remove('d-none');
+                        } else {
+                            if (clearSourceBtn) clearSourceBtn.classList.add('d-none');
+                        }
+                    });
+                }
+
+                if (clearSourceBtn) {
+                    clearSourceBtn.addEventListener('click', () => {
+                        if (sourceText) {
+                            sourceText.value = '';
+                            sourceText.focus();
+                        }
+                        if (charCounter) charCounter.innerText = '0 / 5000';
+                        clearSourceBtn.classList.add('d-none');
+
+                        // Clear output too
+                        if (outputText) {
+                            outputText.value = '';
+                        }
+                    });
+                }
+            })();
+        </script>
+    </section>
+
+    <!-- Core Features Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase tracking-wider">Features</span>
+                <h2 class="display-5 fw-bold mt-2">Unmatched Translation Precision</h2>
+                <p class="text-slate-700 mx-auto" style="max-width: 600px;">Experience the power of advanced language learning models fine-tuned for semantic translation.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Contextual Translation</h4>
+                        <p class="text-slate-700 mb-0">Unlike generic machine translators, Teltam parses idiomatic expressions and cultural nuances to ensure meaning is never lost.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-font"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Transliteration</h4>
+                        <p class="text-slate-700 mb-0">Convert text from one script to another logically so you can read and pronounce non-native alphabets instantly.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Pronunciation Synthesis</h4>
+                        <p class="text-slate-700 mb-0">Listen to high-fidelity, natural voice synthesis of translated phrases, with integrated IPA phonetics support.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-spell-check"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Grammar & Tone Assist</h4>
+                        <p class="text-slate-700 mb-0">Refine translations with built-in grammar checks and choose professional, casual, or poetic tones.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Document Translation</h4>
+                        <p class="text-slate-700 mb-0">Upload documents like PDFs, DOCX, and text files. Preserve headers, layouts, and tables in the target translation.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Language Detection</h4>
+                        <p class="text-slate-700 mb-0">Teltam auto-identifies source dialects, including mixed-language inputs (e.g. Spanglish or Hinglish).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Languages Section -->
+    <section class="py-5 bg-soft-gradient">
+        <div class="container py-3">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase">Global Reach</span>
+                <h2 class="display-6 fw-bold mt-2">120+ Languages Supported</h2>
+                <p class="text-slate-700">Translate and transliterate globally. Below are a few of our popular systems.</p>
+            </div>
+            
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <div class="lang-badge"><span class="fs-5">🇪🇸</span> Spanish (Español)</div>
+                <div class="lang-badge"><span class="fs-5">🇫🇷</span> French (Français)</div>
+                <div class="lang-badge"><span class="fs-5">🇩🇪</span> German (Deutsch)</div>
+                <div class="lang-badge"><span class="fs-5">🇮🇳</span> Tamil (தமிழ்)</div>
+                <div class="lang-badge"><span class="fs-5">🇯🇵</span> Japanese (日本語)</div>
+                <div class="lang-badge"><span class="fs-5">🇮🇹</span> Italian (Italiano)</div>
+                <div class="lang-badge"><span class="fs-5">🇨🇳</span> Chinese (中文)</div>
+                <div class="lang-badge"><span class="fs-5">🇸🇦</span> Arabic (العربية)</div>
+                <div class="lang-badge"><span class="fs-5">🇵🇹</span> Portuguese (Português)</div>
+                <div class="lang-badge"><span class="fs-5">🇰🇷</span> Korean (한국어)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase">Workflow</span>
+                <h2 class="display-5 fw-bold mt-2">How Teltam Works</h2>
+                <p class="text-slate-700">A simple, 3-step process powered by state-of-the-art LLMs.</p>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="step-number mb-3">1</div>
+                        <h4 class="fw-bold">Input Content</h4>
+                        <p class="text-slate-700 px-lg-3">Type your text, upload documents, or paste speech snippets into the input console.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="step-number mb-3">2</div>
+                        <h4 class="fw-bold">LLM Parsing</h4>
+                        <p class="text-slate-700 px-lg-3">Our models scan vocabulary context, detect grammar, and build a transliteration guide.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="step-number mb-3">3</div>
+                        <h4 class="fw-bold">Review & Speak</h4>
+                        <p class="text-slate-700 px-lg-3">Verify tone settings, listen to natural voice guide, and copy your high-fidelity translations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Tools Section Preview -->
+    <section class="py-5 bg-soft-gradient">
+        <div class="container py-4">
+            <div class="row align-items-center mb-5">
+                <div class="col-md-8 text-center text-md-start">
+                    <span class="text-indigo-600 fw-bold text-uppercase">AI Suites</span>
+                    <h2 class="display-5 fw-bold mt-2">Specialized Linguistic Tools</h2>
+                </div>
+                <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                    <a href="/ai-tools/" class="btn btn-outline-custom">View All AI Tools</a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4">
+                        <div class="feature-icon-wrapper"><i class="fas fa-sync-alt"></i></div>
+                        <h4 class="fw-bold">Contextual Translators</h4>
+                        <p class="text-slate-700">Translates full papers, paragraphs, or emails, keeping specialized vocabularies intact.</p>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none">Launch Tool <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4">
+                        <div class="feature-icon-wrapper"><i class="fas fa-keyboard"></i></div>
+                        <h4 class="fw-bold">Transliteration Engine</h4>
+                        <p class="text-slate-700">Type in your script and see phonetics mapped instantly to simplify pronunciation studies.</p>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none">Launch Tool <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mx-auto">
+                    <div class="glass-card p-4">
+                        <div class="feature-icon-wrapper"><i class="fas fa-file-word"></i></div>
+                        <h4 class="fw-bold">Document Translator</h4>
+                        <p class="text-slate-700">Convert PDFs, docx, slide decks, and subtitles into localized files while retaining layouts.</p>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none">Launch Tool <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Preview Section -->
+    <section class="py-5 bg-white">
+        <style>
+            .pricing-card-modern {
+                border-radius: 24px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid #e2e8f0;
+                background: #ffffff;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+                position: relative;
+                overflow: hidden;
+            }
+            .pricing-card-modern:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(79, 70, 229, 0.12);
+                border-color: rgba(79, 70, 229, 0.2);
+            }
+            .pricing-card-modern.popular-card {
+                border: 1px solid transparent;
+                background-image: linear-gradient(#ffffff, #ffffff), linear-gradient(135deg, #7c3aed, #ec4899, #f97316);
+                background-origin: border-box;
+                background-clip: padding-box, border-box;
+                box-shadow: 0 20px 40px rgba(124, 58, 237, 0.08);
+            }
+            .pricing-card-modern.popular-card:hover {
+                box-shadow: 0 25px 50px rgba(124, 58, 237, 0.20);
+                transform: translateY(-10px);
+            }
+            .btn-pro-gradient {
+                background: linear-gradient(135deg, #7c3aed, #ec4899);
+                color: #ffffff !important;
+                border: none;
+                font-weight: 700;
+                font-size: 1rem;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+                border-radius: 50px;
+                padding: 12px 24px;
+                display: inline-block;
+                text-decoration: none;
+            }
+            .btn-pro-gradient:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 28px rgba(236, 72, 153, 0.4);
+                background: linear-gradient(135deg, #6d28d9, #d946ef);
+                color: #ffffff !important;
+            }
+            .btn-pro-gradient:active {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 15px rgba(236, 72, 153, 0.3);
+            }
+            .pricing-card-features li {
+                margin-bottom: 12px;
+                font-size: 0.95rem;
+                color: #475569;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .pricing-card-features i.fa-check {
+                color: #10b981;
+                background: rgba(16, 185, 129, 0.1);
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+            }
+            .pricing-card-features i.fa-times {
+                color: #94a3b8;
+                background: #f1f5f9;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+            }
+        </style>
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="hero-badge"><i class="fas fa-tags text-indigo-600"></i> Pricing Plans</span>
+                <h2 class="display-5 fw-bold mt-2">Flexible Plans for Everyone</h2>
+                <p class="text-slate-700">Choose the perfect plan to unlock high-fidelity AI translation and transliteration.</p>
+            </div>
+            
+            <div class="row g-4 justify-content-center">
+                <!-- Basic Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card-modern p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="fw-bold text-slate-800 mb-1">Basic</h4>
+                            <p class="text-muted small mb-3">For casual translation and learning</p>
+                            <div class="my-4">
+                                <span class="display-5 fw-bold text-slate-900">₹97</span>
+                                <span class="text-muted">/month</span>
+                            </div>
+                            <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-2 border-top pt-4">
+                                <li><i class="fas fa-check"></i> 50,000 words per month</li>
+                                <li><i class="fas fa-check"></i> 30 supported languages</li>
+                                <li><i class="fas fa-check"></i> Standard voice output</li>
+                                <li><i class="fas fa-check"></i> Basic transliteration guides</li>
+                                <li class="text-muted"><i class="fas fa-times"></i> Document upload processing</li>
+                                <li class="text-muted"><i class="fas fa-times"></i> Developer API Access</li>
+                            </ul>
+                        </div>
+                        <a href="{% url 'pricing_select' 'basic' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Choose Basic</a>
+                    </div>
+                </div>
+                
+                <!-- Pro Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card-modern popular-card p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="badge bg-primary text-white mb-2 py-2 px-3 rounded-pill" style="background: var(--brand-primary-gradient) !important;">Most Popular</div>
+                            <h4 class="fw-bold text-slate-800 mb-1">Pro</h4>
+                            <p class="text-muted small mb-3">For creators, professionals, and writers</p>
+                            <div class="my-4">
+                                <span class="display-5 fw-bold text-slate-900">₹699</span>
+                                <span class="text-muted">/month</span>
+                            </div>
+                            <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-2 border-top pt-4">
+                                <li><i class="fas fa-check"></i> 500,000 words per month</li>
+                                <li><i class="fas fa-check"></i> 120+ supported languages</li>
+                                <li><i class="fas fa-check"></i> High-fidelity voice synthesis</li>
+                                <li><i class="fas fa-check"></i> Advanced phonetic transliteration</li>
+                                <li><i class="fas fa-check"></i> Translate PDFs, DOCX (100 files/mo)</li>
+                                <li class="text-muted"><i class="fas fa-times"></i> Developer API Access</li>
+                            </ul>
+                        </div>
+                        <a href="{% url 'pricing_select' 'pro' %}" class="btn btn-pro-gradient w-100 mt-4 py-2.5">Start Pro Now</a>
+                    </div>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card-modern p-4 h-100 text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="fw-bold text-slate-800 mb-1">Business</h4>
+                            <p class="text-muted small mb-3">For business teams and API usage</p>
+                            <div class="my-4">
+                                <span class="display-5 fw-bold text-slate-900">₹1999</span>
+                                <span class="text-muted">/month</span>
+                            </div>
+                            <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-2 border-top pt-4">
+                                <li><i class="fas fa-check"></i> Unlimited words translation</li>
+                                <li><i class="fas fa-check"></i> All supported languages</li>
+                                <li><i class="fas fa-check"></i> Dedicated GPU priority speed</li>
+                                <li><i class="fas fa-check"></i> Unlimited document translation</li>
+                                <li><i class="fas fa-check"></i> REST API keys (20 req/sec)</li>
+                                <li><i class="fas fa-check"></i> 24/7 Priority support channel</li>
+                            </ul>
+                        </div>
+                        <a href="{% url 'pricing_select' 'business' %}" class="btn btn-outline-custom w-100 mt-4 py-2.5 rounded-pill">Choose Business</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Full Pricing Link -->
+            <div class="text-center mt-5">
+                <a href="/pricing/" class="btn btn-outline-custom px-5 py-3 rounded-pill fw-bold" style="border-width: 2px;">
+                    <i class="fas fa-list-check me-2 text-indigo-600"></i> View Full Pricing & Comparison Matrix
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-5 bg-soft-gradient">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase">Testimonials</span>
+                <h2 class="display-5 fw-bold mt-2">What Our Users Say</h2>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 testimonial-card bg-white">
+                        <div class="stars-rating mb-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="text-slate-700 italic">"Teltam changed how I learn languages. The transliteration matches local dialects perfectly and the voice synth sounds completely human."</p>
+                        <div class="d-flex align-items-center gap-3 mt-4">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">AS</div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Alejandro Silva</h6>
+                                <small class="text-muted">Language Student</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 testimonial-card bg-white">
+                        <div class="stars-rating mb-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="text-slate-700 italic">"Our engineering firm uses the Teltam API for localizing design documents. Context preservation has saved us hundreds of manual proofing hours."</p>
+                        <div class="d-flex align-items-center gap-3 mt-4">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">SL</div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Sarah Jenkins</h6>
+                                <small class="text-muted">Tech Product Manager</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mx-auto">
+                    <div class="glass-card p-4 testimonial-card bg-white">
+                        <div class="stars-rating mb-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="text-slate-700 italic">"The document translation feature maintains formatting exactly! I translate contracts between French and English in just a few clicks."</p>
+                        <div class="d-flex align-items-center gap-3 mt-4">
+                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">MD</div>
+                            <div>
+                                <h6 class="fw-bold mb-0">Marc Dubois</h6>
+                                <small class="text-muted">Legal Consultant</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog & Video Preview Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="row align-items-center mb-5">
+                <div class="col-md-8 text-center text-md-start">
+                    <span class="text-indigo-600 fw-bold text-uppercase">Learning Center</span>
+                    <h2 class="display-5 fw-bold mt-2">Latest Articles & Video Guides</h2>
+                </div>
+                <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                    <a href="/blog/" class="btn btn-outline-custom me-2">Read Blog</a>
+                    <a href="/videos/" class="btn btn-outline-custom">Watch Tutorials</a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Blog Preview -->
+                <div class="col-md-6">
+                    <div class="glass-card overflow-hidden h-100">
+                        <div class="p-4">
+                            <div class="d-flex gap-2 mb-3">
+                                <span class="badge bg-indigo-100 text-indigo-700" style="background: rgba(79, 70, 229, 0.08);">AI & Tech</span>
+                                <span class="text-muted small">June 8, 2026</span>
+                            </div>
+                            <h4 class="fw-bold"><a href="/blog/detail/" class="text-decoration-none text-dark">How LLMs are Revolutionizing Dialect & Idiom Translations</a></h4>
+                            <p class="text-slate-700 mt-2">Discover how modern neural network pipelines look past basic word replacements to decode true cultural context...</p>
+                            <a href="/blog/detail/" class="text-indigo-600 fw-semibold text-decoration-none d-inline-flex align-items-center mt-3">Read Full Article <i class="fas fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Video Preview -->
+                <div class="col-md-6">
+                    <div class="glass-card overflow-hidden h-100">
+                        <div class="p-4">
+                            <div class="d-flex gap-2 mb-3">
+                                <span class="badge bg-danger-subtle text-danger">Video Guide</span>
+                                <span class="text-muted small">5 Mins Watch</span>
+                            </div>
+                            <h4 class="fw-bold"><a href="/videos/detail/" class="text-decoration-none text-dark">Getting Started with Teltam Document Translators</a></h4>
+                            <p class="text-slate-700 mt-2">Watch our quick walkthrough showing how to translate complex PDFs while preserving alignment, tables, and images.</p>
+                            <a href="/videos/detail/" class="text-indigo-600 fw-semibold text-decoration-none d-inline-flex align-items-center mt-3">Watch Tutorial <i class="fas fa-play me-2 order-first text-danger"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-5 bg-soft-gradient">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase">FAQs</span>
+                <h2 class="display-5 fw-bold mt-2">Frequently Asked Questions</h2>
+                <p class="text-slate-700">Find answers to common questions about Teltam.</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- FAQ 1 -->
+                    <div class="accordion-item-custom">
+                        <button class="accordion-button-custom" aria-controls="faqCollapse1">
+                            What makes Teltam different from other translation tools?
+                        </button>
+                        <div id="faqCollapse1" class="accordion-collapse-custom">
+                            <div class="accordion-body-custom">
+                                Teltam utilizes custom-trained Large Language Models (LLMs) rather than traditional phrase-based machine translations. This allows our system to capture slang, formatting rules, cultural contexts, and technical vocabularies with significantly higher accuracy.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="accordion-item-custom">
+                        <button class="accordion-button-custom" aria-controls="faqCollapse2">
+                            What is transliteration, and how is it used?
+                        </button>
+                        <div id="faqCollapse2" class="accordion-collapse-custom">
+                            <div class="accordion-body-custom">
+                                Transliteration maps text from one character set to another (e.g., converting Tamil characters into Romanized phonetics). This helps non-native speakers read and speak phrases correctly even if they cannot read the local script.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="accordion-item-custom">
+                        <button class="accordion-button-custom" aria-controls="faqCollapse3">
+                            Can I translate scanned PDF documents?
+                        </button>
+                        <div id="faqCollapse3" class="accordion-collapse-custom">
+                            <div class="accordion-body-custom">
+                                Yes. Teltam Pro supports uploading standard and scanned PDFs. Our backend performs intelligent OCR to read the text and then reconstructs the original document structure in the target language.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact CTA Banner -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="p-5 rounded-4 text-center text-white bg-dark-gradient" style="box-shadow: var(--brand-accent-glow);">
+                <h2 class="display-5 fw-bold mb-3">Ready to Translate Globally?</h2>
+                <p class="lead mx-auto mb-4" style="max-width: 600px; opacity: 0.85;">Join thousands of students, developers, and businesses using Teltam to communicate with the world.</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="/register/" class="btn btn-primary-gradient px-4 py-3">Get Started for Free</a>
+                    <a href="/contact/" class="btn btn-outline-light rounded-pill px-4 py-3">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 Integration -->
+    {% include 'sweetalert_messages.html' %}
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,211 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Teltam AI Translation & Transliteration</title>
+    <meta name="description" content="Learn more about Teltam AI, our mission to simplify cross-lingual communication using LLMs, and our team of AI researchers and developers.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero Section -->
+    <section class="py-5 bg-white border-bottom animate-fade-in-up">
+        <div class="container text-center py-4">
+            <span class="hero-badge"><i class="fas fa-info-circle"></i> Our Story</span>
+            <h1 class="display-4 fw-bold">About <span class="text-gradient-primary">Teltam AI</span></h1>
+            <p class="lead text-slate-700 mx-auto" style="max-width: 600px; font-size: 1.1rem;">
+                Bridging language barriers with advanced neural network technologies that preserve structural context, tone, and cultural nuances.
+            </p>
+        </div>
+    </section>
+
+    <!-- Vision and Mission Section -->
+    <section class="py-5">
+        <div class="container py-3">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="display-6 fw-bold mb-4">Redefining Translation for a Connected World</h2>
+                    <p class="text-slate-700" style="line-height: 1.7;">
+                        Teltam was founded by a team of linguistic experts and computer scientists who noticed that traditional, phrase-based translation systems failed to capture context. Idioms were mistranslated, spelling systems were ignored, and technical definitions were lost.
+                    </p>
+                    <p class="text-slate-700" style="line-height: 1.7;">
+                        By fine-tuning custom Large Language Models, Teltam recognizes sentences not just as arrays of words, but as carriers of culture, emotion, and technical instruction.
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <div class="glass-card p-4 h-100">
+                                <span class="d-flex align-items-center justify-content-center bg-indigo-100 text-indigo-700 rounded-3 mb-3" style="width: 48px; height: 48px; background: rgba(79,70,229,0.08);">
+                                    <i class="fas fa-eye" style="font-size: 1.3rem;"></i>
+                                </span>
+                                <h4 class="fw-bold">Our Vision</h4>
+                                <p class="small text-slate-700 mb-0">To build a world where anyone can read, speak, and write any language naturally, without friction.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="glass-card p-4 h-100">
+                                <span class="d-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-3 mb-3" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-bullseye" style="font-size: 1.3rem;"></i>
+                                </span>
+                                <h4 class="fw-bold">Our Mission</h4>
+                                <p class="small text-slate-700 mb-0">To deliver highly precise, real-time context-aware translation tools accessible to individuals and enterprises alike.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Company Values Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase">Core Values</span>
+                <h2 class="display-6 fw-bold mt-2">What We Stand For</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="glass-card p-4 text-center">
+                        <span class="d-flex align-items-center justify-content-center mx-auto mb-3 text-indigo-600 bg-indigo-100 rounded-circle" style="width: 50px; height: 50px; background: rgba(79,70,229,0.08);">
+                            <i class="fas fa-shield-alt"></i>
+                        </span>
+                        <h4 class="fw-bold">Accuracy & Honor</h4>
+                        <p class="text-slate-700 mb-0">We commit to continuous LLM training, preserving semantic integrity across all text and document structures.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-4 text-center">
+                        <span class="d-flex align-items-center justify-content-center mx-auto mb-3 text-primary bg-primary-subtle rounded-circle" style="width: 50px; height: 50px;">
+                            <i class="fas fa-lightbulb"></i>
+                        </span>
+                        <h4 class="fw-bold">Continuous Innovation</h4>
+                        <p class="text-slate-700 mb-0">We integrate new research in generative artificial intelligence to keep translations fast and natural.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-4 text-center">
+                        <span class="d-flex align-items-center justify-content-center mx-auto mb-3 text-success bg-success-subtle rounded-circle" style="width: 50px; height: 50px;">
+                            <i class="fas fa-users"></i>
+                        </span>
+                        <h4 class="fw-bold">Inclusivity</h4>
+                        <p class="text-slate-700 mb-0">We focus on supporting low-resource regional dialects (like transliteration rules for Tamil and more).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Architecture Info -->
+    <section class="py-5 bg-dark-gradient text-white">
+        <div class="container py-4">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-6">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="background: var(--brand-primary-gradient) !important;">System Architecture</span>
+                    <h2 class="display-6 fw-bold text-white mb-4">How Teltam's Neural Pipelines Work</h2>
+                    <ul class="list-unstyled d-flex flex-column gap-3">
+                        <li class="d-flex align-items-start gap-3">
+                            <span class="badge bg-light text-indigo-700 p-2 rounded-circle"><i class="fas fa-microchip"></i></span>
+                            <div>
+                                <h5 class="fw-bold text-white mb-1">Tokenizer Optimization</h5>
+                                <p class="text-slate-400 mb-0" style="color: #cbd5e1;">Sentence structures are split into specific semantic tokens rather than character boundaries, speeding up multi-byte translation (like Tamil, Chinese).</p>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start gap-3">
+                            <span class="badge bg-light text-indigo-700 p-2 rounded-circle"><i class="fas fa-network-wired"></i></span>
+                            <div>
+                                <h5 class="fw-bold text-white mb-1">Context Window Attention</h5>
+                                <p class="text-slate-400 mb-0" style="color: #cbd5e1;">Our models scan paragraphs concurrently, ensuring pronoun agreements and local expressions translate naturally across large files.</p>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start gap-3">
+                            <span class="badge bg-light text-indigo-700 p-2 rounded-circle"><i class="fas fa-volume-up"></i></span>
+                            <div>
+                                <h5 class="fw-bold text-white mb-1">Phonetic Synthesizer</h5>
+                                <p class="text-slate-400 mb-0" style="color: #cbd5e1;">Converts localized phonemes into IPA guidelines, then compiles audio outputs through advanced speech synthesis algorithms.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="p-4 rounded-4 glass-card text-start" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        <h4 class="fw-bold text-white mb-4"><i class="fas fa-terminal me-2 text-indigo-600" style="color: #a78bfa;"></i> System Diagnostics</h4>
+                        <div class="font-monospace text-slate-300 small d-flex flex-column gap-2" style="color: #cbd5e1;">
+                            <div><span class="text-success">&gt;</span> LLM version: teltam-translator-v2.1-lrg</div>
+                            <div><span class="text-success">&gt;</span> Average processing latency: 180ms</div>
+                            <div><span class="text-success">&gt;</span> Supported vocabulary size: 840,000,000 tokens</div>
+                            <div><span class="text-success">&gt;</span> Word detection accuracy: 99.42% (Sufficient for legal/medical documents)</div>
+                            <div><span class="text-success">&gt;</span> Running instances: 42 GPU nodes active</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="text-indigo-600 fw-bold text-uppercase">The Team</span>
+                <h2 class="display-6 fw-bold mt-2">The Minds Behind Teltam</h2>
+                <p class="text-slate-700">A global group of linguists, computer scientists, and software designers.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card p-4 text-center">
+                        <div class="rounded-circle bg-secondary text-white mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 80px; height: 80px; font-size: 1.5rem;">DR</div>
+                        <h5 class="fw-bold mb-1">Dr. Dennis Ritchie</h5>
+                        <small class="text-indigo-600 d-block mb-3">Co-Founder & Chief AI Officer</small>
+                        <p class="small text-slate-700 mb-0">10+ years researching Natural Language Processing. Former senior researcher at tech conglomerates.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card p-4 text-center">
+                        <div class="rounded-circle bg-primary text-white mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 80px; height: 80px; font-size: 1.5rem;">AM</div>
+                        <h5 class="fw-bold mb-1">Alina Morozevich</h5>
+                        <small class="text-indigo-600 d-block mb-3">Lead Frontend Architect</small>
+                        <p class="small text-slate-700 mb-0">UI/UX designer focused on building accessible, high-performance web applications.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card p-4 text-center">
+                        <div class="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 80px; height: 80px; font-size: 1.5rem;">VK</div>
+                        <h5 class="fw-bold mb-1">Vikram Karthik</h5>
+                        <small class="text-indigo-600 d-block mb-3">Head of Regional Dialects</small>
+                        <p class="small text-slate-700 mb-0">Linguistic expert focusing on South Asian phonetics, transliteration rules, and tone systems.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card p-4 text-center">
+                        <div class="rounded-circle bg-warning text-white mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 80px; height: 80px; font-size: 1.5rem;">SS</div>
+                        <h5 class="fw-bold mb-1">Sarah Sandifer</h5>
+                        <small class="text-indigo-600 d-block mb-3">Head of Infrastructure</small>
+                        <p class="small text-slate-700 mb-0">Keeps the multi-GPU translation pipelines fast, secure, and scaling globally.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

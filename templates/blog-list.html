@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Blog - Teltam AI</title>
+    <meta name="description" content="Read the latest articles on AI translations, linguistics, transliteration systems, and document processing guides on the Teltam Blog.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero Section -->
+    <section class="py-5 bg-white border-bottom animate-fade-in-up">
+        <div class="container text-center py-4">
+            <span class="hero-badge"><i class="fas fa-blog"></i> Resources</span>
+            <h1 class="display-4 fw-bold">Teltam <span class="text-gradient-primary">Learning Blog</span></h1>
+            <p class="lead text-slate-700 mx-auto" style="max-width: 600px; font-size: 1.1rem;">
+                Stay updated on AI translation capabilities, linguistic breakthroughs, and product localization guides.
+            </p>
+        </div>
+    </section>
+
+    <!-- Search & Category Filters -->
+    <section class="py-4 bg-light border-bottom">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-md-6 d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                    <a href="{% url 'blog_list' %}" class="btn {% if not selected_category %}btn-primary-gradient{% else %}btn-outline-custom border bg-white{% endif %} rounded-pill px-3 py-1">All</a>
+                    {% for cat in categories %}
+                        <a href="{% url 'blog_list' %}?category={{ cat }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if selected_category == cat %}btn-primary-gradient{% else %}btn-outline-custom border bg-white{% endif %} rounded-pill px-3 py-1">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <form class="d-flex" method="GET" action="{% url 'blog_list' %}">
+                        {% if selected_category %}
+                            <input type="hidden" name="category" value="{{ selected_category }}">
+                        {% endif %}
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                            <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 py-2 shadow-none" placeholder="Search blog articles..." style="outline: none;">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+ 
+    <!-- Blog Cards Grid -->
+    <section class="py-5">
+        <div class="container py-3">
+            <div class="row g-4">
+                {% for blog in page_obj %}
+                <!-- Blog Card -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card overflow-hidden h-100 d-flex flex-column justify-content-between bg-white">
+                        <div>
+                            {% if blog.featured_image %}
+                            <div style="height: 180px; overflow: hidden; background: #eee;">
+                                <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            {% else %}
+                            <div class="bg-secondary text-white py-5 text-center" style="background: var(--brand-primary-gradient) !important;">
+                                <i class="fas fa-brain display-4 text-white opacity-75"></i>
+                            </div>
+                            {% endif %}
+                            <div class="p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-indigo-100 text-indigo-700" style="background: rgba(79,70,229,0.08);">{{ blog.category }}</span>
+                                    <small class="text-muted">{{ blog.created_date|date:"M d, Y" }}</small>
+                                </div>
+                                <h4 class="fw-bold mb-2"><a href="{% url 'blog_view' blog.slug %}" class="text-decoration-none text-dark">{{ blog.title }}</a></h4>
+                                <p class="text-slate-700 small" style="line-height:1.6;">
+                                    {{ blog.short_description }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-4 border-top bg-light-subtle d-flex justify-content-between align-items-center">
+                            <span class="small text-muted"><i class="far fa-user me-1"></i> {{ blog.author }}</span>
+                            <a href="{% url 'blog_view' blog.slug %}" class="text-indigo-600 fw-bold text-decoration-none small">Read More <i class="fas fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-folder-open display-2 text-muted opacity-50 mb-3"></i>
+                    <h4 class="fw-bold text-slate-800">No blog articles found.</h4>
+                    <p class="text-muted">Try clearing your filters or using a different search query.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination block -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-5" aria-label="Blog Pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link shadow-none" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link" style="background: var(--brand-primary-gradient) !important; border-color: transparent !important;">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link shadow-none text-dark" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link shadow-none" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

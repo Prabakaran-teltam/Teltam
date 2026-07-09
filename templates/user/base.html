@@ -1,0 +1,470 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}User Dashboard{% endblock %} - Teltam.ai</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --brand-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --brand-primary: #6366f1;
+            --brand-secondary: #a855f7;
+            --dark-sidebar-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --border-color: #f1f5f9;
+            --card-border: #f1f5f9;
+            --text-main: #334155;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6, .display-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--dark-sidebar-bg);
+            z-index: 100;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 4px 0 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-section-header {
+            color: #475569;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem 0.25rem 1.5rem;
+        }
+
+        .sidebar-item {
+            margin: 0.15rem 1rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            color: #f8fafc;
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .sidebar-link:hover i {
+            transform: translateX(2px);
+        }
+
+        .sidebar-item.active .sidebar-link {
+            color: #ffffff;
+            background: var(--brand-gradient);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Content Wrapper */
+        .content-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .topbar {
+            height: 70px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        /* Main Workspace Content */
+        .main-content {
+            padding: 2.25rem;
+            flex-grow: 1;
+        }
+
+        /* Dashboard UI Cards */
+        .dashboard-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.02);
+            transition: all 0.25s ease;
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+            border-color: rgba(99, 102, 241, 0.15);
+        }
+
+        .card-icon-container {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-card:hover .card-icon-container {
+            transform: scale(1.05);
+        }
+
+        .bg-indigo-light {
+            background-color: rgba(99, 102, 241, 0.08);
+            color: var(--brand-primary);
+        }
+
+        .bg-purple-light {
+            background-color: rgba(168, 85, 247, 0.08);
+            color: var(--brand-secondary);
+        }
+
+        .bg-emerald-light {
+            background-color: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+        }
+
+        /* Premium Buttons & Widgets */
+        .btn-brand-primary {
+            background: var(--brand-gradient);
+            color: #ffffff;
+            border: none;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .btn-brand-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+            color: #ffffff;
+        }
+
+        .btn-brand-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Styled inputs */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .form-control, .form-select {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
+        /* Responsive Table */
+        .table-responsive {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .table td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            font-size: 0.88rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .content-wrapper {
+                margin-left: 0;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <a class="d-flex align-items-center gap-2 text-decoration-none" href="/">
+                    <span class="d-flex align-items-center justify-content-center bg-indigo-600 rounded-3 text-white" style="width: 36px; height: 36px; background: var(--brand-gradient);">
+                        <i class="fas fa-language" style="font-size: 1.25rem;"></i>
+                    </span>
+                    <span class="fs-4 fw-bold text-white" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Teltam<span class="text-indigo-600" style="color: #a855f7;">.ai</span></span>
+                </a>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="sidebar-item {% block nav_home %}{% endblock %}">
+                    <a href="{% url 'user_dashboard_home' %}" class="sidebar-link">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Overview</span>
+                    </a>
+                </li>
+                
+                <div class="sidebar-section-header">Translation Tools</div>
+                <li class="sidebar-item {% block nav_tool_text %}{% endblock %}">
+                    <a href="{% url 'user_tool_text' %}" class="sidebar-link">
+                        <i class="fas fa-keyboard"></i>
+                        <span>Text Translator</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% block nav_tool_file %}{% endblock %}">
+                    <a href="{% url 'user_tool_file' %}" class="sidebar-link">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Document Translator</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% block nav_tool_voice %}{% endblock %}">
+                    <a href="{% url 'user_tool_voice' %}" class="sidebar-link">
+                        <i class="fas fa-microphone"></i>
+                        <span>Voice Translator</span>
+                    </a>
+                </li>
+                
+                <div class="sidebar-section-header">Account</div>
+                <li class="sidebar-item {% block nav_history %}{% endblock %}">
+                    <a href="{% url 'user_history_list' %}" class="sidebar-link">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span>Logs &amp; History</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% block nav_profile %}{% endblock %}">
+                    <a href="{% url 'user_profile' %}" class="sidebar-link">
+                        <i class="fas fa-user-gear"></i>
+                        <span>Profile Settings</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {% block nav_billing %}{% endblock %}">
+                    <a href="{% url 'user_dashboard_home' %}" class="sidebar-link">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Billing &amp; Plan</span>
+                    </a>
+                </li>
+                
+                <div class="sidebar-section-header">Public Website</div>
+                <li class="sidebar-item">
+                    <a href="{% url 'blog_list' %}" class="sidebar-link" target="_blank">
+                        <i class="fas fa-blog"></i>
+                        <span>Blogs</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'video_list' %}" class="sidebar-link" target="_blank">
+                        <i class="fab fa-youtube"></i>
+                        <span>Tutorials</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <a href="{% url 'user_logout' %}" class="sidebar-link text-danger">
+                <i class="fas fa-arrow-right-from-bracket"></i>
+                <span>Sign Out</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Workspace Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Topbar Header -->
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h4 class="mb-0 fw-bold text-slate-800">{% block header_title %}Workspace{% endblock %}</h4>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-home me-1"></i> Public Site
+                </a>
+                
+                <div class="vr bg-secondary opacity-25" style="height: 24px;"></div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; background: var(--brand-gradient); font-size: 0.9rem;">
+                        {{ request.user.first_name|slice:":2"|upper|default:request.user.username|slice:":2"|upper }}
+                    </div>
+                    <div class="d-none d-md-block">
+                        <h6 class="mb-0 fw-semibold" style="font-size: 0.88rem;">{{ request.user.first_name|default:request.user.username }}</h6>
+                        <span class="text-muted" style="font-size: 0.72rem;">{{ request.user.email }}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="main-content">
+            <!-- Alert message flags -->
+            {% if messages %}
+                <div class="container-fluid px-0 mb-4 animate-fade-in">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show border-0 shadow-sm rounded-3 px-4 py-3" role="alert">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle text-success{% else %}fa-exclamation-circle text-danger{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="animate-fade-in">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('sidebar-toggle');
+            
+            if (toggle) {
+                toggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('show');
+                });
+            }
+
+            // Close sidebar on clicks outside (tablet/mobile view)
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 992) {
+                    if (sidebar && sidebar.classList.contains('show') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                        sidebar.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

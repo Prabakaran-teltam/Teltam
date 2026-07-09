@@ -1,0 +1,77 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Contact Inbox{% endblock %}
+{% block header_title %}Contact Inquiries{% endblock %}
+{% block nav_contacts %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-inbox text-amber me-2"></i> Messages Inbox</h5>
+    </div>
+
+    <!-- Contact Listings Table -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Sender</th>
+                    <th>Subject</th>
+                    <th>Date Received</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in page_obj %}
+                <tr class="{% if not msg.is_read %}fw-semibold bg-light-subtle{% endif %}">
+                    <td>
+                        <span class="text-slate-800 d-block">{{ msg.name }}</span>
+                        <small class="text-muted">{{ msg.email }}{% if msg.phone %} • {{ msg.phone }}{% endif %}</small>
+                    </td>
+                    <td>
+                        <span class="text-slate-800 d-block text-truncate" style="max-width: 300px;">{{ msg.subject }}</span>
+                        <small class="text-muted text-truncate d-block" style="max-width: 300px;">{{ msg.message }}</small>
+                    </td>
+                    <td><small class="text-muted">{{ msg.created_date|date:"M d, Y, g:i A" }}</small></td>
+                    <td>
+                        {% if msg.is_read %}
+                            <span class="badge bg-light text-muted border rounded-pill px-2">Reviewed</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2">Unread</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'dashboard_contact_view' msg.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Read Message">
+                                <i class="far fa-envelope-open me-1"></i> Read
+                            </a>
+                            {% if msg.is_read %}
+                                <a href="{% url 'dashboard_contact_mark_unread' msg.pk %}" class="btn btn-sm btn-outline-warning rounded-pill px-3" title="Mark as Unread">
+                                    <i class="fas fa-envelope me-1"></i> Unread
+                                </a>
+                            {% else %}
+                                <a href="{% url 'dashboard_contact_mark_read' msg.pk %}" class="btn btn-sm btn-outline-success rounded-pill px-3" title="Mark as Read">
+                                    <i class="fas fa-check me-1"></i> Read
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="fas fa-tray display-4 opacity-50 mb-3 d-block"></i>
+                        <h5>Your inbox is empty</h5>
+                        <p class="small mb-0">No contact submissions have been received yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'dashboard/_pagination.html' %}
+</div>
+{% endblock %}

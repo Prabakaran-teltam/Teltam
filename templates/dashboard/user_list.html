@@ -1,0 +1,73 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}System Users{% endblock %}
+{% block header_title %}Registered System Users{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-users text-primary me-2"></i> System User Registry</h5>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>User Profile Name</th>
+                    <th>Email Address / Username</th>
+                    <th>Status Permissions</th>
+                    <th>Account Status</th>
+                    <th>Joined Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usr in page_obj %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-indigo-light text-indigo d-flex align-items-center justify-content-center fw-bold font-semibold" style="width: 40px; height: 40px; font-size: 0.95rem;">
+                                {{ usr.first_name|slice:":2"|upper|default:usr.username|slice:":2"|upper }}
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-slate-800 d-block">{% if usr.first_name %}{{ usr.first_name }}{% else %}{{ usr.username }}{% endif %}</span>
+                                <small class="text-muted">ID: #{{ usr.id }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="text-slate-700">{{ usr.email }}</span></td>
+                    <td>
+                        {% if usr.is_superuser %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2"><i class="fas fa-crown me-1"></i> Superuser</span>
+                        {% elif usr.is_staff %}
+                            <span class="badge bg-violet-subtle text-violet border border-violet-subtle rounded-pill px-2"><i class="fas fa-shield-halved me-1"></i> Staff Member</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2"><i class="far fa-circle-dot me-1"></i> Regular Member</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if usr.is_active %}
+                            <span class="badge bg-emerald-light text-emerald rounded-pill px-2"><i class="fas fa-circle-check me-1"></i> Active</span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border rounded-pill px-2"><i class="fas fa-ban me-1"></i> Suspended</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ usr.date_joined|date:"M d, Y, g:i A" }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="fas fa-users-slash display-4 opacity-50 mb-3 d-block"></i>
+                        <h5>No registered users found</h5>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'dashboard/_pagination.html' %}
+</div>
+{% endblock %}

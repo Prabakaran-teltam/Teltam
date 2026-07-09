@@ -1,0 +1,1919 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools Console - Teltam AI</title>
+    <meta name="description" content="Access Teltam's suite of AI linguistic tools: Text translation, document localizers, and voice speech translator.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        /* Scoped Custom Styling for Redesigned AI Tools Page */
+        .ai-tools-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Navigation Buttons at Top */
+        .tools-nav-wrapper {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            margin: 0 auto;
+        }
+        @media (max-width: 768px) {
+            .tools-nav-wrapper {
+                border-radius: 20px;
+                padding: 12px;
+            }
+        }
+        
+        .tool-nav-btn {
+            color: var(--color-slate-700) !important;
+            background: transparent;
+            border: 1.5px solid transparent !important;
+            font-weight: 600;
+            font-family: var(--font-headings);
+            font-size: 0.95rem;
+            border-radius: 50px !important;
+            padding: 10px 24px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: none;
+        }
+        
+        .tool-nav-btn:hover {
+            background: #f1f5f9;
+            color: var(--color-indigo-600) !important;
+            transform: translateY(-1px);
+        }
+        
+        .tool-nav-btn.active {
+            background: var(--brand-primary-gradient) !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25) !important;
+            transform: translateY(-1px);
+        }
+        
+        /* Smooth Slide-up Fade Transition */
+        .tab-content > .tab-pane {
+            display: none;
+        }
+        .tab-content > .active {
+            display: block;
+        }
+        .tab-pane.fade {
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .tab-pane.fade.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Gradient Border Widget Wrapper */
+        .gradient-border-wrapper {
+            padding: 2px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.06);
+        }
+        
+        .translation-widget-premium {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 2.5rem;
+        }
+        @media (max-width: 768px) {
+            .translation-widget-premium {
+                padding: 1.5rem 1rem;
+            }
+        }
+        
+        /* Premium Dropdowns */
+        .custom-dropdown-container {
+            position: relative;
+            width: 100%;
+        }
+        .premium-dropdown-btn {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+        }
+        .premium-dropdown-btn:hover {
+            border-color: #6366f1;
+            background: #f8fafc;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.05);
+        }
+        .premium-dropdown-btn:focus {
+            border-color: #6366f1;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+        .custom-dropdown-menu {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            width: 420px;
+            padding: 16px;
+            margin-top: 6px !important;
+            background: #ffffff;
+            z-index: 1050;
+            border-top: 3px solid #6366f1;
+        }
+        @media (max-width: 576px) {
+            .custom-dropdown-menu {
+                width: calc(100vw - 32px);
+            }
+        }
+        .dropdown-search-wrapper {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .dropdown-search-wrapper i {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .dropdown-search-input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .dropdown-search-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .dropdown-options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px 10px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        @media (max-width: 576px) {
+            .dropdown-options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .lang-option {
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            width: 100%;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-align: left;
+        }
+        .lang-option:hover {
+            background: #f1f5f9;
+        }
+        .lang-option.active {
+            background: rgba(79, 70, 229, 0.08);
+            color: #4f46e5;
+        }
+        .lang-option .lang-name {
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 0.88rem;
+            line-height: 1.2;
+        }
+        .lang-option.active .lang-name {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .lang-option .lang-native {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 1px;
+        }
+        .lang-option.active .lang-native {
+            color: #6366f1;
+            opacity: 0.9;
+        }
+        .lang-flag {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+        .dropdown-options-grid::-webkit-scrollbar {
+            width: 5px;
+        }
+        .dropdown-options-grid::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        .dropdown-options-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .dropdown-options-grid::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Language Swap Button */
+        .swap-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .swap-btn-custom {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .swap-btn-custom:hover {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #ffffff;
+            border-color: transparent;
+            transform: rotate(180deg);
+            box-shadow: 0 6px 12px rgba(79, 70, 229, 0.18);
+        }
+        
+        /* Textareas */
+        .textarea-container-custom {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 16px;
+            position: relative;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+            min-height: 240px;
+        }
+        .textarea-container-custom:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.1);
+        }
+        .output-textarea-container {
+            background: #f8fafc;
+            border-style: solid;
+        }
+        .textarea-custom {
+            border: none !important;
+            background: transparent !important;
+            resize: none;
+            width: 100%;
+            padding: 0 !important;
+            color: #0f172a;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        .textarea-custom::placeholder {
+            color: #94a3b8;
+        }
+        .textarea-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .btn-light-custom {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-light-custom:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .btn-translate-gradient {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899);
+            color: #ffffff;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
+            padding: 14px 44px;
+        }
+        .btn-translate-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(124, 58, 237, 0.3);
+            background: linear-gradient(135deg, #4338ca, #6d28d9, #d946ef);
+            color: #ffffff;
+        }
+        .btn-translate-gradient:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 12px rgba(124, 58, 237, 0.2);
+        }
+        
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #cbd5e1 !important;
+            transition: all 0.3s ease;
+            background: #f8fafc !important;
+        }
+        .upload-zone:hover {
+            border-color: #6366f1 !important;
+            background: rgba(99, 102, 241, 0.02) !important;
+            transform: translateY(-2px);
+        }
+        
+        /* Voice Mic and Pulse Animation */
+        .mic-btn-container {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 24px 0;
+        }
+        .mic-btn-custom {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+            outline: none !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .mic-btn-custom:hover {
+            border-color: #cbd5e1;
+            background: #e2e8f0;
+        }
+        .mic-btn-custom.recording {
+            background: linear-gradient(135deg, #ef4444, #f43f5e) !important;
+            color: #ffffff !important;
+            border-color: transparent !important;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.45) !important;
+        }
+        .mic-pulse-ring {
+            position: absolute;
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.25);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .mic-btn-custom.recording + .mic-pulse-ring {
+            animation: mic-pulse 1.6s cubic-bezier(0.1, 0, 0.3, 1) infinite;
+            opacity: 1;
+        }
+        @keyframes mic-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.65);
+                opacity: 0;
+            }
+        }
+
+    </style>
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero Section -->
+    <section class="py-5 bg-white border-bottom animate-fade-in-up">
+        <div class="container text-center py-4">
+            <span class="hero-badge"><i class="fas fa-magic"></i> Teltam AI Console</span>
+            <h1 class="display-4 fw-bold">Specialized <span class="text-gradient-primary">AI Translation Suites</span></h1>
+            <p class="lead text-slate-700 mx-auto mb-0" style="max-width: 600px; font-size: 1.1rem;">
+                Select a tool below to run high-fidelity text translation, localize layout documents, translate speech files, or extract OCR text scripts.
+            </p>
+        </div>
+    </section>
+
+    <!-- Redesigned Tools Interface -->
+    <section class="py-5">
+        <div class="container ai-tools-container px-2 px-md-4">
+            
+            <!-- Tool Buttons Top Navigation Bar -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="tools-nav-wrapper">
+                        <div class="nav nav-pills justify-content-center gap-2 flex-wrap" id="tools-tab" role="tablist">
+                            <button class="nav-link tool-nav-btn active d-flex align-items-center gap-2" id="tab-text-translator" data-bs-toggle="pill" data-bs-target="#pane-text-translator" type="button" role="tab" aria-controls="pane-text-translator" aria-selected="true">
+                                <i class="fas fa-language"></i> Text Translator
+                            </button>
+                            <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-doc-translator" data-bs-toggle="pill" data-bs-target="#pane-doc-translator" type="button" role="tab" aria-controls="pane-doc-translator" aria-selected="false">
+                                <i class="fas fa-file-pdf"></i> Document Translator
+                            </button>
+                            <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-voice-translator" data-bs-toggle="pill" data-bs-target="#pane-voice-translator" type="button" role="tab" aria-controls="pane-voice-translator" aria-selected="false">
+                                <i class="fas fa-microphone"></i> Voice Translator
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Panes Content Window -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="tab-content" id="tools-tabContent">
+                        
+                        <!-- Tool 1: Text Translator Pane -->
+                        <div class="tab-pane fade show active" id="pane-text-translator" role="tabpanel" aria-labelledby="tab-text-translator">
+                            <div class="gradient-border-wrapper">
+                                <div class="translation-widget-premium">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-slate-100">
+                                        <div>
+                                            <h4 class="fw-bold mb-1 text-slate-900">AI Text Translator</h4>
+                                            <p class="text-slate-600 small mb-0">Contextual language conversion using fine-tuned translation parameters.</p>
+                                        </div>
+                                        <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(79, 70, 229, 0.06); color: #4f46e5; font-weight: 500;"><i class="fas fa-sparkles me-1"></i> Teltam LLM-v3</span>
+                                    </div>
+                                    
+                                    <!-- Hidden selects for main.js compatibility -->
+                                    <select id="sourceLanguage" style="display: none;"></select>
+                                    <select id="targetLanguage" style="display: none;"></select>
+
+                                    <!-- Dropdowns row -->
+                                    <div class="row align-items-center mb-4 g-3">
+                                        <div class="col-12 col-md-5">
+                                            <div class="d-flex flex-column gap-1.5">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-arrow-right text-indigo-500 me-1.5"></i> SOURCE LANGUAGE</label>
+                                                <div class="custom-dropdown-container dropdown" id="textSourceDropdownContainer">
+                                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="textSourceLangBtn">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="selected-flag fs-5">🔍</span>
+                                                            <div class="text-start">
+                                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Detect Language</div>
+                                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Auto Detect</div>
+                                                            </div>
+                                                        </div>
+                                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                        <div class="dropdown-search-wrapper mb-2">
+                                                            <i class="fas fa-search"></i>
+                                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                                        </div>
+                                                        <div class="dropdown-options-grid custom-scrollbar" id="textSourceOptionsGrid"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-2 text-center my-2 my-md-0">
+                                            <div class="swap-btn-wrapper pt-md-3">
+                                                <button id="textSwapBtn" type="button" class="swap-btn-custom" title="Swap languages">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-5">
+                                            <div class="d-flex flex-column gap-1.5">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-globe text-indigo-500 me-1.5"></i> TARGET LANGUAGE</label>
+                                                <div class="custom-dropdown-container dropdown" id="textTargetDropdownContainer">
+                                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="textTargetLangBtn">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="selected-flag fs-5">🇪🇸</span>
+                                                            <div class="text-start">
+                                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Spanish</div>
+                                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Español</div>
+                                                            </div>
+                                                        </div>
+                                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                        <div class="dropdown-search-wrapper mb-2">
+                                                            <i class="fas fa-search"></i>
+                                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                                        </div>
+                                                        <div class="dropdown-options-grid custom-scrollbar" id="textTargetOptionsGrid"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Textareas row -->
+                                    <div class="row g-4 mb-4">
+                                        <div class="col-lg-6 col-12">
+                                            <div class="textarea-container-custom d-flex flex-column justify-content-between h-100">
+                                                <div class="position-relative flex-grow-1">
+                                                    <textarea id="sourceText" class="textarea-custom" placeholder="Type or paste text here (e.g. 'hello, how are you?')..." style="min-height: 140px; padding-right: 25px !important;"></textarea>
+                                                    <button id="clearSourceBtn" class="position-absolute top-0 end-0 border-0 bg-transparent text-slate-400 hover-text-slate-700 d-none" style="padding: 0; font-size: 1.1rem; line-height: 1;"><i class="fas fa-times-circle"></i></button>
+                                                </div>
+                                                <div class="textarea-footer">
+                                                    <span class="small text-muted" style="font-size: 0.8rem;"><i class="far fa-keyboard me-1"></i> Press Ctrl + Enter to translate</span>
+                                                    <span id="charCounter" class="small text-muted" style="font-size: 0.8rem;">0 / 5000</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-12">
+                                            <div class="textarea-container-custom output-textarea-container d-flex flex-column justify-content-between h-100">
+                                                <div class="position-relative flex-grow-1">
+                                                    <div id="translationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="z-index: 10; background: rgba(248, 250, 252, 0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px;">
+                                                        <div class="spinner-border text-indigo-600 mb-2" role="status" style="width: 2.2rem; height: 2.2rem; border-width: 0.22em;">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
+                                                        <div class="small fw-semibold text-indigo-600" style="font-size: 0.85rem;">Generating translation...</div>
+                                                    </div>
+                                                    <textarea id="outputText" class="textarea-custom" readonly placeholder="Translation will appear here..." style="min-height: 140px;"></textarea>
+                                                </div>
+
+
+                                                <div class="textarea-footer">
+                                                    <div class="footer-left-info">
+                                                        <span class="badge px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background-color: rgba(16, 185, 129, 0.08); color: #10b981; font-weight: 500; font-size: 0.75rem;"><i class="fas fa-circle-check"></i> AI Context Synced</span>
+                                                    </div>
+                                                    <div class="d-flex gap-2">
+                                                        <button id="speakBtn" class="btn btn-light-custom btn-sm text-slate-700" title="Speak translation"><i class="fas fa-volume-up me-1"></i> Speak</button>
+                                                        <button id="copyBtn" class="btn btn-light-custom btn-sm text-slate-700" title="Copy Translation"><i class="fas fa-copy me-1"></i> Copy</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <button id="translateBtn" class="btn btn-translate-gradient px-5 py-3">Translate with Teltam LLM</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tool 2: Document Translator Pane -->
+                        <div class="tab-pane fade" id="pane-doc-translator" role="tabpanel" aria-labelledby="tab-doc-translator">
+                            <div class="gradient-border-wrapper">
+                                <div class="translation-widget-premium">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-slate-100">
+                                        <div>
+                                            <h4 class="fw-bold mb-1 text-slate-900">AI Document Translator</h4>
+                                            <p class="text-slate-600 small mb-0">Translate PDF, DOCX, TXT, JPG, PNG structures while fully retaining original layouts.</p>
+                                        </div>
+                                        <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(16, 185, 129, 0.06); color: #10b981; font-weight: 500;"><i class="fas fa-file-invoice me-1"></i> Doc Engine v2</span>
+                                    </div>
+
+                                    <!-- Upload Zone Drag/Drop -->
+                                    <div class="border border-2 border-dashed rounded-4 p-5 text-center mb-4 position-relative upload-zone" id="docDropzone">
+                                        <input type="file" id="docFileInput" class="position-absolute w-100 h-100 top-0 start-0 opacity-0" style="cursor: pointer;" accept=".pdf,.docx,.txt,.jpg,.png">
+                                        
+                                        <div class="upload-zone-content" id="docUploadContent">
+                                            <i class="fas fa-cloud-upload-alt text-indigo-600 display-4 mb-3" style="color: #4f46e5;"></i>
+                                            <h5 class="fw-bold text-slate-800">Drag and drop file here</h5>
+                                            <p class="text-muted small">Supports PDF, DOCX, TXT, JPG, PNG files up to 15MB</p>
+                                            <button type="button" class="btn btn-outline-custom px-4 py-2 mt-2">Browse Files</button>
+                                        </div>
+                                        
+                                        <!-- Selected File Info -->
+                                        <div class="selected-file-indicator d-none" id="docSelectedFileInfo">
+                                            <i class="fas fa-file-invoice-dollar text-success display-4 mb-3"></i>
+                                            <h5 class="fw-bold text-slate-800 file-name-display" id="docFileName">filename.pdf</h5>
+                                            <p class="text-muted small file-size-display" id="docFileSize">1.2 MB</p>
+                                            <button type="button" class="btn btn-link text-danger text-decoration-none small remove-file-btn" id="removeDocFileBtn"><i class="fas fa-trash me-1"></i> Remove document</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Document Translate Language Dropdowns -->
+                                    <div id="docTranslateOptions" class="d-none">
+                                        <div class="row align-items-center mb-4 g-3">
+                                            <div class="col-12 col-md-5">
+                                                <div class="d-flex flex-column gap-1.5">
+                                                    <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-arrow-right text-indigo-500 me-1.5"></i> SOURCE LANGUAGE</label>
+                                                    <div class="custom-dropdown-container dropdown" id="docSourceDropdownContainer">
+                                                        <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="docSourceLangBtn">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <span class="selected-flag fs-5">🔍</span>
+                                                                <div class="text-start">
+                                                                    <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Detect Language</div>
+                                                                    <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Auto Detect</div>
+                                                                </div>
+                                                            </div>
+                                                            <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                            <div class="dropdown-search-wrapper mb-2">
+                                                                <i class="fas fa-search"></i>
+                                                                <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                                            </div>
+                                                            <div class="dropdown-options-grid custom-scrollbar" id="docSourceOptionsGrid"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-2 text-center my-2 my-md-0">
+                                                <div class="swap-btn-wrapper pt-md-3">
+                                                    <span class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle text-slate-500" style="width: 38px; height: 38px; border: 1px solid #e2e8f0;">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-5">
+                                                <div class="d-flex flex-column gap-1.5">
+                                                    <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-globe text-indigo-500 me-1.5"></i> TARGET LANGUAGE</label>
+                                                    <div class="custom-dropdown-container dropdown" id="docTargetDropdownContainer">
+                                                        <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="docTargetLangBtn">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <span class="selected-flag fs-5">🇪🇸</span>
+                                                                <div class="text-start">
+                                                                    <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Spanish</div>
+                                                                    <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Español</div>
+                                                                </div>
+                                                            </div>
+                                                            <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                            <div class="dropdown-search-wrapper mb-2">
+                                                                <i class="fas fa-search"></i>
+                                                                <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                                            </div>
+                                                            <div class="dropdown-options-grid custom-scrollbar" id="docTargetOptionsGrid"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Document Output Format Selection -->
+                                        <div class="row justify-content-center mt-3 g-3">
+                                            <div class="col-12 col-md-6 text-start">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-file-export text-indigo-500 me-1.5"></i> OUTPUT FILE FORMAT</label>
+                                                <select id="docOutputFormat" class="form-select border rounded-3 p-2.5" style="font-size: 0.95rem; border: 1.5px solid #e2e8f0 !important;">
+                                                    <option value="txt" selected>Plain Text (.txt)</option>
+                                                    <option value="pdf">Adobe PDF (.pdf)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-4">
+                                            <button id="startDocTranslateBtn" class="btn btn-translate-gradient px-5 py-3"><i class="fas fa-file-invoice me-2"></i> Translate Document</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress simulation loader -->
+                                    <div id="docProgressIndicator" class="text-center p-4 d-none">
+                                        <div class="spinner-border text-indigo-600 mb-3" role="status" style="width: 3rem; height: 3rem; border-width: 0.25em;">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <h5 class="fw-bold text-slate-800" id="docProgressText">Uploading & Parsing Document layout...</h5>
+                                        <p class="text-muted small">Teltam is running contextual translation & structural rebuilding...</p>
+                                    </div>
+
+                                    <!-- Translation Complete screen -->
+                                    <div id="docCompleteIndicator" class="text-center p-5 rounded-4 d-none" style="background-color: rgba(16, 185, 129, 0.05); border: 1.5px solid rgba(16, 185, 129, 0.15);">
+                                        <i class="fas fa-check-circle text-success display-4 mb-3"></i>
+                                        <h4 class="fw-bold text-success mb-2">Translation Complete!</h4>
+                                        <p class="text-slate-700 max-w-600 mx-auto mb-4">Your document has been successfully parsed and translated using OpenAI. Review the extracted text and its translation below, or download the full localized document.</p>
+                                        
+                                        <!-- Extracted & Translated text side-by-side -->
+                                        <div class="row text-start my-4 g-3">
+                                            <div class="col-md-6">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-file-alt text-indigo-500 me-1.5"></i> EXTRACTED TEXT</label>
+                                                <textarea id="docExtractedText" class="form-control bg-white border rounded-3 p-3 font-monospace shadow-none" rows="8" readonly style="font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; border-color: #cbd5e1 !important;"></textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-language text-emerald-500 me-1.5"></i> TRANSLATED TEXT</label>
+                                                <textarea id="docTranslatedText" class="form-control bg-white border rounded-3 p-3 font-monospace shadow-none" rows="8" readonly style="font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; border-color: #cbd5e1 !important;"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                            <a href="#" class="btn btn-success px-4 py-2.5" id="downloadTranslatedBtn"><i class="fas fa-download me-2"></i> Download Translated File</a>
+                                            <button type="button" class="btn btn-outline-custom px-4 py-2.5" id="translateAnotherDocBtn"><i class="fas fa-sync-alt me-2"></i> Translate Another</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tool 3: Voice Translator Pane -->
+                        <div class="tab-pane fade" id="pane-voice-translator" role="tabpanel" aria-labelledby="tab-voice-translator">
+                            <div class="gradient-border-wrapper">
+                                <div class="translation-widget-premium">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-slate-100">
+                                        <div>
+                                            <h4 class="fw-bold mb-1 text-slate-900">AI Voice Translator</h4>
+                                            <p class="text-slate-600 small mb-0">Record speech tokens, view instant transcriptions, and hear translated voice guides.</p>
+                                        </div>
+                                        <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(239, 68, 68, 0.06); color: #ef4444; font-weight: 500;"><i class="fas fa-microphone me-1"></i> Live voice audio</span>
+                                    </div>
+
+                                    <!-- Voice selectors row -->
+                                    <div class="row align-items-center mb-4 g-3">
+                                        <div class="col-12 col-md-5">
+                                            <div class="d-flex flex-column gap-1.5">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-arrow-right text-indigo-500 me-1.5"></i> SOURCE LANGUAGE</label>
+                                                <div class="custom-dropdown-container dropdown" id="voiceSourceDropdownContainer">
+                                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="voiceSourceLangBtn">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="selected-flag fs-5">🔍</span>
+                                                            <div class="text-start">
+                                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Detect Language</div>
+                                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Auto Detect</div>
+                                                            </div>
+                                                        </div>
+                                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                        <div class="dropdown-search-wrapper mb-2">
+                                                            <i class="fas fa-search"></i>
+                                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                                        </div>
+                                                        <div class="dropdown-options-grid custom-scrollbar" id="voiceSourceOptionsGrid"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-2 text-center my-2 my-md-0">
+                                            <div class="swap-btn-wrapper pt-md-3">
+                                                <span class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle text-slate-500" style="width: 38px; height: 38px; border: 1px solid #e2e8f0;">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-5">
+                                            <div class="d-flex flex-column gap-1.5">
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-globe text-indigo-500 me-1.5"></i> TARGET LANGUAGE</label>
+                                                <div class="custom-dropdown-container dropdown" id="voiceTargetDropdownContainer">
+                                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="voiceTargetLangBtn">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="selected-flag fs-5">🇪🇸</span>
+                                                            <div class="text-start">
+                                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Spanish</div>
+                                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Español</div>
+                                                            </div>
+                                                        </div>
+                                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                        <div class="dropdown-search-wrapper mb-2">
+                                                            <i class="fas fa-search"></i>
+                                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search language...">
+                                                        </div>
+                                                        <div class="dropdown-options-grid custom-scrollbar" id="voiceTargetOptionsGrid"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Voice layout panel -->
+                                    <div class="row g-4 mt-2">
+                                        <div class="col-lg-6 col-12 text-center border-end border-slate-100 pr-lg-4">
+                                            <h5 class="fw-bold text-slate-800 mb-2">Audio Input Capture</h5>
+                                            <p class="text-muted small mb-0">Record voice snippets using your device microphone</p>
+                                            
+                                            <div class="mic-btn-container">
+                                                <button type="button" class="mic-btn-custom" id="micRecordBtn">
+                                                    <i class="fas fa-microphone"></i>
+                                                </button>
+                                                <div class="mic-pulse-ring"></div>
+                                            </div>
+                                            
+                                            <div class="recording-status-text mt-1 fw-semibold text-slate-600" id="voiceStatusText">Click microphone to start recording</div>
+                                            <div class="recording-timer mt-1 font-monospace text-indigo-600 fw-bold d-none" id="voiceTimer" style="font-size: 1.1rem;">00:00</div>
+                                            
+                                            <div class="d-flex justify-content-center gap-2 mt-4">
+                                                <button type="button" class="btn btn-outline-custom py-2 px-4 d-none" id="stopRecordBtn"><i class="fas fa-stop me-2"></i> Stop Recording</button>
+                                            </div>
+
+                                            <!-- Audio File Upload Option -->
+                                            <div class="mt-4 border-top pt-3 text-center">
+                                                <p class="text-muted small mb-2">- OR -</p>
+                                                <label class="btn btn-outline-custom btn-sm px-4" style="cursor: pointer;">
+                                                    <i class="fas fa-file-audio me-2"></i> Upload Audio File
+                                                    <input type="file" id="voiceFileInput" accept=".wav,.mp3,.m4a,.webm,.ogg,.caf" style="display: none;">
+                                                </label>
+                                                <div id="voiceSelectedFileDisplay" class="small text-success mt-2 d-none" style="font-weight: 500;"></div>
+                                            </div>
+                                            
+                                            <!-- Audio element -->
+                                            <div class="audio-player-wrapper mt-4 d-none" id="voiceAudioWrapper">
+                                                <label class="small fw-bold text-slate-600 mb-2 d-block"><i class="fas fa-volume-up me-1"></i> Recorded Audio Preview</label>
+                                                <audio id="recordedAudioPlayer" controls class="w-100" style="max-width: 320px; margin: 0 auto; outline: none;"></audio>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-lg-6 col-12 pl-lg-4">
+                                            <div class="d-flex flex-column gap-3">
+                                                <div>
+                                                    <label class="small fw-bold text-slate-600 mb-1.5"><i class="fas fa-closed-captioning me-1.5 text-indigo-500"></i> VOICE TRANSCRIPT</label>
+                                                    <div class="output-container p-3 bg-light border border-slate-100 rounded-3 text-slate-700" style="min-height: 84px; font-size: 0.95rem; line-height: 1.6;" id="voiceTranscriptText">
+                                                        Spoken transcript will appear here...
+                                                    </div>
+                                                </div>
+                                                
+                                                <div>
+                                                    <label class="small fw-bold text-slate-600 mb-1.5"><i class="fas fa-sparkles me-1.5 text-indigo-500"></i> AI CONTEXT TRANSLATION</label>
+                                                    <div class="output-container p-3 border border-slate-200 rounded-3 text-slate-900 bg-white" style="min-height: 84px; position: relative; font-size: 0.95rem; line-height: 1.6;">
+                                                        <div id="voiceTranslationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="background: #ffffff; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 10;">
+                                                            <div class="spinner-border text-indigo-600 spinner-border-sm" role="status"></div>
+                                                            <span class="small text-indigo-600 fw-semibold ms-2" style="font-size:0.8rem;">Processing speech context...</span>
+                                                        </div>
+                                                        <div id="voiceTranslationOutput">Translation will appear here...</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-end gap-2 mt-2">
+                                                    <button type="button" id="voiceSpeakBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-volume-up me-1"></i> Speak</button>
+                                                    <button type="button" id="voiceCopyBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-copy me-1"></i> Copy</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+    </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 Integration -->
+    {% include 'sweetalert_messages.html' %}
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+
+
+    <script>
+        (function() {
+            // Utility: Get CSRF Token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            // Utility: Fetch with timeout support
+            function fetchWithTimeout(resource, options = {}) {
+                const { timeout = 30000 } = options; // Default 30s timeout
+                
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), timeout);
+                
+                return fetch(resource, {
+                    ...options,
+                    signal: controller.signal
+                }).then(response => {
+                    clearTimeout(id);
+                    return response;
+                }).catch(error => {
+                    clearTimeout(id);
+                    if (error.name === 'AbortError') {
+                        throw new Error('Request timed out. Please try again.');
+                    }
+                    throw error;
+                });
+            }
+
+            // 1. Language Database Definition (150+ unique languages)
+            const allLanguagesList = [
+                { code: "en", name: "English", native: "English", flag: "🇺🇸" },
+                { code: "es", name: "Spanish", native: "Español", flag: "🇪🇸" },
+                { code: "fr", name: "French", native: "Français", flag: "🇫🇷" },
+                { code: "de", name: "German", native: "Deutsch", flag: "🇩🇪" },
+                { code: "ta", name: "Tamil", native: "தமிழ்", flag: "🇮🇳" },
+                { code: "hi", name: "Hindi", native: "हिन्दी", flag: "🇮🇳" },
+                { code: "zh", name: "Chinese", native: "中文", flag: "🇨🇳" },
+                { code: "ar", name: "Arabic", native: "العربية", flag: "🇸🇦" },
+                { code: "pt", name: "Portuguese", native: "Português", flag: "🇵🇹" },
+                { code: "ru", name: "Russian", native: "Русский", flag: "🇷🇺" },
+                { code: "ja", name: "Japanese", native: "日本語", flag: "🇯🇵" },
+                { code: "ko", name: "Korean", native: "한국어", flag: "🇰🇷" },
+                { code: "it", name: "Italian", native: "Italiano", flag: "🇮🇹" },
+                { code: "nl", name: "Dutch", native: "Nederlands", flag: "🇳🇱" },
+                { code: "tr", name: "Turkish", native: "Türkçe", flag: "🇹🇷" },
+                { code: "vi", name: "Vietnamese", native: "Tiếng Việt", flag: "🇻🇳" },
+                { code: "pl", name: "Polish", native: "Polski", flag: "🇵🇱" },
+                { code: "sv", name: "Swedish", native: "Svenska", flag: "🇸🇪" },
+                { code: "uk", name: "Ukrainian", native: "Українська", flag: "🇺🇦" },
+                { code: "id", name: "Indonesian", native: "Bahasa Indonesia", flag: "🇮🇩" },
+                { code: "he", name: "Hebrew", native: "עברית", flag: "🇮🇱" },
+                { code: "el", name: "Greek", native: "Ελληνικά", flag: "🇬🇷" },
+                { code: "no", name: "Norwegian", native: "Norsk", flag: "🇳🇴" },
+                { code: "da", name: "Danish", native: "Dansk", flag: "🇩🇰" },
+                { code: "fi", name: "Finnish", native: "Suomi", flag: "🇫🇮" },
+                { code: "cs", name: "Czech", native: "Čeština", flag: "🇨🇿" },
+                { code: "hu", name: "Hungarian", native: "Magyar", flag: "🇭🇺" },
+                { code: "th", name: "Thai", native: "ไทย", flag: "🇹🇭" },
+                { code: "fa", name: "Persian", native: "فارسی", flag: "🇮🇷" },
+                { code: "ro", name: "Romanian", native: "Română", flag: "🇷🇴" },
+                { code: "bg", name: "Bulgarian", native: "Български", flag: "🇧🇬" },
+                { code: "sk", name: "Slovak", native: "Slovenčina", flag: "🇸🇰" },
+                { code: "ms", name: "Malay", native: "Bahasa Melayu", flag: "🇲🇾" },
+                { code: "hr", name: "Croatian", native: "Hrvatski", flag: "🇭🇷" },
+                { code: "sr", name: "Serbian", native: "Српски", flag: "🇷🇸" },
+                { code: "lt", name: "Lithuanian", native: "Lietuvių", flag: "🇱🇹" },
+                { code: "sl", name: "Slovenian", native: "Slovenščina", flag: "🇸🇮" },
+                { code: "et", name: "Estonian", native: "Eesti", flag: "🇪🇪" },
+                { code: "lv", name: "Latvian", native: "Latviešu", flag: "🇱🇻" },
+                { code: "sw", name: "Swahili", native: "Kiswahili", flag: "🇰🇪" },
+                { code: "ur", name: "Urdu", native: "اردو", flag: "🇵🇰" },
+                { code: "bn", name: "Bengali", native: "বাংলা", flag: "🇧🇩" },
+                { code: "pa", name: "Punjabi", native: "ਪੰਜਾਬੀ", flag: "🇮🇳" },
+                { code: "te", name: "Telugu", native: "తెలుగు", flag: "🇮🇳" },
+                { code: "mr", name: "Marathi", native: "मराठी", flag: "🇮🇳" },
+                { code: "kn", name: "Kannada", native: "ಕನ್ನಡ", flag: "🇮🇳" },
+                { code: "ml", name: "Malayalam", native: "മലയാളம்", flag: "🇮🇳" },
+                { code: "gu", name: "Gujarati", native: "ગુજરાતી", flag: "🇮🇳" },
+                { code: "or", name: "Odia", native: "ଓட଼ିଆ", flag: "🇮🇳" },
+                { code: "as", name: "Assamese", native: "অসমীয়া", flag: "🇮🇳" },
+                { code: "af", name: "Afrikaans", native: "Afrikaans", flag: "🇿🇦" },
+                { code: "sq", name: "Albanian", native: "Shqip", flag: "🇦🇱" },
+                { code: "am", name: "Amharic", native: "አማርኛ", flag: "🇪🇹" },
+                { code: "hy", name: "Armenian", native: "Հայերեն", flag: "🇦🇲" },
+                { code: "az", name: "Azerbaijani", native: "Azərbaycanca", flag: "🇦🇿" },
+                { code: "eu", name: "Basque", native: "Euskara", flag: "🇪🇸" },
+                { code: "be", name: "Belarusian", native: "Беларуская", flag: "🇧🇾" },
+                { code: "bs", name: "Bosnian", native: "Bosanski", flag: "🇧🇦" },
+                { code: "ca", name: "Catalan", native: "Català", flag: "🇪🇸" },
+                { code: "ceb", name: "Cebuano", native: "Cebuano", flag: "🇵🇭" },
+                { code: "ny", name: "Chichewa", native: "Chichewa", flag: "🇲🇼" },
+                { code: "co", name: "Corsican", native: "Corsu", flag: "🇫🇷" },
+                { code: "eo", name: "Esperanto", native: "Esperanto", flag: "🌍" },
+                { code: "tl", name: "Filipino", native: "Wikang Filipino", flag: "🇵🇭" },
+                { code: "fy", name: "Frisian", native: "Frysk", flag: "🇳🇱" },
+                { code: "gl", name: "Galician", native: "Galego", flag: "🇪🇸" },
+                { code: "ka", name: "Georgian", native: "ქართული", flag: "🇬🇪" },
+                { code: "ht", name: "Haitian Creole", native: "Kreyòl Ayisyen", flag: "🇭🇹" },
+                { code: "ha", name: "Hausa", native: "Hausa", flag: "🇳🇬" },
+                { code: "haw", name: "Hawaiian", native: "ʻŌlelo Hawaiʻi", flag: "🌺" },
+                { code: "hmn", name: "Hmong", native: "Hmong", flag: "🇨🇳" },
+                { code: "is", name: "Icelandic", native: "Íslenska", flag: "🇮🇸" },
+                { code: "ig", name: "Igbo", native: "Asụsụ Igbo", flag: "🇳🇬" },
+                { code: "ga", name: "Irish", native: "Gaeilge", flag: "🇮🇪" },
+                { code: "jv", name: "Javanese", native: "Basa Jawa", flag: "🇮🇩" },
+                { code: "kk", name: "Kazakh", native: "Қазақ Тілі", flag: "🇰🇿" },
+                { code: "km", name: "Khmer", native: "ភាសាខ្មែរ", flag: "🇰🇭" },
+                { code: "rw", name: "Kinyarwanda", native: "Ikinyarwanda", flag: "🇷🇼" },
+                { code: "ku", name: "Kurdish", native: "Kurdî", flag: "🇮🇶" },
+                { code: "ky", name: "Kyrgyz", native: "Кыргызча", flag: "🇰🇬" },
+                { code: "lo", name: "Lao", native: "ພາສາລາວ", flag: "🇱🇦" },
+                { code: "la", name: "Latin", native: "Latina", flag: "🏛️" },
+                { code: "lb", name: "Luxembourgish", native: "Lëtzebuergesch", flag: "🇱🇺" },
+                { code: "mk", name: "Macedonian", native: "Македонски", flag: "🇲🇰" },
+                { code: "mg", name: "Malagasy", native: "Malagasy", flag: "🇲🇬" },
+                { code: "mt", name: "Maltese", native: "Malti", flag: "🇲🇹" },
+                { code: "mi", name: "Maori", native: "Te Reo Māori", flag: "🇳🇿" },
+                { code: "mn", name: "Mongolian", native: "Монгол Хэл", flag: "🇲🇳" },
+                { code: "my", name: "Myanmar (Burmese)", native: "မြန်မာဘာသာ", flag: "🇲🇲" },
+                { code: "ne", name: "Nepali", native: "नेपाली", flag: "🇳🇵" },
+                { code: "ps", name: "Pashto", native: "پښتو", flag: "🇦𝒇" },
+                { code: "sa", name: "Sanskrit", native: "संस्कृतम्", flag: "🏛️" },
+                { code: "gd", name: "Scots Gaelic", native: "Gàidhlig", flag: "🇬🇧" },
+                { code: "st", name: "Sesotho", native: "Sesotho", flag: "🇱🇸" },
+                { code: "sn", name: "Shona", native: "chiShona", flag: "🇿🇼" },
+                { code: "sd", name: "Sindhi", native: "سنڌي", flag: "🇵🇰" },
+                { code: "si", name: "Sinhala", native: "සිංහල", flag: "🇱🇰" },
+                { code: "so", name: "Somali", native: "Soomaaliga", flag: "🇸🇴" },
+                { code: "su", name: "Sundanese", native: "Basa Sunda", flag: "🇮🇩" },
+                { code: "tg", name: "Tajik", native: "Тоҷикӣ", flag: "🇹🇯" },
+                { code: "tt", name: "Tatar", native: "Татарча", flag: "🇷🇺" },
+                { code: "tk", name: "Turkmen", native: "Türkmençe", flag: "🇹🇲" },
+                { code: "ug", name: "Uyghur", native: "ئۇيغۇرچە", flag: "🇨🇳" },
+                { code: "uz", name: "Uzbek", native: "Oʻzbekcha", flag: "🇺🇿" },
+                { code: "cy", name: "Welsh", native: "Cymraeg", flag: "🇬🇧" },
+                { code: "xh", name: "Xhosa", native: "isiXhosa", flag: "🇿🇦" },
+                { code: "yi", name: "Yiddish", native: "ייִדיש", flag: "🇮🇱" },
+                { code: "yo", name: "Yoruba", native: "Èdè Yorùbá", flag: "🇳🇬" },
+                { code: "zu", name: "Zulu", native: "isiZulu", flag: "🇿🇦" },
+                { code: "ay", name: "Aymara", native: "Aymar aru", flag: "🇧🇴" },
+                { code: "bm", name: "Bambara", native: "Bamanankan", flag: "🇲🇱" },
+                { code: "bho", name: "Bhojpuri", native: "भोजपुरी", flag: "🇮🇳" },
+                { code: "dv", name: "Dhivehi", native: "ދιވެހިބަސް", flag: "🇲🇻" },
+                { code: "doi", name: "Dogri", native: "डोगरी", flag: "🇮🇳" },
+                { code: "ee", name: "Ewe", native: "Ewegbe", flag: "🇬🇭" },
+                { code: "gn", name: "Guarani", native: "Avañe'ẽ", flag: "🇵🇾" },
+                { code: "ilo", name: "Ilocano", native: "Ilokano", flag: "🇵🇭" },
+                { code: "gom", name: "Konkani", native: "कोंकणी", flag: "🇮🇳" },
+                { code: "kri", name: "Krio", native: "Krio", flag: "🇸🇱" },
+                { code: "ln", name: "Lingala", native: "Lingála", flag: "🇨🇩" },
+                { code: "lg", name: "Luganda", native: "Luganda", flag: "🇺🇬" },
+                { code: "mai", name: "Maithili", native: "मैथिली", flag: "🇮🇳" },
+                { code: "mni", name: "Manipuri", native: "மৈতৈলোন", flag: "🇮🇳" },
+                { code: "lus", name: "Mizo", native: "Mizo ṭawng", flag: "🇮🇳" },
+                { code: "om", name: "Oromo", native: "Afaan Oromoo", flag: "🇪🇹" },
+                { code: "qu", name: "Quechua", native: "Runa Simi", flag: "🇵🇪" },
+                { code: "nso", name: "Sepedi", native: "Sesotho sa Leboa", flag: "🇿🇦" },
+                { code: "ti", name: "Tigrinya", native: "ትግርኛ", flag: "🇪🇷" },
+                { code: "ts", name: "Tsonga", native: "Xitsonga", flag: "🇿🇦" },
+                { code: "ak", name: "Twi", native: "Twi", flag: "🇬🇭" },
+                { code: "ve", name: "Venda", native: "Tshivenda", flag: "🇿🇦" },
+                { code: "wo", name: "Wolof", native: "Wolof", flag: "🇸🇳" }
+            ];
+
+            // 2. Filter duplicates
+            const seenCodes = new Set();
+            const uniqueLanguages = allLanguagesList.filter(lang => {
+                if (seenCodes.has(lang.code)) return false;
+                seenCodes.add(lang.code);
+                return true;
+            });
+
+            const sourceLanguages = [
+                { code: "auto", name: "Detect Language", native: "Auto Detect", flag: "🔍" },
+                ...uniqueLanguages
+            ];
+            const targetLanguages = uniqueLanguages;
+
+            // Elements references
+            const sourceSelect = document.getElementById('sourceLanguage');
+            const targetSelect = document.getElementById('targetLanguage');
+            const outputText = document.getElementById('outputText');
+            const sourceText = document.getElementById('sourceText');
+            const clearSourceBtn = document.getElementById('clearSourceBtn');
+            const charCounter = document.getElementById('charCounter');
+
+            // Intercept outputText.innerText to map to value (main.js compatibility)
+            if (outputText) {
+                Object.defineProperty(outputText, 'innerText', {
+                    get: function() { return this.value; },
+                    set: function(val) { 
+                        this.value = val;
+                        this.dispatchEvent(new Event('input'));
+                    },
+                    configurable: true
+                });
+            }
+
+            // Populate hidden select elements
+            function populateHiddenSelects() {
+                if (sourceSelect && targetSelect) {
+                    sourceSelect.innerHTML = '';
+                    targetSelect.innerHTML = '';
+
+                    sourceLanguages.forEach(lang => {
+                        const opt = document.createElement('option');
+                        opt.value = lang.code === 'auto' ? 'en' : lang.code;
+                        opt.innerText = `${lang.name} (${lang.native})`;
+                        sourceSelect.appendChild(opt);
+                    });
+
+                    targetLanguages.forEach(lang => {
+                        const opt = document.createElement('option');
+                        opt.value = lang.code;
+                        opt.innerText = `${lang.name} (${lang.native})`;
+                        targetSelect.appendChild(opt);
+                    });
+
+                    sourceSelect.value = "en";
+                    targetSelect.value = "es";
+                }
+            }
+
+            // Dropdown Manager function
+            function initDropdown(containerId, isSource, defaultVal, onSelect) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const btn = container.querySelector('.premium-dropdown-btn');
+                const searchInput = container.querySelector('.dropdown-search-input');
+                const grid = container.querySelector('.dropdown-options-grid');
+                
+                const langsList = isSource ? sourceLanguages : targetLanguages;
+                let selectedCode = defaultVal;
+                
+                // Set initial trigger label
+                const initialLang = langsList.find(l => l.code === selectedCode) || langsList[0];
+                updateBtnUI(btn, initialLang);
+                
+                function updateBtnUI(button, lang) {
+                    button.querySelector('.selected-flag').innerText = lang.flag;
+                    button.querySelector('.selected-lang-name').innerText = lang.name;
+                    button.querySelector('.selected-lang-native').innerText = lang.native;
+                }
+                
+                function renderOptions(filteredList) {
+                    grid.innerHTML = '';
+                    filteredList.forEach(lang => {
+                        const isActive = lang.code === selectedCode;
+                        const optionBtn = document.createElement('button');
+                        optionBtn.type = 'button';
+                        optionBtn.className = `lang-option ${isActive ? 'active' : ''}`;
+                        optionBtn.innerHTML = `
+                            <span class="lang-flag">${lang.flag}</span>
+                            <div class="d-flex flex-column text-start">
+                                <span class="lang-name">${lang.name}</span>
+                                <span class="lang-native">${lang.native}</span>
+                            </div>
+                        `;
+                        
+                        optionBtn.addEventListener('click', () => {
+                            selectedCode = lang.code;
+                            updateBtnUI(btn, lang);
+                            onSelect(lang.code, lang);
+                            renderOptions(filteredList);
+                            
+                            // Close dropdown
+                            const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(btn);
+                            if (bsDropdown) bsDropdown.hide();
+                        });
+                        
+                        grid.appendChild(optionBtn);
+                    });
+                }
+                
+                // Search handler
+                searchInput.addEventListener('input', () => {
+                    const query = searchInput.value.trim().toLowerCase();
+                    const filtered = langsList.filter(lang => 
+                        lang.name.toLowerCase().includes(query) || 
+                        lang.native.toLowerCase().includes(query) || 
+                        lang.code.toLowerCase().includes(query)
+                    );
+                    renderOptions(filtered);
+                });
+                
+                // Reset search on hide
+                container.addEventListener('hidden.bs.dropdown', () => {
+                    searchInput.value = '';
+                    renderOptions(langsList);
+                });
+                
+                renderOptions(langsList);
+            }
+
+            // Initialize all 8 dropdowns
+            populateHiddenSelects();
+            
+            // Text Dropdowns
+            initDropdown('textSourceDropdownContainer', true, 'auto', (code) => {
+                sourceSelect.value = code === 'auto' ? 'en' : code;
+                sourceSelect.dispatchEvent(new Event('change'));
+            });
+            initDropdown('textTargetDropdownContainer', false, 'es', (code) => {
+                targetSelect.value = code;
+                targetSelect.dispatchEvent(new Event('change'));
+            });
+
+            // Doc Dropdowns
+            let docSourceCode = 'auto';
+            let docTargetCode = 'es';
+            initDropdown('docSourceDropdownContainer', true, 'auto', (code) => { docSourceCode = code; });
+            initDropdown('docTargetDropdownContainer', false, 'es', (code) => { docTargetCode = code; });
+
+            // Voice Dropdowns
+            let voiceSourceCode = 'auto';
+            let voiceTargetCode = 'es';
+            initDropdown('voiceSourceDropdownContainer', true, 'auto', (code) => { voiceSourceCode = code; });
+            initDropdown('voiceTargetDropdownContainer', false, 'es', (code) => { 
+                voiceTargetCode = code;
+            });
+
+
+            // Auto-focus search input when any dropdown opens
+            document.querySelectorAll('.dropdown').forEach(dropdownEl => {
+                dropdownEl.addEventListener('shown.bs.dropdown', () => {
+                    const searchInput = dropdownEl.querySelector('.dropdown-search-input');
+                    if (searchInput) searchInput.focus();
+                });
+            });
+
+            // Text swap button
+            const textSwapBtn = document.getElementById('textSwapBtn');
+            if (textSwapBtn) {
+                textSwapBtn.addEventListener('click', () => {
+                    let srcVal = sourceSelect.value;
+                    let tgtVal = targetSelect.value;
+                    
+                    if (srcVal === 'auto' || srcVal === 'en') {
+                        srcVal = 'en'; 
+                    }
+                    
+                    sourceSelect.value = tgtVal;
+                    targetSelect.value = srcVal;
+                    
+                    sourceSelect.dispatchEvent(new Event('change'));
+                    targetSelect.dispatchEvent(new Event('change'));
+                    
+                    initDropdown('textSourceDropdownContainer', true, tgtVal, (code) => {
+                        sourceSelect.value = code === 'auto' ? 'en' : code;
+                        sourceSelect.dispatchEvent(new Event('change'));
+                    });
+                    initDropdown('textTargetDropdownContainer', false, srcVal, (code) => {
+                        targetSelect.value = code;
+                        targetSelect.dispatchEvent(new Event('change'));
+                    });
+                });
+            }
+
+            // Textarea utilities
+            if (sourceText) {
+                sourceText.addEventListener('input', () => {
+                    const len = sourceText.value.length;
+                    if (charCounter) charCounter.innerText = `${len} / 5000`;
+                    
+                    if (len > 0) {
+                        if (clearSourceBtn) clearSourceBtn.classList.remove('d-none');
+                    } else {
+                        if (clearSourceBtn) clearSourceBtn.classList.add('d-none');
+                    }
+                });
+            }
+
+            if (clearSourceBtn) {
+                clearSourceBtn.addEventListener('click', () => {
+                    if (sourceText) {
+                        sourceText.value = '';
+                        sourceText.focus();
+                    }
+                    if (charCounter) charCounter.innerText = '0 / 5000';
+                    clearSourceBtn.classList.add('d-none');
+                    if (outputText) outputText.value = '';
+                });
+            }
+
+            // ==========================================
+            // SIMULATION: Document Translator
+            // ==========================================
+            const docFileInput = document.getElementById('docFileInput');
+            const docDropzone = document.getElementById('docDropzone');
+            const docUploadContent = document.getElementById('docUploadContent');
+            const docSelectedFileInfo = document.getElementById('docSelectedFileInfo');
+            const docFileName = document.getElementById('docFileName');
+            const docFileSize = document.getElementById('docFileSize');
+            const removeDocFileBtn = document.getElementById('removeDocFileBtn');
+            const docTranslateOptions = document.getElementById('docTranslateOptions');
+            const startDocTranslateBtn = document.getElementById('startDocTranslateBtn');
+            const docProgressIndicator = document.getElementById('docProgressIndicator');
+            const docProgressText = document.getElementById('docProgressText');
+            const docCompleteIndicator = document.getElementById('docCompleteIndicator');
+            const translateAnotherDocBtn = document.getElementById('translateAnotherDocBtn');
+            const docExtractedText = document.getElementById('docExtractedText');
+            const docTranslatedText = document.getElementById('docTranslatedText');
+
+            function handleDocSelect(file) {
+                if (file) {
+                    docFileName.innerText = file.name;
+                    // Format file size
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    docFileSize.innerText = `${sizeMB} MB`;
+                    
+                    docUploadContent.classList.add('d-none');
+                    docSelectedFileInfo.classList.remove('d-none');
+                    docTranslateOptions.classList.remove('d-none');
+                }
+            }
+
+            if (docFileInput) {
+                docFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleDocSelect(e.target.files[0]);
+                    }
+                });
+            }
+
+            // Drag and drop events for uploader
+            if (docDropzone) {
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    docDropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        docDropzone.style.borderColor = '#6366f1';
+                        docDropzone.style.background = 'rgba(99, 102, 241, 0.05)';
+                    }, false);
+                });
+                ['dragleave', 'drop'].forEach(eventName => {
+                    docDropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        docDropzone.style.borderColor = '#cbd5e1';
+                        docDropzone.style.background = '#f8fafc';
+                    }, false);
+                });
+                docDropzone.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    if (files.length > 0) {
+                        docFileInput.files = files;
+                        handleDocSelect(files[0]);
+                    }
+                });
+            }
+
+            if (removeDocFileBtn) {
+                removeDocFileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    docFileInput.value = '';
+                    docSelectedFileInfo.classList.add('d-none');
+                    docTranslateOptions.classList.add('d-none');
+                    docUploadContent.classList.remove('d-none');
+                });
+            }
+
+            const maxDocPollAttempts = 60; // 60 attempts = 60 seconds max
+
+            function pollDocStatus(taskId, pollAttempts = 0) {
+                if (pollAttempts >= maxDocPollAttempts) {
+                    docProgressIndicator.classList.add('d-none');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Timeout',
+                        text: 'Document translation timed out. The server took too long to respond. Please make sure the Celery worker is active or try again.',
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4'
+                        },
+                        buttonsStyling: false
+                    });
+                    docDropzone.classList.remove('d-none');
+                    docTranslateOptions.classList.remove('d-none');
+                    return;
+                }
+
+                const url = `/api/document-status/${taskId}/`;
+                fetchWithTimeout(url, { timeout: 10000 })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`Server returned HTTP ${res.status}`);
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'PENDING' || data.status === 'PROGRESS') {
+                            docProgressText.innerText = data.progress || "Translating document layout...";
+                            setTimeout(() => pollDocStatus(taskId, pollAttempts + 1), 1000);
+                        } else if (data.status === 'SUCCESS') {
+                            docProgressIndicator.classList.add('d-none');
+                            docCompleteIndicator.classList.remove('d-none');
+                            
+                            if (docExtractedText && data.result.extracted_text) {
+                                docExtractedText.value = data.result.extracted_text;
+                            }
+                            if (docTranslatedText && data.result.translated_text) {
+                                docTranslatedText.value = data.result.translated_text;
+                            }
+                            
+                            if (downloadTranslatedBtn && data.result.download_url) {
+                                downloadTranslatedBtn.href = data.result.download_url;
+                            }
+                        } else {
+                            docProgressIndicator.classList.add('d-none');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Translation Failed',
+                                text: 'Document translation failed: ' + (data.error || "Unknown error"),
+                                confirmButtonColor: '#ef4444',
+                                customClass: {
+                                    confirmButton: 'btn btn-danger rounded-pill px-4'
+                                },
+                                buttonsStyling: false
+                            });
+                            docDropzone.classList.remove('d-none');
+                            docTranslateOptions.classList.remove('d-none');
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Polling error:", err);
+                        if (pollAttempts < maxDocPollAttempts - 1) {
+                            setTimeout(() => pollDocStatus(taskId, pollAttempts + 1), 2000);
+                        } else {
+                            docProgressIndicator.classList.add('d-none');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Connection Error',
+                                text: 'Connection failed while tracking document status: ' + err.message,
+                                confirmButtonColor: '#ef4444',
+                                customClass: {
+                                    confirmButton: 'btn btn-danger rounded-pill px-4'
+                                },
+                                buttonsStyling: false
+                            });
+                            docDropzone.classList.remove('d-none');
+                            docTranslateOptions.classList.remove('d-none');
+                        }
+                    });
+            }
+
+            if (startDocTranslateBtn) {
+                startDocTranslateBtn.addEventListener('click', () => {
+                    const file = docFileInput.files[0];
+                    if (!file) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No File Selected',
+                            text: 'Please select a document first.',
+                            confirmButtonColor: '#fbbf24',
+                            customClass: {
+                                confirmButton: 'btn btn-warning text-white rounded-pill px-4'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    // Pre-upload Client-side File Validation
+                    const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
+                    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                    if (!allowedExtensions.includes(ext)) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Unsupported Format',
+                            text: `Unsupported file format "${ext}". Allowed: PDF, DOCX, TXT, JPG, PNG`,
+                            confirmButtonColor: '#fbbf24',
+                            customClass: {
+                                confirmButton: 'btn btn-warning text-white rounded-pill px-4'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    const maxDocSize = 15 * 1024 * 1024; // 15MB
+                    if (file.size > maxDocSize) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'File Too Large',
+                            text: `File size exceeds maximum limit of 15MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+                            confirmButtonColor: '#fbbf24',
+                            customClass: {
+                                confirmButton: 'btn btn-warning text-white rounded-pill px-4'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    docTranslateOptions.classList.add('d-none');
+                    docDropzone.classList.add('d-none');
+                    docProgressIndicator.classList.remove('d-none');
+                    docProgressText.innerText = "Uploading document to Teltam server...";
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('source_lang', docSourceCode);
+                    formData.append('target_lang', docTargetCode);
+                    formData.append('output_format', docOutputFormat.value);
+
+                    // 60-second upload timeout (covers synchronous fallback execution)
+                    fetchWithTimeout('/api/upload-document/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken') || ''
+                        },
+                        body: formData,
+                        timeout: 60000
+                    })
+                    .then(res => {
+                        return res.json().then(data => {
+                            if (!res.ok) {
+                                throw new Error(data.error || `Server returned error ${res.status}`);
+                            }
+                            return data;
+                        }).catch(jsonErr => {
+                            if (!res.ok) {
+                                throw new Error(`Server returned HTTP ${res.status}`);
+                            }
+                            throw jsonErr;
+                        });
+                    })
+                    .then(data => {
+                        docProgressText.innerText = "Document queued for translation...";
+                        pollDocStatus(data.task_id);
+                    })
+                    .catch(err => {
+                        console.error("Upload error:", err);
+                        docProgressIndicator.classList.add('d-none');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Translation Failed',
+                            text: 'Failed to translate document: ' + err.message,
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                confirmButton: 'btn btn-danger rounded-pill px-4'
+                            },
+                            buttonsStyling: false
+                        });
+                        docDropzone.classList.remove('d-none');
+                        docTranslateOptions.classList.remove('d-none');
+                    });
+                });
+            }
+
+            if (translateAnotherDocBtn) {
+                translateAnotherDocBtn.addEventListener('click', () => {
+                    docFileInput.value = '';
+                    docCompleteIndicator.classList.add('d-none');
+                    docSelectedFileInfo.classList.add('d-none');
+                    docUploadContent.classList.remove('d-none');
+                    docDropzone.classList.remove('d-none');
+                    if (docExtractedText) docExtractedText.value = '';
+                    if (docTranslatedText) docTranslatedText.value = '';
+                });
+            }
+
+            // ==========================================
+            // REAL INTEGRATION: Voice Translator
+            // ==========================================
+            const micRecordBtn = document.getElementById('micRecordBtn');
+            const stopRecordBtn = document.getElementById('stopRecordBtn');
+            const voiceStatusText = document.getElementById('voiceStatusText');
+            const voiceTimer = document.getElementById('voiceTimer');
+            const voiceAudioWrapper = document.getElementById('voiceAudioWrapper');
+            const voiceTranscriptText = document.getElementById('voiceTranscriptText');
+            const voiceTranslationSpinner = document.getElementById('voiceTranslationSpinner');
+            const voiceTranslationOutput = document.getElementById('voiceTranslationOutput');
+            const voiceSpeakBtn = document.getElementById('voiceSpeakBtn');
+            const voiceCopyBtn = document.getElementById('voiceCopyBtn');
+            const recordedAudioPlayer = document.getElementById('recordedAudioPlayer');
+            const voiceFileInput = document.getElementById('voiceFileInput');
+            const voiceSelectedFileDisplay = document.getElementById('voiceSelectedFileDisplay');
+
+            let isRecording = false;
+            let recordingSecs = 0;
+            let timerInterval = null;
+            let mediaRecorder = null;
+            let audioChunks = [];
+
+            function uploadVoiceFile(file) {
+                if (!file) return;
+
+                // Client-side Validation
+                const allowedExtensions = ['.wav', '.mp3', '.m4a', '.webm', '.ogg', '.caf'];
+                const fileName = file.name || "recorded_audio.wav";
+                const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+                if (!allowedExtensions.includes(ext)) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Unsupported Format',
+                        text: `Unsupported audio format "${ext}". Allowed: WAV, MP3, M4A, WEBM, OGG, CAF`,
+                        confirmButtonColor: '#fbbf24',
+                        customClass: {
+                            confirmButton: 'btn btn-warning text-white rounded-pill px-4'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                const maxVoiceSize = 10 * 1024 * 1024; // 10MB
+                if (file.size > maxVoiceSize) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'File Too Large',
+                        text: `Audio file size exceeds maximum limit of 10MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+                        confirmButtonColor: '#fbbf24',
+                        customClass: {
+                            confirmButton: 'btn btn-warning text-white rounded-pill px-4'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                voiceTranslationSpinner.classList.remove('d-none');
+                voiceStatusText.innerText = "Uploading voice audio...";
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('target_lang', voiceTargetCode);
+
+                // 60-second upload timeout (covers synchronous fallback execution)
+                fetchWithTimeout('/api/upload-voice/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken') || ''
+                    },
+                    body: formData,
+                    timeout: 60000
+                })
+                .then(res => {
+                    return res.json().then(data => {
+                        if (!res.ok) {
+                            throw new Error(data.error || `Server returned error ${res.status}`);
+                        }
+                        return data;
+                    }).catch(jsonErr => {
+                        if (!res.ok) {
+                            throw new Error(`Server returned HTTP ${res.status}`);
+                        }
+                        throw jsonErr;
+                    });
+                })
+                .then(data => {
+                    voiceStatusText.innerText = "Voice processing queued...";
+                    pollVoiceStatus(data.task_id);
+                })
+                .catch(err => {
+                    console.error("Audio upload error:", err);
+                    voiceTranslationSpinner.classList.add('d-none');
+                    voiceStatusText.innerText = "Failed to translate audio: " + err.message;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Translation Failed',
+                        text: 'Voice translation failed: ' + err.message,
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4'
+                        },
+                        buttonsStyling: false
+                    });
+                });
+            }
+
+            const maxVoicePollAttempts = 60; // 60 attempts = 60 seconds max
+
+            function pollVoiceStatus(taskId, pollAttempts = 0) {
+                if (pollAttempts >= maxVoicePollAttempts) {
+                    voiceTranslationSpinner.classList.add('d-none');
+                    voiceStatusText.innerText = "Click microphone to start recording";
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Timeout',
+                        text: 'Voice translation timed out. The server took too long to respond. Please make sure the Celery worker is active or try again.',
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                const url = `/api/task-status/${taskId}/`;
+                fetchWithTimeout(url, { timeout: 10000 })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`Server returned HTTP ${res.status}`);
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'PENDING' || data.status === 'PROGRESS') {
+                            voiceStatusText.innerText = data.progress || "Transcribing voice...";
+                            setTimeout(() => pollVoiceStatus(taskId, pollAttempts + 1), 1000);
+                        } else if (data.status === 'SUCCESS') {
+                            voiceTranslationSpinner.classList.add('d-none');
+                            voiceStatusText.innerText = "Click microphone to start recording";
+                            
+                            voiceTranscriptText.innerText = data.result.transcription;
+                            voiceTranslationOutput.innerText = data.result.translated_text;
+                            
+                            voiceSpeakBtn.disabled = false;
+                            voiceCopyBtn.disabled = false;
+                        } else {
+                            voiceTranslationSpinner.classList.add('d-none');
+                            voiceStatusText.innerText = "Voice translation task failed.";
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Transcription Error',
+                                text: 'Audio transcription error: ' + (data.error || "Unknown error"),
+                                confirmButtonColor: '#ef4444',
+                                customClass: {
+                                    confirmButton: 'btn btn-danger rounded-pill px-4'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Voice polling error:", err);
+                        if (pollAttempts < maxVoicePollAttempts - 1) {
+                            setTimeout(() => pollVoiceStatus(taskId, pollAttempts + 1), 2000);
+                        } else {
+                            voiceTranslationSpinner.classList.add('d-none');
+                            voiceStatusText.innerText = "Status track connection lost.";
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Connection Error',
+                                text: 'Connection failed while tracking voice status: ' + err.message,
+                                confirmButtonColor: '#ef4444',
+                                customClass: {
+                                    confirmButton: 'btn btn-danger rounded-pill px-4'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
+                    });
+            }
+
+            if (voiceFileInput) {
+                voiceFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const file = e.target.files[0];
+                        voiceSelectedFileDisplay.innerText = `Uploaded Audio: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                        voiceSelectedFileDisplay.classList.remove('d-none');
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            recordedAudioPlayer.src = evt.target.result;
+                            voiceAudioWrapper.classList.remove('d-none');
+                        };
+                        reader.readAsDataURL(file);
+
+                        uploadVoiceFile(file);
+                    }
+                });
+            }
+
+            function startVoiceRecording() {
+                isRecording = true;
+                recordingSecs = 0;
+                audioChunks = [];
+                
+                if (voiceSelectedFileDisplay) {
+                    voiceSelectedFileDisplay.classList.add('d-none');
+                    voiceSelectedFileDisplay.innerText = "";
+                }
+
+                // Detect supported mime-types to avoid format mismatches
+                let options = {};
+                let fileExtension = 'wav';
+                const candidateTypes = [
+                    { type: 'audio/webm;codecs=opus', ext: 'webm' },
+                    { type: 'audio/webm', ext: 'webm' },
+                    { type: 'audio/ogg;codecs=opus', ext: 'ogg' },
+                    { type: 'audio/ogg', ext: 'ogg' },
+                    { type: 'audio/mp4', ext: 'm4a' }
+                ];
+
+                for (const candidate of candidateTypes) {
+                    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(candidate.type)) {
+                        options = { mimeType: candidate.type };
+                        fileExtension = candidate.ext;
+                        break;
+                    }
+                }
+
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream, options);
+                        mediaRecorder.addEventListener("dataavailable", event => {
+                            if (event.data && event.data.size > 0) {
+                                audioChunks.push(event.data);
+                            }
+                        });
+                        
+                        mediaRecorder.addEventListener("stop", () => {
+                            const actualMimeType = mediaRecorder.mimeType || options.mimeType || 'audio/wav';
+                            
+                            let ext = fileExtension;
+                            if (actualMimeType.includes('webm')) ext = 'webm';
+                            else if (actualMimeType.includes('ogg')) ext = 'ogg';
+                            else if (actualMimeType.includes('mp4') || actualMimeType.includes('m4a')) ext = 'm4a';
+                            else if (actualMimeType.includes('wav')) ext = 'wav';
+
+                            const audioBlob = new Blob(audioChunks, { type: actualMimeType });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            recordedAudioPlayer.src = audioUrl;
+                            voiceAudioWrapper.classList.remove('d-none');
+                            
+                            const audioFile = new File([audioBlob], `recorded_audio.${ext}`, { type: actualMimeType });
+                            uploadVoiceFile(audioFile);
+                        });
+                        
+                        mediaRecorder.start(250); // slice into 250ms chunks
+                        
+                        micRecordBtn.classList.add('recording');
+                        stopRecordBtn.classList.remove('d-none');
+                        voiceTimer.classList.remove('d-none');
+                        voiceTimer.innerText = "00:00";
+                        voiceStatusText.innerText = "Recording active... Speak now";
+                        
+                        voiceTranscriptText.innerText = "Listening...";
+                        voiceTranslationOutput.innerText = "Translation will appear here...";
+                        voiceSpeakBtn.disabled = true;
+                        voiceCopyBtn.disabled = true;
+
+                        timerInterval = setInterval(() => {
+                            recordingSecs++;
+                            const mins = Math.floor(recordingSecs / 60).toString().padStart(2, '0');
+                            const secs = (recordingSecs % 60).toString().padStart(2, '0');
+                            voiceTimer.innerText = `${mins}:${secs}`;
+                            
+                            if (recordingSecs >= 15) {
+                                stopVoiceRecording();
+                            }
+                        }, 1000);
+                    })
+                    .catch(err => {
+                        console.error("Microphone permission denied:", err);
+                        voiceStatusText.innerText = "Mic access blocked. Try uploading an audio file.";
+                        isRecording = false;
+                        if (voiceTranslationSpinner) {
+                            voiceTranslationSpinner.classList.add('d-none');
+                        }
+                    });
+            }
+
+            function stopVoiceRecording() {
+                if (!isRecording) return;
+                isRecording = false;
+                
+                clearInterval(timerInterval);
+                micRecordBtn.classList.remove('recording');
+                stopRecordBtn.classList.add('d-none');
+                voiceTimer.classList.add('d-none');
+                voiceStatusText.innerText = "Processing audio track...";
+                
+                if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+            }
+
+            if (micRecordBtn) {
+                micRecordBtn.addEventListener('click', () => {
+                    if (isRecording) {
+                        stopVoiceRecording();
+                    } else {
+                        startVoiceRecording();
+                    }
+                });
+            }
+
+            if (stopRecordBtn) {
+                stopRecordBtn.addEventListener('click', stopVoiceRecording);
+            }
+
+            // Speak translation
+            if (voiceSpeakBtn) {
+                voiceSpeakBtn.addEventListener('click', () => {
+                    const text = voiceTranslationOutput.innerText;
+                    if ('speechSynthesis' in window && text) {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        const langMap = { es: "es-ES", fr: "fr-FR", de: "de-DE", ta: "ta-IN" };
+                        utterance.lang = langMap[voiceTargetCode] || "en-US";
+                        window.speechSynthesis.speak(utterance);
+                    }
+                });
+            }
+
+            // Copy translation
+            if (voiceCopyBtn) {
+                voiceCopyBtn.addEventListener('click', () => {
+                    const text = voiceTranslationOutput.innerText;
+                    if (text) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            const origHTML = voiceCopyBtn.innerHTML;
+                            voiceCopyBtn.innerHTML = `<i class="fas fa-check text-success"></i> Copied`;
+                            setTimeout(() => { voiceCopyBtn.innerHTML = origHTML; }, 1500);
+                        });
+                    }
+                });
+            }
+
+        })();
+    </script>
+</body>
+</html>

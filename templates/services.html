@@ -1,0 +1,208 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Teltam AI Translation Solutions</title>
+    <meta name="description" content="Explore Teltam's professional services: Text translation, transliteration guides, natural voice synthesizers, document layout parsers, API integrations, and custom model training.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero Section -->
+    <section class="py-5 bg-white border-bottom animate-fade-in-up">
+        <div class="container text-center py-4">
+            <span class="hero-badge"><i class="fas fa-cogs"></i> Our Services</span>
+            <h1 class="display-4 fw-bold">Professional <span class="text-gradient-primary">AI Solutions</span></h1>
+            <p class="lead text-slate-700 mx-auto" styl
+            e="max-width: 600px; font-size: 1.1rem;">
+                Powering translations, voice guides, and regional script transliterations with fine-tuned contextual model systems.
+            </p>
+        </div>
+    </section>
+
+    
+
+    <!-- Detailed Services List -->
+    <section class="py-5">
+        <div class="container py-3">
+            <div class="row g-4">
+                <!-- Service 1 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-language"></i></div>
+                            <h4 class="fw-bold text-slate-900">Contextual Translation</h4>
+                            <p class="text-slate-700 mb-3" style="font-size: 0.95rem; line-height: 1.6;">
+                                Translates paragraphs, documents, and transcripts with deep language mapping that ensures local idioms, grammar formatting, and technical terms make complete sense.
+                            </p>
+                        </div>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none mt-3">Try Translation Widget <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-keyboard"></i></div>
+                            <h4 class="fw-bold text-slate-900">Transliteration Guides</h4>
+                            <p class="text-slate-700 mb-3" style="font-size: 0.95rem; line-height: 1.6;">
+                                Maps characters from non-Latin scripts (e.g. Tamil, Cyrillic, Arabic) into Latin phonetic equivalents, making reading and spoken practice accessible to new learners.
+                            </p>
+                        </div>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none mt-3">Try Transliteration <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-file-pdf"></i></div>
+                            <h4 class="fw-bold text-slate-900">Document Parsing</h4>
+                            <p class="text-slate-700 mb-3" style="font-size: 0.95rem; line-height: 1.6;">
+                                Automatically parses uploaded PDF, DOCX, and CSV sheets. Translates structural terms while keeping headers, images, margins, and column layouts identical.
+                            </p>
+                        </div>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none mt-3">Upload Document <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-volume-up"></i></div>
+                            <h4 class="fw-bold text-slate-900">AI Voice Synthesis</h4>
+                            <p class="text-slate-700 mb-3" style="font-size: 0.95rem; line-height: 1.6;">
+                                Converts text outputs into high-fidelity voice files. Adjust settings to hear professional, regional, or conversational voice inflections and speed guides.
+                            </p>
+                        </div>
+                        <a href="/ai-tools/" class="text-indigo-600 fw-semibold text-decoration-none mt-3">Listen to Speech <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+
+                <!-- Service 5 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-code"></i></div>
+                            <h4 class="fw-bold text-slate-900">API Integration</h4>
+                            <p class="text-slate-700 mb-3" style="font-size: 0.95rem; line-height: 1.6;">
+                                Embed our lightweight REST APIs into your customer service channels, websites, or chat widgets. Includes robust documentation and SDKs for developers.
+                            </p>
+                        </div>
+                        <a href="/contact/" class="text-indigo-600 fw-semibold text-decoration-none mt-3">Get API Key <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+
+                <!-- Service 6 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="feature-icon-wrapper"><i class="fas fa-cloud"></i></div>
+                            <h4 class="fw-bold text-slate-900">Enterprise Clouds</h4>
+                            <p class="text-slate-700 mb-3" style="font-size: 0.95rem; line-height: 1.6;">
+                                Dedicated GPU clusters and custom LLM tuning options for companies with strict compliance, medical records, or secure legal document translations.
+                            </p>
+                        </div>
+                        <a href="/contact/" class="text-indigo-600 fw-semibold text-decoration-none mt-3">Contact Sales <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Request a Custom Solution Form Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="glass-card p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold">Request a Custom AI Model Setup</h3>
+                            <p class="text-slate-700">Need specific dialects or massive API limits? Fill out the details below and our team will prepare a custom proposal.</p>
+                        </div>
+                        <form id="serviceRequestForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="reqName" class="form-label fw-bold text-slate-700">Full Name</label>
+                                    <input type="text" id="reqName" class="form-control py-2" placeholder="John Doe" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reqEmail" class="form-label fw-bold text-slate-700">Work Email</label>
+                                    <input type="email" id="reqEmail" class="form-control py-2" placeholder="john@company.com" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reqCompany" class="form-label fw-bold text-slate-700">Company Name</label>
+                                    <input type="text" id="reqCompany" class="form-control py-2" placeholder="Acme Corp">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reqServiceType" class="form-label fw-bold text-slate-700">Desired Service</label>
+                                    <select id="reqServiceType" class="form-select py-2" required>
+                                        <option value="">Select a service...</option>
+                                        <option value="custom-llm">Custom LLM Fine-Tuning</option>
+                                        <option value="api-enterprise">API Access (Enterprise Scale)</option>
+                                        <option value="doc-localization">Automated Document Localization</option>
+                                        <option value="other">Other Translation Solutions</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="reqMessage" class="form-label fw-bold text-slate-700">Describe Your Requirements</label>
+                                    <textarea id="reqMessage" class="form-control py-2" rows="4" placeholder="Tell us about the languages, files, and expected volume..." required></textarea>
+                                </div>
+                                <div class="col-12 text-center mt-4">
+                                    <button type="submit" class="btn btn-primary-gradient px-5 py-3">Submit Inquiry</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 Integration -->
+    {% include 'sweetalert_messages.html' %}
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+        // Form response logic
+        const requestForm = document.getElementById("serviceRequestForm");
+        if (requestForm) {
+            requestForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const name = document.getElementById("reqName").value;
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Inquiry Logged',
+                    text: `Thank you, ${name}! Your inquiry has been logged. Our integration team will contact you within 24 hours.`,
+                    confirmButtonColor: '#4f46e5',
+                    customClass: {
+                        confirmButton: 'btn btn-primary rounded-pill px-4'
+                    },
+                    buttonsStyling: false
+                });
+                requestForm.reset();
+            });
+        }
+    </script>
+</body>
+</html>

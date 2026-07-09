@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ video.meta_title|default:video.title }} - Teltam AI Video Guides</title>
+    <meta name="description" content="{{ video.meta_description|default:video.short_description }}">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero / Back link -->
+    <section class="py-4 bg-white border-bottom animate-fade-in-up">
+        <div class="container">
+            <a href="{% url 'video_list' %}" class="text-indigo-600 fw-semibold text-decoration-none"><i class="fas fa-arrow-left me-2"></i> Back to Video Hub</a>
+        </div>
+    </section>
+
+    <!-- Video Watch Container Layout -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Video Screen -->
+                <div class="col-lg-8 mb-4">
+                    <!-- Responsive Video Frame Wrapper -->
+                    <div class="ratio ratio-16x9 rounded-4 overflow-hidden mb-4 bg-black border" style="box-shadow: 0 15px 35px rgba(0,0,0,0.08);">
+                        <iframe src="https://www.youtube.com/embed/{{ video.youtube_video_id }}" title="{{ video.title }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Video Details Title -->
+                    <div class="glass-card p-4 mb-4 bg-white">
+                        <div class="d-flex gap-2 mb-2">
+                            <span class="badge bg-danger-subtle text-danger">{{ video.category }}</span>
+                            <span class="text-muted small">Released {{ video.created_date|date:"M d, Y" }}</span>
+                        </div>
+                        <h2 class="fw-bold mb-3 text-slate-900">{{ video.title }}</h2>
+                        
+                        <p class="text-slate-700 mb-4" style="line-height: 1.6;">
+                            {{ video.full_description|linebreaks }}
+                        </p>
+
+                        <!-- Transcript Accordion -->
+                        <div class="accordion-item-custom border-top pt-3">
+                            <button class="accordion-button-custom py-2 px-0" aria-controls="transcriptCollapse">
+                                View Full Video Transcript
+                            </button>
+                            <div id="transcriptCollapse" class="accordion-collapse-custom">
+                                <div class="accordion-body-custom px-0 pt-3">
+                                    <div class="font-monospace small text-slate-700 d-flex flex-column gap-3">
+                                        <div><strong>[00:10]</strong> Hello everyone! Welcome back to Teltam AI guides. Today we're diving into the document translation tool.</div>
+                                        <div><strong>[01:05]</strong> First, log into your Teltam console and navigate to the "AI Tools" tab. You'll see the "Doc Translator" option.</div>
+                                        <div><strong>[02:22]</strong> Simply drag and drop your PDF or word file. Next, choose your target settings. For instance, translating from English to Spanish.</div>
+                                        <div><strong>[03:40]</strong> Once translation finishes, press the "Download" button to save your formatted translated document.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Page Comments -->
+                    <div class="glass-card p-4 bg-white">
+                        <h4 class="fw-bold mb-4">Discussion</h4>
+                        
+                        <div class="d-flex align-items-start gap-3 mb-4">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 40px; height: 40px;">RK</div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Rohan K. <small class="text-muted fw-normal ms-2">1 week ago</small></h6>
+                                <p class="text-slate-700 small mb-0">Does the document translator work with scanned JPG images too? Or only PDFs?</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Leave feedback response -->
+                        <form id="videoFeedbackForm" class="mt-4 border-top pt-4">
+                            <h5 class="fw-bold mb-3">Ask a Question</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="text" id="vidName" class="form-control" placeholder="Name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="email" id="vidEmail" class="form-control" placeholder="Email" required>
+                                </div>
+                                <div class="col-12">
+                                    <textarea id="vidMessage" class="form-control" rows="3" placeholder="Write your question..." required></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary-gradient px-4">Post Question</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Video Sidebar suggestions -->
+                <div class="col-lg-4">
+                    <div class="glass-card p-4 bg-white sticky-lg-top" style="top: 100px; z-index: 10;">
+                        <h4 class="fw-bold mb-4 text-slate-900">Up Next</h4>
+                        <div class="d-flex flex-column gap-4">
+                            {% for r_video in recent_videos %}
+                            <!-- Video Sidebar Item -->
+                            <div class="d-flex align-items-start gap-3 border-bottom pb-3">
+                                {% if r_video.thumbnail_image %}
+                                <div class="rounded-3 flex-shrink-0 overflow-hidden" style="width: 70px; height: 50px; background: #eee;">
+                                    <img src="{{ r_video.thumbnail_image.url }}" alt="{{ r_video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                {% else %}
+                                <div class="bg-dark text-white rounded-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 70px; height: 50px; background: var(--brand-primary-gradient) !important;">
+                                    <i class="fab fa-youtube text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="font-size:0.92rem;"><a href="{% url 'video_view' r_video.slug %}" class="text-decoration-none text-dark">{{ r_video.title }}</a></h6>
+                                    <small class="text-muted">{{ r_video.created_date|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted small">No other videos available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 Integration -->
+    {% include 'sweetalert_messages.html' %}
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+        const videoForm = document.getElementById("videoFeedbackForm");
+        if (videoForm) {
+            videoForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const name = document.getElementById("vidName").value;
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Question Posted',
+                    text: `Thank you, ${name}! Your question has been posted.`,
+                    confirmButtonColor: '#4f46e5',
+                    customClass: {
+                        confirmButton: 'btn btn-primary rounded-pill px-4'
+                    },
+                    buttonsStyling: false
+                });
+                videoForm.reset();
+            });
+        }
+    </script>
+</body>
+</html>

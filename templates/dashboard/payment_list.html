@@ -1,0 +1,89 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Transactions{% endblock %}
+{% block header_title %}Payment Transactions{% endblock %}
+{% block nav_payments %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard-card p-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <h5 class="fw-bold mb-0 text-slate-800"><i class="fas fa-credit-card text-indigo-600 me-2"></i> Payment Registry</h5>
+        
+        <!-- Search bar -->
+        <form method="GET" action="{% url 'dashboard_payment_list' %}" class="flex-grow-1" style="max-width: 400px;">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 bg-light shadow-none" placeholder="Search transaction ID, user email..." style="outline: none;">
+                {% if search_query %}
+                    <a href="{% url 'dashboard_payment_list' %}" class="btn btn-outline-secondary border"><i class="fas fa-times"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Merchant Txn ID</th>
+                    <th>User</th>
+                    <th>Plan Purchased</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Initiated Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for txn in page_obj %}
+                <tr>
+                    <td>
+                        <span class="fw-semibold text-slate-800 d-block font-monospace" style="font-size: 0.85rem;">{{ txn.merchant_order_id }}</span>
+                        {% if txn.phonepe_order_id %}
+                            <small class="text-muted font-monospace d-block">PhonePe Order: {{ txn.phonepe_order_id }}</small>
+                        {% endif %}
+                        {% if txn.phonepe_transaction_id %}
+                            <small class="text-muted font-monospace d-block">PhonePe Txn: {{ txn.phonepe_transaction_id }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-slate-800 d-block">{% if txn.user.first_name %}{{ txn.user.first_name }}{% else %}{{ txn.user.username }}{% endif %}</span>
+                        <small class="text-muted">{{ txn.user.email }}</small>
+                    </td>
+                    <td>
+                        {% if txn.plan %}
+                            <span class="badge bg-indigo-light text-indigo border border-indigo-light rounded-pill px-2.5">{{ txn.plan.name }}</span>
+                        {% else %}
+                            <span class="text-muted small">No Plan Selected</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="fw-bold text-slate-800">₹{{ txn.amount|floatformat:2 }}</span></td>
+                    <td>
+                        {% if txn.status == 'success' %}
+                            <span class="badge bg-emerald-light text-emerald rounded-pill px-2.5"><i class="fas fa-circle-check me-1"></i> Success</span>
+                        {% elif txn.status == 'pending' %}
+                            <span class="badge bg-amber-light text-amber rounded-pill px-2.5"><i class="fas fa-circle-notch fa-spin me-1"></i> Pending</span>
+                        {% elif txn.status == 'failed' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5"><i class="fas fa-circle-xmark me-1"></i> Failed</span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border rounded-pill px-2.5"><i class="fas fa-ban me-1"></i> Cancelled</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ txn.created_at|date:"M d, Y, g:i A" }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-credit-card-slash display-4 opacity-50 mb-3 d-block"></i>
+                        <h5>No payment transactions found</h5>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% include 'dashboard/_pagination.html' %}
+</div>
+{% endblock %}

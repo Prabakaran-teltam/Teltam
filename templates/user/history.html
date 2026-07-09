@@ -1,0 +1,158 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Translation History{% endblock %}
+{% block header_title %}Logs &amp; History{% endblock %}
+{% block nav_history %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-12">
+        <div class="dashboard-card p-4">
+            <!-- Header search bar -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1 text-slate-800">Activity Logs</h5>
+                    <p class="text-muted small mb-0">Review all your previous text, file, and voice translation activities.</p>
+                </div>
+                
+                <!-- Search Form -->
+                <form method="GET" action="{% url 'user_history_list' %}" class="d-flex gap-2" style="max-width: 380px; width: 100%;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0 shadow-none" placeholder="Search text or file name...">
+                    </div>
+                    {% if search_query %}
+                        <a href="{% url 'user_history_list' %}" class="btn btn-outline-secondary" title="Clear Search">
+                            <i class="fas fa-xmark"></i>
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-brand-primary">Search</button>
+                </form>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date &amp; Time</th>
+                            <th>Tool Type</th>
+                            <th>Langs</th>
+                            <th>Source Text / Details</th>
+                            <th>Translated Output</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in page_obj %}
+                            <tr>
+                                <td class="text-nowrap text-slate-500">
+                                    {{ log.created_date|date:"M d, Y" }}<br>
+                                    <span class="text-muted small">{{ log.created_date|date:"H:i" }}</span>
+                                </td>
+                                <td>
+                                    {% if log.tool_type == 'text' %}
+                                        <span class="badge bg-indigo-light text-indigo-700 px-2.5 py-1.5 rounded-3 fw-semibold">
+                                            <i class="fas fa-keyboard me-1.5"></i> Text
+                                        </span>
+                                    {% elif log.tool_type == 'file' %}
+                                        <span class="badge bg-purple-light text-purple-700 px-2.5 py-1.5 rounded-3 fw-semibold">
+                                            <i class="fas fa-file-pdf me-1.5"></i> Document
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-emerald-light text-emerald-700 px-2.5 py-1.5 rounded-3 fw-semibold">
+                                            <i class="fas fa-microphone me-1.5"></i> Voice
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap">
+                                    <span class="badge bg-light text-dark border font-monospace">{{ log.source_lang|upper }}</span>
+                                    <i class="fas fa-arrow-right text-muted mx-1" style="font-size: 0.75rem;"></i>
+                                    <span class="badge bg-brand-primary text-white font-monospace" style="background: var(--brand-gradient);">{{ log.target_lang|upper }}</span>
+                                </td>
+                                <td>
+                                    {% if log.tool_type == 'file' %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-file-invoice text-indigo-500"></i>
+                                            <span class="fw-semibold text-slate-800">{{ log.file_name|default:"Uploaded File" }}</span>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-truncate" style="max-width: 320px;" title="{{ log.source_text }}">
+                                            {{ log.source_text }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.tool_type == 'file' %}
+                                        <a href="{{ log.translated_text|cut:'Download URL: ' }}" class="btn btn-sm btn-outline-primary px-3 rounded-pill" download>
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                    {% else %}
+                                        <div class="text-truncate" style="max-width: 320px;" title="{{ log.translated_text }}">
+                                            {{ log.translated_text }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <div class="mb-3">
+                                        <i class="fas fa-clock-rotate-left fs-1 text-slate-300"></i>
+                                    </div>
+                                    <h6 class="fw-bold">No translation history found</h6>
+                                    <p class="small mb-0">Your translated texts and documents will show up here.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Grid -->
+            {% if page_obj.has_other_pages %}
+                <nav class="d-flex justify-content-between align-items-center mt-4" aria-label="Pagination">
+                    <span class="text-muted small">
+                        Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link shadow-none" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link" style="background: var(--brand-gradient); border-color: transparent;">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item"><a class="page-link shadow-none" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link shadow-none" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

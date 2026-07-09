@@ -1,0 +1,613 @@
+<!-- Modern Glassmorphic Sonner/Toastify notification system wrapper -->
+
+<!-- FontAwesome CDN (loaded if not already present) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Toastify & Dialog Stylesheet -->
+<style>
+    /* CSS Variables for Accent Gradients */
+    :root {
+        --toast-success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        --toast-error-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        --toast-warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        --toast-info-gradient: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        --toast-accent-color: #4f46e5;
+    }
+
+    /* Container for Toasts */
+    #glass-toast-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 100000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 380px;
+        width: calc(100% - 48px);
+        pointer-events: none;
+    }
+
+    /* Base Toast Style with Glassmorphism */
+    .glass-toast {
+        position: relative;
+        pointer-events: auto;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(14px) saturate(180%);
+        -webkit-backdrop-filter: blur(14px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.35s cubic-bezier(0.19, 1, 0.22, 1);
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    /* Toast Slide In/Out animations */
+    .glass-toast.toast-show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    .glass-toast.toast-hide {
+        transform: translateY(-15px) scale(0.92);
+        opacity: 0;
+    }
+
+    /* Left accent vertical gradient border */
+    .glass-toast::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 5px;
+    }
+
+    /* Variant Accent Gradients & Borders */
+    .glass-toast.toast-success {
+        border-color: rgba(16, 185, 129, 0.15);
+    }
+    .glass-toast.toast-success::before {
+        background: var(--toast-success-gradient);
+    }
+
+    .glass-toast.toast-error {
+        border-color: rgba(239, 68, 68, 0.15);
+    }
+    .glass-toast.toast-error::before {
+        background: var(--toast-error-gradient);
+    }
+
+    .glass-toast.toast-warning {
+        border-color: rgba(245, 158, 11, 0.15);
+    }
+    .glass-toast.toast-warning::before {
+        background: var(--toast-warning-gradient);
+    }
+
+    .glass-toast.toast-info {
+        border-color: rgba(59, 130, 246, 0.15);
+    }
+    .glass-toast.toast-info::before {
+        background: var(--toast-info-gradient);
+    }
+
+    /* Icon Styling */
+    .toast-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        padding-top: 1px;
+    }
+    .toast-success .toast-icon-wrapper { color: #10b981; }
+    .toast-error .toast-icon-wrapper { color: #ef4444; }
+    .toast-warning .toast-icon-wrapper { color: #f59e0b; }
+    .toast-info .toast-icon-wrapper { color: #3b82f6; }
+
+    /* Content styling */
+    .toast-content {
+        flex: 1;
+        padding-right: 8px;
+    }
+    .toast-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: #0f172a;
+        margin-bottom: 2px;
+        line-height: 1.3;
+    }
+    .toast-message {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.82rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+
+    /* Close Button */
+    .toast-close-btn {
+        background: transparent;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+    }
+    .toast-close-btn:hover {
+        color: #475569;
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Progress bar indicators */
+    .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2.5px;
+        transform-origin: left;
+        transform: scaleX(1);
+    }
+    .toast-success .toast-progress { background: rgba(16, 185, 129, 0.35); }
+    .toast-error .toast-progress { background: rgba(239, 68, 68, 0.35); }
+    .toast-warning .toast-progress { background: rgba(245, 158, 11, 0.35); }
+    .toast-info .toast-progress { background: rgba(59, 130, 246, 0.35); }
+
+    /* Centered Glassmorphic Modal Dialog (Safety override & confirm) */
+    .glass-confirm-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.25);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 100050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+    .glass-confirm-backdrop.confirm-show {
+        opacity: 1;
+    }
+
+    .glass-confirm-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(18px) saturate(180%);
+        -webkit-backdrop-filter: blur(18px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 420px;
+        width: calc(100% - 32px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+        transform: scale(0.9);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .glass-confirm-backdrop.confirm-show .glass-confirm-card {
+        transform: scale(1);
+    }
+
+    .glass-confirm-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+    .glass-confirm-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.88rem;
+        color: #475569;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+    .glass-confirm-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    .glass-confirm-btn {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 0.85rem;
+        padding: 8px 18px;
+        border-radius: 9999px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .glass-confirm-btn-cancel {
+        background: rgba(0, 0, 0, 0.05);
+        color: #475569;
+    }
+    .glass-confirm-btn-cancel:hover {
+        background: rgba(0, 0, 0, 0.08);
+        color: #0f172a;
+    }
+    .glass-confirm-btn-confirm {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    .glass-confirm-btn-confirm:hover {
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+        transform: translateY(-1px);
+    }
+
+    /* Custom color overrides for modal layouts */
+    .glass-confirm-card .text-success { color: #10b981 !important; }
+    .glass-confirm-card .text-danger { color: #ef4444 !important; }
+    .glass-confirm-card .text-warning { color: #f59e0b !important; }
+    .glass-confirm-card .text-primary { color: #3b82f6 !important; }
+
+    /* Dark Mode Theme Overrides */
+    .dark-mode .glass-toast,
+    [data-theme="dark"] .glass-toast,
+    .sidebar-dark .glass-toast {
+        background: rgba(15, 23, 42, 0.8);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+    .dark-mode .toast-title,
+    [data-theme="dark"] .toast-title,
+    .sidebar-dark .toast-title {
+        color: #f8fafc;
+    }
+    .dark-mode .toast-message,
+    [data-theme="dark"] .toast-message,
+    .sidebar-dark .toast-message {
+        color: #94a3b8;
+    }
+
+    .dark-mode .glass-confirm-card,
+    [data-theme="dark"] .glass-confirm-card {
+        background: rgba(15, 23, 42, 0.85);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+    .dark-mode .glass-confirm-title,
+    [data-theme="dark"] .glass-confirm-title {
+        color: #f8fafc;
+    }
+    .dark-mode .glass-confirm-text,
+    [data-theme="dark"] .glass-confirm-text {
+        color: #94a3b8;
+    }
+    .dark-mode .glass-confirm-btn-cancel,
+    [data-theme="dark"] .glass-confirm-btn-cancel {
+        background: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+    }
+    .dark-mode .glass-confirm-btn-cancel:hover,
+    [data-theme="dark"] .glass-confirm-btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 576px) {
+        #glass-toast-container {
+            top: auto;
+            bottom: 20px;
+            right: 20px;
+            left: 20px;
+            width: calc(100% - 40px);
+        }
+        .glass-toast {
+            transform: translateY(120%);
+        }
+        .glass-toast.toast-show {
+            transform: translateY(0);
+        }
+        .glass-toast.toast-hide {
+            transform: translateY(20px) scale(0.95);
+        }
+    }
+</style>
+
+<!-- Toastify & Dialog Handler Script -->
+<script>
+    class GlassNotifier {
+        constructor() {
+            this.container = document.getElementById('glass-toast-container');
+            if (!this.container) {
+                this.container = document.createElement('div');
+                this.container.id = 'glass-toast-container';
+                document.body.appendChild(this.container);
+            }
+        }
+
+        createToast({ type = 'info', title = '', message = '', duration = 3000 }) {
+            const toast = document.createElement('div');
+            toast.className = `glass-toast toast-${type}`;
+
+            const iconMap = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-xmark',
+                warning: 'fa-triangle-exclamation',
+                info: 'fa-circle-info'
+            };
+
+            const defaultTitleMap = {
+                success: 'Success',
+                error: 'Error',
+                warning: 'Warning',
+                info: 'Notification'
+            };
+
+            const iconClass = iconMap[type] || 'fa-circle-info';
+            const titleText = title || defaultTitleMap[type];
+
+            toast.innerHTML = `
+                <div class="toast-icon-wrapper">
+                    <i class="fa-solid ${iconClass}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${titleText}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close-btn" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="toast-progress"></div>
+            `;
+
+            this.container.appendChild(toast);
+
+            // Animate slide-in
+            setTimeout(() => {
+                toast.classList.add('toast-show');
+            }, 10);
+
+            const closeBtn = toast.querySelector('.toast-close-btn');
+            const progressBar = toast.querySelector('.toast-progress');
+            
+            let timeLeft = duration;
+            const intervalTime = 10;
+            let isPaused = false;
+
+            const dismiss = () => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-hide');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            };
+
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearInterval(timer);
+                dismiss();
+            });
+
+            // Timer for auto-dismiss and progress bar scaling
+            let timer = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft -= intervalTime;
+                    const percentage = Math.max(0, timeLeft / duration);
+                    progressBar.style.transform = `scaleX(${percentage})`;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        dismiss();
+                    }
+                }
+            }, intervalTime);
+
+            // Hover effects (pause timer)
+            toast.addEventListener('mouseenter', () => isPaused = true);
+            toast.addEventListener('mouseleave', () => isPaused = false);
+        }
+
+        createConfirm({ title, text, confirmText = 'Confirm', cancelText = 'Cancel', type = 'warning' }) {
+            return new Promise((resolve) => {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'glass-confirm-backdrop';
+                
+                backdrop.innerHTML = `
+                    <div class="glass-confirm-card">
+                        <div class="glass-confirm-title">${title}</div>
+                        <div class="glass-confirm-text">${text}</div>
+                        <div class="glass-confirm-actions">
+                            <button class="glass-confirm-btn glass-confirm-btn-cancel">${cancelText}</button>
+                            <button class="glass-confirm-btn glass-confirm-btn-confirm">${confirmText}</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(backdrop);
+                
+                // Fade & Zoom In
+                setTimeout(() => {
+                    backdrop.classList.add('confirm-show');
+                }, 10);
+                
+                const closeConfirm = (confirmed) => {
+                    backdrop.classList.remove('confirm-show');
+                    setTimeout(() => {
+                        backdrop.remove();
+                        resolve({ isConfirmed: confirmed });
+                    }, 250);
+                };
+                
+                backdrop.querySelector('.glass-confirm-btn-confirm').addEventListener('click', () => {
+                    closeConfirm(true);
+                });
+                backdrop.querySelector('.glass-confirm-btn-cancel').addEventListener('click', () => {
+                    closeConfirm(false);
+                });
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) {
+                        closeConfirm(false);
+                    }
+                });
+            });
+        }
+
+        createAlert({ type = 'info', title = '', message = '' }) {
+            return new Promise((resolve) => {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'glass-confirm-backdrop';
+                
+                const iconMap = {
+                    success: 'fa-circle-check text-success',
+                    error: 'fa-circle-xmark text-danger',
+                    warning: 'fa-triangle-exclamation text-warning',
+                    info: 'fa-circle-info text-primary'
+                };
+                
+                const iconClass = iconMap[type] || 'fa-circle-info text-primary';
+                
+                backdrop.innerHTML = `
+                    <div class="glass-confirm-card text-center">
+                        <div class="mb-3" style="font-size: 2.8rem;">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                        <div class="glass-confirm-title">${title}</div>
+                        <div class="glass-confirm-text" style="margin-bottom: 20px;">${message}</div>
+                        <div class="glass-confirm-actions" style="justify-content: center;">
+                            <button class="glass-confirm-btn glass-confirm-btn-confirm" style="min-width: 100px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">OK</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(backdrop);
+                
+                setTimeout(() => {
+                    backdrop.classList.add('confirm-show');
+                }, 10);
+                
+                const closeAlert = () => {
+                    backdrop.classList.remove('confirm-show');
+                    setTimeout(() => {
+                        backdrop.remove();
+                        resolve({ isConfirmed: true });
+                    }, 250);
+                };
+                
+                backdrop.querySelector('.glass-confirm-btn-confirm').addEventListener('click', () => {
+                    closeAlert();
+                });
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) {
+                        closeAlert();
+                    }
+                });
+            });
+        }
+    }
+
+    // Initialize global instance
+    const notifier = new GlassNotifier();
+
+    // Safety Override for standard browser alert()
+    window.alert = function(message) {
+        notifier.createToast({
+            type: 'info',
+            title: 'Notification',
+            message: message,
+            duration: 4000
+        });
+    };
+
+    // SweetAlert2 (Swal) drop-in compatibility wrapper layer
+    const Swal = {
+        fire: function(options) {
+            // Case 1: Toast notification mapping
+            if (options.toast) {
+                notifier.createToast({
+                    type: options.icon || 'info',
+                    title: options.title || '',
+                    message: options.text || '',
+                    duration: options.timer || 3000
+                });
+                return Promise.resolve({ isConfirmed: true });
+            }
+            
+            // Case 2: Confirmation modal dialog
+            if (options.showCancelButton) {
+                return notifier.createConfirm({
+                    title: options.title || 'Are you sure?',
+                    text: options.text || '',
+                    confirmText: options.confirmButtonText || 'Confirm',
+                    cancelText: options.cancelButtonText || 'Cancel'
+                });
+            }
+            
+            // Case 3: Normal modal alerts
+            return notifier.createAlert({
+                type: options.icon || 'info',
+                title: options.title || '',
+                message: options.text || ''
+            });
+        },
+        
+        mixin: function(mixinOptions) {
+            return {
+                fire: function(options) {
+                    return Swal.fire({ ...mixinOptions, ...options });
+                }
+            };
+        }
+    };
+
+    // Process Django Backend Framework Messages
+    document.addEventListener("DOMContentLoaded", () => {
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    notifier.createToast({
+                        type: 'success',
+                        title: 'Success',
+                        message: '{{ message|escapejs }}'
+                    });
+                {% elif message.tags == 'info' %}
+                    notifier.createToast({
+                        type: 'info',
+                        title: 'Notification',
+                        message: '{{ message|escapejs }}'
+                    });
+                {% elif message.tags == 'warning' %}
+                    notifier.createToast({
+                        type: 'warning',
+                        title: 'Warning',
+                        message: '{{ message|escapejs }}',
+                        duration: 4000
+                    });
+                {% elif message.tags == 'error' %}
+                    notifier.createToast({
+                        type: 'error',
+                        title: 'Error',
+                        message: '{{ message|escapejs }}',
+                        duration: 5000
+                    });
+                {% else %}
+                    notifier.createToast({
+                        type: 'info',
+                        title: 'Notification',
+                        message: '{{ message|escapejs }}'
+                    });
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    });
+</script>

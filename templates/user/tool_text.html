@@ -1,0 +1,184 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Text Translator{% endblock %}
+{% block header_title %}Text Translation Workspace{% endblock %}
+{% block nav_tool_text %}active{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+    /* Styling Tom Select to fit premium dashboard design */
+    .ts-wrapper .ts-control {
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        border-color: #cbd5e1;
+        font-family: 'Inter', sans-serif;
+        box-shadow: none;
+    }
+    .ts-wrapper.focus .ts-control {
+        border-color: var(--brand-primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    }
+    .ts-wrapper .ts-dropdown {
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        border: 1px solid #e2e8f0;
+    }
+    .ts-dropdown .active {
+        background-color: var(--brand-primary) !important;
+        color: #ffffff !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Main Translation Panel -->
+    <div class="col-lg-12">
+        <div class="dashboard-card p-4">
+            <!-- Language Select Header -->
+            <div class="row g-3 align-items-center border-bottom pb-4 mb-4">
+                <div class="col-md-5">
+                    <label for="sourceLanguage" class="form-label fw-semibold">Source Language</label>
+                    <select id="sourceLanguage" class="form-select shadow-none">
+                        <option value="auto" selected>Auto-Detect Language</option>
+                        {% for lang in languages %}
+                            <option value="{{ lang.code }}">{{ lang.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2 text-center d-none d-md-block mt-4">
+                    <div class="rounded-circle border d-inline-flex align-items-center justify-content-center bg-light" style="width: 40px; height: 40px;">
+                        <i class="fas fa-right-left text-slate-400"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <label for="targetLanguage" class="form-label fw-semibold">Target Language</label>
+                    <select id="targetLanguage" class="form-select shadow-none">
+                        {% for lang in languages %}
+                            <option value="{{ lang.code }}" {% if lang.code == 'es' %}selected{% endif %}>{{ lang.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Translate Text Areas -->
+            <div class="row g-4">
+                <!-- Source Text (Left) -->
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small text-muted fw-medium">Source Text</span>
+                        <span class="small text-muted" id="charCount">0 / 5000</span>
+                    </div>
+                    <textarea id="sourceText" class="form-control shadow-none" rows="10" placeholder="Type or paste your text here (e.g. 'hello, how are you?')..." style="resize: none; font-size: 1.05rem;"></textarea>
+                </div>
+
+                <!-- Translated Text (Right) -->
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small text-muted fw-medium">Translation Output</span>
+                        <!-- Spinner loader -->
+                        <div id="translationSpinner" class="spinner-border spinner-border-sm text-indigo-600 d-none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="position-relative">
+                        <textarea id="outputText" class="form-control bg-light shadow-none" rows="10" readonly placeholder="Translated output will appear here..." style="resize: none; font-size: 1.05rem; border-color: #e2e8f0;"></textarea>
+                        
+                        <!-- Tool controls inside output panel -->
+                        <div class="position-absolute bottom-0 end-0 m-3 d-flex gap-2">
+                            <button id="speakBtn" class="btn btn-sm btn-light border shadow-sm rounded-pill px-3" title="Listen to translation">
+                                <i class="fas fa-volume-high me-1"></i> Speak
+                            </button>
+                            <button id="copyBtn" class="btn btn-sm btn-light border shadow-sm rounded-pill px-3" title="Copy to clipboard">
+                                <i class="fas fa-copy me-1"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-4">
+                <span class="text-muted small d-none d-md-inline-block"><i class="fas fa-keyboard me-1"></i> Press <kbd class="bg-light text-dark border font-monospace px-1">Ctrl + Enter</kbd> to translate instantly.</span>
+                <button id="translateBtn" class="btn btn-brand-primary px-5 py-2">
+                    <i class="fas fa-language me-2"></i> Translate Text
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Details Container (Phonetics & Grammar) -->
+    <div class="col-lg-12 d-none animate-fade-in" id="activeDetailsContainer">
+        <div class="dashboard-card p-4 bg-light-subtle">
+            <h5 class="fw-bold mb-3 text-slate-800"><i class="fas fa-circle-info text-primary me-2"></i> Linguistic Insights &amp; Pronunciation</h5>
+            <div class="row g-4">
+                <!-- Transliteration -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border bg-white h-100">
+                        <span class="text-muted small fw-semibold d-block mb-1">Romanized Transliteration</span>
+                        <p id="outputTranslit" class="fw-semibold text-slate-800 mb-0 font-monospace" style="font-size: 0.95rem;">-</p>
+                    </div>
+                </div>
+                <!-- IPA Pronunciation -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border bg-white h-100">
+                        <span class="text-muted small fw-semibold d-block mb-1">Phonetic IPA Pronunciation</span>
+                        <p id="outputPron" class="text-indigo-600 fw-bold mb-0 font-monospace" style="font-size: 0.95rem;">-</p>
+                    </div>
+                </div>
+                <!-- Grammar Notes -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border bg-white h-100">
+                        <span class="text-muted small fw-semibold d-block mb-1">Context Grammar Feedback</span>
+                        <p id="outputGrammar" class="small text-slate-800 mb-0">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Main Translator script -->
+<script src="{% static 'js/main.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initialize Tom Select on language selectors
+        new TomSelect("#sourceLanguage", {
+            create: false,
+            placeholder: "Search language...",
+            controlInput: '<input>',
+            dropdownParent: 'body'
+        });
+        
+        new TomSelect("#targetLanguage", {
+            create: false,
+            placeholder: "Search language...",
+            controlInput: '<input>',
+            dropdownParent: 'body'
+        });
+
+        // Character counter logic
+        const sourceText = document.getElementById("sourceText");
+        const charCount = document.getElementById("charCount");
+        
+        if (sourceText && charCount) {
+            sourceText.addEventListener("input", () => {
+                const count = sourceText.value.length;
+                charCount.textContent = `${count} / 5000`;
+                if (count > 5000) {
+                    charCount.classList.add("text-danger");
+                } else {
+                    charCount.classList.remove("text-danger");
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

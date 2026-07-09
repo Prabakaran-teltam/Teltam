@@ -1,0 +1,26 @@
+# Django Framework and Utilities
+Django>=4.2.1,<5.0.0
+python-dotenv>=1.0.0
+
+# Database, Cache & Celery Task Queue
+celery>=5.3.0
+redis>=5.0.0
+
+# Payment Gateway
+phonepe-pg-sdk-python>=2.0.0
+requests>=2.31.0
+
+# Document & Text Rich Editing (CKEditor)
+django-ckeditor>=6.7.1
+Pillow>=10.0.0
+
+# Translation Services & APIs
+openai>=1.0.0
+deep-translator>=1.11.4
+
+# Document Text Extraction
+PyMuPDF>=1.22.0
+python-docx>=0.8.11
+
+# Audio & Voice Processing
+pydub>=0.25.1

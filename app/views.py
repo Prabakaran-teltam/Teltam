@@ -376,13 +376,28 @@ def translate_api(request):
         
     # 5. Perform translation
     try:
+        translated_text = None
+        openai_error_msg = None
+        
         if getattr(settings, 'OPENAI_API_KEY', None):
-            from app.services.openai_text_service import translate_text_with_openai_semantic
-            translated_text = translate_text_with_openai_semantic(text, target_lang, source_lang)
-        else:
-            logger.warning("OPENAI_API_KEY is not configured. Falling back to GoogleTranslator scraper.")
-            translator = GoogleTranslator(source=source_lang, target=target_lang)
-            translated_text = translator.translate(text)
+            try:
+                from app.services.openai_text_service import translate_text_with_openai_semantic
+                translated_text = translate_text_with_openai_semantic(text, target_lang, source_lang)
+            except Exception as openai_err:
+                openai_error_msg = str(openai_err)
+                logger.error(f"OpenAI semantic translation failed: {openai_error_msg}. Attempting fallback to GoogleTranslator.")
+        
+        if not translated_text:
+            try:
+                # Fallback to GoogleTranslator scraper interface (deep-translator)
+                translator = GoogleTranslator(source=source_lang, target=target_lang)
+                translated_text = translator.translate(text)
+            except Exception as gt_err:
+                logger.error(f"GoogleTranslator fallback failed: {str(gt_err)}")
+                if getattr(settings, 'OPENAI_API_KEY', None):
+                    raise Exception(openai_error_msg or f"Translation failed: {str(gt_err)}")
+                else:
+                    raise Exception("OpenAI API key is not configured, and fallback Google Translation is unavailable (possibly blocked by Google on this server IP).")
         
         response_data = {
             'translated_text': translated_text,
@@ -411,8 +426,13 @@ def translate_api(request):
         
     except Exception as e:
         logger.exception("Live translation view encountered an error")
+        err_msg = str(e)
+        if "APIKey" in err_msg or "api_key" in err_msg or "API key" in err_msg:
+            err_msg = "OpenAI API Key is invalid or expired. Please check your environment configuration."
+        elif "quota" in err_msg or "billing" in err_msg:
+            err_msg = "OpenAI API quota exceeded or billing limits reached. Please check your OpenAI account billing."
         return JsonResponse({
-            'error': 'Translation service is currently unavailable. Please try again.'
+            'error': err_msg
         }, status=500)
 
 from celery.result import AsyncResult

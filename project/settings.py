@@ -200,7 +200,7 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 print(f"[Startup Log] Environment file loaded. OpenAI API Key configured: {bool(OPENAI_API_KEY)}")
 
 # Document Translation settingss
-ALLOW_ANONYMOUS_TRANSLATION = False
+ALLOW_ANONYMOUS_TRANSLATION = True
 
 
 

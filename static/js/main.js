@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         // Attach debounced translate for typing in textarea
-        const debouncedTranslate = debounce(() => triggerTranslation(true), 500);
+        const debouncedTranslate = debounce(() => triggerTranslation(true), 800);
 
         sourceText.addEventListener("input", () => {
             if (sourceText.value.trim().length > 0) {

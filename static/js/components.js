@@ -170,9 +170,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentPathname = window.location.pathname;
     const navLinks = document.querySelectorAll(".navbar-nav .nav-link, .navbar-nav .dropdown-item");
 
+    // Normalize path by removing trailing slashes for standard comparison
+    const normalizePath = (path) => {
+        if (!path) return '';
+        return path === '/' ? '/' : path.replace(/\/+$/, "");
+    };
+
+    const currentNormalized = normalizePath(currentPathname);
+
     navLinks.forEach(link => {
         const href = link.getAttribute("href");
-        if (href === currentPathname || (currentPathname === "/" && href === "/")) {
+        if (!href || href === "#") return;
+        
+        const hrefNormalized = normalizePath(href);
+        let isMatch = false;
+        
+        if (hrefNormalized === '/') {
+            isMatch = currentNormalized === '/';
+        } else {
+            isMatch = currentNormalized === hrefNormalized || currentNormalized.startsWith(hrefNormalized + '/');
+        }
+
+        if (isMatch) {
             link.classList.add("active");
             // Highlight parent dropdown if active link is a dropdown item
             if (link.classList.contains("dropdown-item")) {

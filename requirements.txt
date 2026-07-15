@@ -24,3 +24,4 @@ python-docx>=0.8.11
 
 # Audio & Voice Processing
 pydub>=0.25.1
+audioop-lts

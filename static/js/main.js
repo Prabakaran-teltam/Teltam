@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const outputText = document.getElementById("outputText");
     const translationSpinner = document.getElementById("translationSpinner");
 
-    if (translateBtn && sourceText && targetLang && outputText) {
+    if (sourceText && targetLang && outputText) {
         const triggerTranslation = (isLive = false) => {
             const query = sourceText.value.trim();
             const src = sourceLang ? sourceLang.value : 'auto';
@@ -142,21 +142,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Attach explicit button click
-        translateBtn.addEventListener("click", () => {
-            if (!sourceText.value.trim()) {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'warning',
-                    title: 'Please enter some text to translate.',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-                return;
-            }
-            triggerTranslation(false);
-        });
+        if (translateBtn) {
+            translateBtn.addEventListener("click", () => {
+                if (!sourceText.value.trim()) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: 'Please enter some text to translate.',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+                triggerTranslation(false);
+            });
+        }
 
         // Trigger translate on pressing enter (Ctrl + Enter)
         sourceText.addEventListener("keydown", (e) => {
@@ -171,41 +173,105 @@ document.addEventListener("DOMContentLoaded", () => {
     const speakBtn = document.getElementById("speakBtn");
     if (speakBtn && outputText) {
         speakBtn.addEventListener("click", () => {
-            const textToSpeak = outputText.innerText;
+            const textToSpeak = outputText.value || outputText.innerText;
             if (textToSpeak && !textToSpeak.includes("Translating")) {
+                // Cancel any ongoing local speech synthesis
                 if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                    // Try to match voice code based on selected lang
-                    const langCodeMap = { es: "es-ES", fr: "fr-FR", de: "de-DE", ta: "ta-IN" };
-                    if (targetLang && langCodeMap[targetLang.value]) {
-                        utterance.lang = langCodeMap[targetLang.value];
-                    }
-                    window.speechSynthesis.speak(utterance);
+                    window.speechSynthesis.cancel();
+                }
+                
+                // Identify target language code
+                const langCode = targetLang ? targetLang.value : 'en';
+                const langCodeMap = { 
+                    en: "en", 
+                    es: "es", 
+                    fr: "fr", 
+                    de: "de", 
+                    ta: "ta",
+                    hi: "hi",
+                    te: "te"
+                };
+                const tl = langCodeMap[langCode] || langCode;
+
+                // Animate button
+                speakBtn.classList.add("text-indigo-600");
+                setTimeout(() => speakBtn.classList.remove("text-indigo-600"), 1000);
+
+                // Try playing via Google Translate TTS for highly clear native voice
+                try {
+                    const encodedText = encodeURIComponent(textToSpeak);
+                    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${tl}&client=tw-ob&q=${encodedText}`;
                     
-                    // Add active button animation class
-                    speakBtn.classList.add("text-indigo-600");
-                    setTimeout(() => speakBtn.classList.remove("text-indigo-600"), 1000);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Not Supported',
-                        text: 'Text-to-speech not supported in this browser.',
-                        confirmButtonColor: '#ef4444',
-                        customClass: {
-                            confirmButton: 'btn btn-danger rounded-pill px-4'
-                        },
-                        buttonsStyling: false
-                    });
+                    if (window.currentTtsAudio) {
+                        window.currentTtsAudio.pause();
+                    }
+                    
+                    const audio = new Audio(ttsUrl);
+                    window.currentTtsAudio = audio;
+                    
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(err => {
+                            console.warn("Google TTS play failed. Falling back to local Web Speech API.", err);
+                            speakWithWebSpeechFallback(textToSpeak, tl);
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Google TTS setup failed. Falling back to local Web Speech API.", e);
+                    speakWithWebSpeechFallback(textToSpeak, tl);
                 }
             }
         });
+    }
+
+    // Local Web Speech Fallback helper
+    function speakWithWebSpeechFallback(text, langCode) {
+        if (!('speechSynthesis' in window)) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        const localeMap = {
+            en: "en-US",
+            es: "es-ES",
+            fr: "fr-FR",
+            de: "de-DE",
+            ta: "ta-IN",
+            hi: "hi-IN",
+            te: "te-IN"
+        };
+        const targetLocale = localeMap[langCode] || langCode;
+        utterance.lang = targetLocale;
+
+        const voices = window.speechSynthesis.getVoices();
+        let bestVoice = null;
+        if (voices && voices.length > 0) {
+            const matchLocale = targetLocale.toLowerCase().replace('_', '-');
+            const langPrefix = matchLocale.split('-')[0];
+            const localeMatches = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
+            if (localeMatches.length > 0) {
+                bestVoice = localeMatches.find(v => 
+                    v.name.includes("Google") || 
+                    v.name.includes("Natural") || 
+                    v.name.includes("Premium") || 
+                    v.name.includes("Microsoft")
+                );
+                if (!bestVoice) {
+                    bestVoice = localeMatches.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(matchLocale));
+                }
+                if (!bestVoice) {
+                    bestVoice = localeMatches[0];
+                }
+            }
+        }
+        if (bestVoice) {
+            utterance.voice = bestVoice;
+        }
+        window.speechSynthesis.speak(utterance);
     }
 
     // Copy to clipboard
     const copyBtn = document.getElementById("copyBtn");
     if (copyBtn && outputText) {
         copyBtn.addEventListener("click", () => {
-            const text = outputText.innerText;
+            const text = outputText.value || outputText.innerText;
             if (text && !text.includes("Translating")) {
                 navigator.clipboard.writeText(text).then(() => {
                     const origIcon = copyBtn.innerHTML;

@@ -374,11 +374,15 @@ def translate_api(request):
                 logger.warning(f"Failed to log cached text translation: {str(e)}")
         return JsonResponse(cached_response)
         
-    # 5. Perform translation and transliteration
+    # 5. Perform translation
     try:
-        # Translate via Google Translate scraper interface (deep-translator)
-        translator = GoogleTranslator(source=source_lang, target=target_lang)
-        translated_text = translator.translate(text)
+        if getattr(settings, 'OPENAI_API_KEY', None):
+            from app.services.openai_text_service import translate_text_with_openai_semantic
+            translated_text = translate_text_with_openai_semantic(text, target_lang, source_lang)
+        else:
+            logger.warning("OPENAI_API_KEY is not configured. Falling back to GoogleTranslator scraper.")
+            translator = GoogleTranslator(source=source_lang, target=target_lang)
+            translated_text = translator.translate(text)
         
         response_data = {
             'translated_text': translated_text,

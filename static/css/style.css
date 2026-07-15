@@ -636,7 +636,10 @@ input:checked + .slider-custom:before {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+}
+
+.auth-image-side h1 {
+    color: #ffffff !important;
 }
 
 .auth-form-side {
@@ -739,4 +742,15 @@ input:checked + .slider-custom:before {
 }
 .auth-input-group .form-control:focus + i {
     color: var(--color-indigo-600);
+}
+
+/* Active Navigation Highlighting */
+.navbar-nav .nav-link.active {
+    color: #7c3aed !important; /* Brand purple */
+    font-weight: 600 !important;
+}
+.navbar-nav .dropdown-item.active {
+    background-color: rgba(124, 58, 237, 0.08) !important;
+    color: #7c3aed !important;
+    font-weight: 600 !important;
 }

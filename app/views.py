@@ -129,7 +129,6 @@ def video_list(request):
     category = request.GET.get('category', '').strip()
     if category:
         videos_query = videos_query.filter(category__iexact=category)
-        
     # Search filter
     q = request.GET.get('q', '').strip()
     if q:
@@ -1679,4 +1678,70 @@ def download_translated_file(request, id):
         
     response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=original_name)
     return response
+
+
+@require_POST
+def summarize_document_api(request):
+    """
+    POST API to summarize or explain the document text using OpenAI.
+    Premium Feature: Restricts usage to active subscribed users only.
+    """
+    # 1. Enforce login authentication
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication Required: You must log in to use the AI Summarization feature.'}, status=401)
+
+    # 2. Enforce active subscription check
+    has_active_sub = request.user.subscriptions.filter(status='active').exists()
+    if not has_active_sub:
+        return JsonResponse({'error': 'Subscription Required: You must have an active subscription plan to use the AI Summarizer.'}, status=403)
+
+    if not getattr(settings, 'OPENAI_API_KEY', None):
+        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY.'}, status=500)
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        return JsonResponse({'error': 'Invalid JSON request payload'}, status=400)
+
+    text = data.get('text', '').strip()
+    if not text:
+        return JsonResponse({'error': 'Text content is required.'}, status=400)
+
+    from app.services.openai_document_service import get_openai_client
+    client = get_openai_client()
+    if not client:
+        return JsonResponse({'error': 'Failed to initialize OpenAI client.'}, status=500)
+
+    try:
+        system_prompt = (
+            "You are an expert AI educational assistant and content summarizer.\n"
+            "Your task is to analyze the user's text and provide a concise, structured, and informative summary.\n"
+            "Do NOT repeat the entire input text word-for-word. Instead, produce a distinct summary following this format:\n\n"
+            "### 📌 Executive Summary\n"
+            "A high-level 2-3 sentence overview of the main theme.\n\n"
+            "### 🔑 Key Takeaways & Main Points\n"
+            "- **Point 1**: Description...\n"
+            "- **Point 2**: Description...\n\n"
+            "### 💡 Critical Analysis & Insights\n"
+            "Brief educational explanation of the core concepts or implications discussed in the text.\n\n"
+            "Rules:\n"
+            "1. Output must be in Markdown format.\n"
+            "2. Ensure the summary is significantly shorter and more digestible than the original text.\n"
+            "3. Return ONLY the summarized markdown content. Do not include intro/outro conversational remarks."
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Text to explain and summarize:\n\n{text}"}
+            ],
+            temperature=0.3
+        )
+        summary = response.choices[0].message.content.strip()
+        return JsonResponse({'summary': summary})
+    except Exception as e:
+        logger.exception("Document summarization failed")
+        return JsonResponse({'error': f"Failed to summarize document content: {str(e)}"}, status=500)
+
 

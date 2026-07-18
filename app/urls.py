@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/upload-document/', views.upload_document, name='upload_document'),
     path('api/document-status/<str:task_id>/', views.document_task_status, name='document_task_status'),
     path('download/document/<int:id>/', views.download_translated_file, name='download_translated_file'),
+    path('api/summarize-document/', views.summarize_document_api, name='summarize_document_api'),
     path('api/upload-voice/', views.upload_voice_api, name='upload_voice_api'),
     path('api/task-status/<str:task_id>/', views.task_status_api, name='task_status_api'),
 

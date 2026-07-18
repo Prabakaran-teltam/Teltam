@@ -708,11 +708,26 @@
                                         <!-- Extracted & Translated text side-by-side -->
                                         <div class="row text-start my-4 g-3">
                                             <div class="col-md-6">
-                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-file-alt text-indigo-500 me-1.5"></i> EXTRACTED TEXT</label>
+                                                <div class="d-flex justify-content-between align-items-center mb-1.5">
+                                                    <label class="small fw-bold text-slate-700 mb-0" style="font-size: 0.82rem;"><i class="fas fa-file-alt text-indigo-500 me-1.5"></i> EXTRACTED TEXT</label>
+                                                    <button type="button" id="docSpeakExtractedBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0.5" style="font-size: 0.75rem; border-color: #cbd5e1;">
+                                                        <i class="fas fa-volume-up me-1"></i> Speak
+                                                    </button>
+                                                </div>
                                                 <textarea id="docExtractedText" class="form-control bg-white border rounded-3 p-3 font-monospace shadow-none" rows="8" readonly style="font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; border-color: #cbd5e1 !important;"></textarea>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-language text-emerald-500 me-1.5"></i> TRANSLATED TEXT</label>
+                                                <div class="d-flex justify-content-between align-items-center mb-1.5">
+                                                    <label class="small fw-bold text-slate-700 mb-0" style="font-size: 0.82rem;"><i class="fas fa-language text-emerald-500 me-1.5"></i> TRANSLATED TEXT</label>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" id="docSummarizeAiBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-0.5" style="font-size: 0.75rem;">
+                                                            <i class="fas fa-brain me-1"></i> Summarize with AI
+                                                        </button>
+                                                        <button type="button" id="docSpeakTranslatedBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0.5" style="font-size: 0.75rem; border-color: #cbd5e1;">
+                                                            <i class="fas fa-volume-up me-1"></i> Speak
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 <textarea id="docTranslatedText" class="form-control bg-white border rounded-3 p-3 font-monospace shadow-none" rows="8" readonly style="font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; border-color: #cbd5e1 !important;"></textarea>
                                             </div>
                                         </div>
@@ -1560,6 +1575,232 @@
                 });
             }
 
+            // Speak & AI Summarization Options for Public Document Previewer
+            const docSpeakExtractedBtn = document.getElementById('docSpeakExtractedBtn');
+            const docSpeakTranslatedBtn = document.getElementById('docSpeakTranslatedBtn');
+            const docSummarizeAiBtn = document.getElementById('docSummarizeAiBtn');
+
+            // Speak function using unified Google TTS + Web Speech Fallback
+            const speakPublicDocText = (text, langCode) => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+
+                const langMap = { 
+                    en: "en", 
+                    es: "es", 
+                    fr: "fr", 
+                    de: "de", 
+                    ta: "ta",
+                    hi: "hi",
+                    te: "te",
+                    zh: "zh",
+                    ar: "ar"
+                };
+                let tl = langMap[langCode] || langCode;
+                if (tl === 'auto') {
+                    tl = 'en';
+                }
+
+                try {
+                    const encodedText = encodeURIComponent(text);
+                    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${tl}&client=tw-ob&q=${encodedText}`;
+                    
+                    if (window.currentTtsAudio) {
+                        window.currentTtsAudio.pause();
+                    }
+                    
+                    const audio = new Audio(ttsUrl);
+                    window.currentTtsAudio = audio;
+                    audio.play().catch(err => {
+                        console.warn("Google TTS failed, falling back to Web Speech:", err);
+                        speakPublicDocWebSpeechFallback(text, tl);
+                    });
+                } catch (e) {
+                    speakPublicDocWebSpeechFallback(text, tl);
+                }
+            };
+
+            function speakPublicDocWebSpeechFallback(text, langCode) {
+                if (!('speechSynthesis' in window)) return;
+                const utterance = new SpeechSynthesisUtterance(text);
+                const localeMap = {
+                    en: "en-US",
+                    es: "es-ES",
+                    fr: "fr-FR",
+                    de: "de-DE",
+                    ta: "ta-IN",
+                    hi: "hi-IN",
+                    te: "te-IN"
+                };
+                const targetLocale = localeMap[langCode] || langCode;
+                utterance.lang = targetLocale;
+
+                const voices = window.speechSynthesis.getVoices();
+                let bestVoice = null;
+                if (voices && voices.length > 0) {
+                    const matchLocale = targetLocale.toLowerCase().replace('_', '-');
+                    const langPrefix = matchLocale.split('-')[0];
+                    const localeMatches = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
+                    if (localeMatches.length > 0) {
+                        bestVoice = localeMatches.find(v => 
+                            v.name.includes("Google") || 
+                            v.name.includes("Natural") || 
+                            v.name.includes("Premium") || 
+                            v.name.includes("Microsoft")
+                        );
+                        if (!bestVoice) {
+                            bestVoice = localeMatches.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(matchLocale));
+                        }
+                        if (!bestVoice) {
+                            bestVoice = localeMatches[0];
+                        }
+                    }
+                }
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
+                }
+                window.speechSynthesis.speak(utterance);
+            }
+
+            if (docSpeakExtractedBtn) {
+                docSpeakExtractedBtn.addEventListener('click', () => {
+                    const text = docExtractedText.value.trim();
+                    if (!text) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Text Found',
+                            text: 'There is no extracted text to speak.',
+                            confirmButtonColor: '#fbbf24'
+                        });
+                        return;
+                    }
+                    speakPublicDocText(text, typeof docSourceCode !== 'undefined' ? docSourceCode : 'auto');
+                });
+            }
+
+            if (docSpeakTranslatedBtn) {
+                docSpeakTranslatedBtn.addEventListener('click', () => {
+                    const text = docTranslatedText.value.trim();
+                    if (!text) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Text Found',
+                            text: 'There is no translated text to speak.',
+                            confirmButtonColor: '#fbbf24'
+                        });
+                        return;
+                    }
+                    speakPublicDocText(text, typeof docTargetCode !== 'undefined' ? docTargetCode : 'en');
+                });
+            }
+
+            // Summarize text using OpenAI via new API endpoint
+            if (docSummarizeAiBtn) {
+                docSummarizeAiBtn.addEventListener('click', () => {
+                    const text = docTranslatedText.value.trim();
+                    if (!text) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Text Found',
+                            text: 'There is no translated text to summarize.',
+                            confirmButtonColor: '#fbbf24'
+                        });
+                        return;
+                    }
+
+                    // Show SweetAlert2 loading state
+                    Swal.fire({
+                        title: 'Generating AI Insights...',
+                        html: '<p class="text-muted">Teltam AI is analyzing the content and summarizing key takeaways... Please wait.</p>',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/api/summarize-document/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken') || ''
+                        },
+                        body: JSON.stringify({ text: text })
+                    })
+                    .then(res => {
+                        if (res.status === 401) {
+                            throw { type: 'auth', message: 'You must log in to use the AI Summarizer.' };
+                        }
+                        if (res.status === 403) {
+                            throw { type: 'subscription', message: 'You must have an active subscription plan to use the AI Summarizer.' };
+                        }
+                        return res.json().then(data => {
+                            if (!res.ok) {
+                                throw { type: 'server', message: data.error || `Server returned error ${res.status}` };
+                            }
+                            return data;
+                        });
+                    })
+                    .then(data => {
+                        let renderedHtml = data.summary;
+                        if (typeof marked !== 'undefined') {
+                            renderedHtml = marked.parse(data.summary);
+                        }
+                        
+                        Swal.fire({
+                            title: '<i class="fas fa-brain text-indigo-600 me-2"></i> AI Document Insights & Summary',
+                            html: `<div class="text-start p-2" style="max-height: 450px; overflow-y: auto; font-size: 0.92rem; line-height: 1.6; color: #1e293b;">${renderedHtml}</div>`,
+                            width: '750px',
+                            confirmButtonText: 'Great, thank you!',
+                            confirmButtonColor: '#4f46e5',
+                            customClass: {
+                                popup: 'rounded-4 border-0 shadow-lg'
+                            }
+                        });
+                    })
+                    .catch(err => {
+                        console.error("Summarization error:", err);
+                        
+                        if (err.type === 'auth') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Login Required',
+                                text: err.message,
+                                showCancelButton: true,
+                                confirmButtonText: 'Log In Now',
+                                cancelButtonText: 'Cancel',
+                                confirmButtonColor: '#4f46e5'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '/login/';
+                                }
+                            });
+                        } else if (err.type === 'subscription') {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Subscription Required',
+                                text: err.message,
+                                showCancelButton: true,
+                                confirmButtonText: 'View Pricing Plans',
+                                cancelButtonText: 'Cancel',
+                                confirmButtonColor: '#4f46e5'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '/pricing/';
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Summarization Failed',
+                                text: err.message || err,
+                                confirmButtonColor: '#ef4444'
+                            });
+                        }
+                    });
+                });
+            }
+
             // ==========================================
             // REAL INTEGRATION: Voice Translator
             // ==========================================
@@ -1913,5 +2154,6 @@
 
         })();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html>

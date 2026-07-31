@@ -255,9 +255,9 @@
             return cookieValue;
         }
 
-        // Helper: fetch with timeout support
+        // Helper: fetch with timeout support (default 120 seconds)
         function fetchWithTimeout(resource, options = {}) {
-            const { timeout = 30000 } = options;
+            const { timeout = 120000 } = options;
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
             
@@ -279,6 +279,7 @@
         function handleDocSelect(file) {
             if (file) {
                 docFileName.innerText = file.name;
+                // Format file size
                 const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
                 docFileSize.innerText = `${sizeMB} MB`;
                 
@@ -288,46 +289,39 @@
             }
         }
 
-        // Click zone trigger file input
-        docDropzone.addEventListener('click', () => {
-            if (docFileInput.files.length === 0) {
-                docFileInput.click();
-            }
-        });
+        if (docFileInput) {
+            docFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleDocSelect(e.target.files[0]);
+                }
+            });
+        }
 
-        docFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleDocSelect(e.target.files[0]);
-            }
-        });
-
-        // Drag and drop event handlers
-        ['dragenter', 'dragover'].forEach(eventName => {
-            docDropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                docDropzone.style.borderColor = '#6366f1';
-                docDropzone.style.background = 'rgba(99, 102, 241, 0.03)';
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            docDropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                docDropzone.style.borderColor = '#cbd5e1';
-                docDropzone.style.background = '#f8fafc';
-            }, false);
-        });
-
-        docDropzone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length > 0) {
-                docFileInput.files = files;
-                handleDocSelect(files[0]);
-            }
-        });
+        // Drag and drop events for uploader
+        if (docDropzone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                docDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    docDropzone.style.borderColor = '#6366f1';
+                    docDropzone.style.background = 'rgba(99, 102, 241, 0.05)';
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                docDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    docDropzone.style.borderColor = '#cbd5e1';
+                    docDropzone.style.background = '#f8fafc';
+                }, false);
+            });
+            docDropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    docFileInput.files = files;
+                    handleDocSelect(files[0]);
+                }
+            });
+        }
 
         removeDocFileBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -337,7 +331,7 @@
             docUploadContent.classList.remove('d-none');
         });
 
-        const maxDocPollAttempts = 60; // 60 seconds max
+        const maxDocPollAttempts = 180; // 180 attempts = 3 minutes max
 
         function pollDocStatus(taskId, pollAttempts = 0) {
             if (pollAttempts >= maxDocPollAttempts) {
@@ -464,7 +458,7 @@
                     'X-CSRFToken': getCookie('csrftoken') || ''
                 },
                 body: formData,
-                timeout: 60000
+                timeout: 180000
             })
             .then(res => {
                 return res.json().then(data => {

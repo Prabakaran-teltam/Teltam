@@ -301,10 +301,9 @@ def validate_language_codes(source_lang, target_lang, allow_source_auto=True):
         pass
     elif source_lang not in valid_codes:
         return False, f"Unsupported or invalid source language: '{source_lang}'"
-        
+
     if target_lang not in valid_codes:
         return False, f"Unsupported or invalid target language: '{target_lang}'"
-        
     return True, None
 
 @require_POST
@@ -317,6 +316,7 @@ def translate_api(request):
       - target_lang: string (e.g. 'es', 'fr', etc.)
     Returns JSON response.
     """
+    
     # 1. Rate limiting check (using cache)
     ip = get_client_ip(request)
     rate_limit_key = f"rate_limit_{ip}"
@@ -332,7 +332,7 @@ def translate_api(request):
     
     # 2. Parse request payload
     try:
-
+    
         data = json.loads(request.body)
     except (json.JSONDecodeError, TypeError):
         return JsonResponse({'error': 'Invalid JSON request payload'}, status=400)
@@ -541,32 +541,34 @@ def upload_document(request):
                 'status': 'QUEUED'
             })
         except Exception as task_err:
-            logger.warning(f"Failed to queue task asynchronously: {str(task_err)}. Falling back to sync.")
+            logger.warning(f"Failed to queue task asynchronously: {str(task_err)}. Falling back to background thread.")
             celery_active = False
 
-    # Synchronous Fallback if Celery is down/inactive
+    # Background Thread Fallback if Celery is down/inactive
     task_id = str(uuid.uuid4())
-    try:
-        from app.tasks import process_document_translation
-        sync_result = process_document_translation(history.id, temp_path, output_format)
-        cache.set(f"sync_task_{task_id}", sync_result, timeout=600)
-        return JsonResponse({
-            'task_id': task_id,
-            'history_id': history.id,
-            'status': 'QUEUED'
-        })
-    except Exception as sync_err:
-        logger.exception("Synchronous document translation failed")
-        if os.path.exists(temp_path):
-            try:
-                os.remove(temp_path)
-            except Exception:
-                pass
-        # Mark history as failed
-        history.status = 'failure'
-        history.error_message = str(sync_err)
-        history.save()
-        return JsonResponse({'error': f'Failed to process document: {str(sync_err)}'}, status=500)
+    
+    def run_document_task_in_thread():
+        try:
+            from app.tasks import process_document_translation
+            sync_result = process_document_translation(history.id, temp_path, output_format)
+            cache.set(f"sync_task_{task_id}", sync_result, timeout=1800)
+        except Exception as sync_err:
+            logger.exception("Background thread document translation failed")
+            history.status = 'failure'
+            history.error_message = str(sync_err)
+            history.save()
+            err_data = {'status': 'FAILURE', 'error': str(sync_err)}
+            cache.set(f"sync_task_{task_id}", err_data, timeout=1800)
+
+    import threading
+    t = threading.Thread(target=run_document_task_in_thread, daemon=True)
+    t.start()
+
+    return JsonResponse({
+        'task_id': task_id,
+        'history_id': history.id,
+        'status': 'QUEUED'
+    })
 
 @require_POST
 def upload_voice_api(request):
@@ -663,27 +665,30 @@ def upload_voice_api(request):
                 'status': 'QUEUED'
             })
         except Exception as task_err:
-            logger.warning(f"Failed to queue voice task asynchronously: {str(task_err)}. Falling back to sync.")
+            logger.warning(f"Failed to queue voice task asynchronously: {str(task_err)}. Falling back to background thread.")
             celery_active = False
 
-    # Synchronous Fallback if Celery is down/inactive
+    # Background Thread Fallback if Celery is down/inactive
     task_id = str(uuid.uuid4())
-    try:
-        from app.tasks import process_voice_translation
-        sync_result = process_voice_translation(temp_path, target_lang, user_id=user_id)
-        cache.set(f"sync_task_{task_id}", sync_result, timeout=600)
-        return JsonResponse({
-            'task_id': task_id,
-            'status': 'QUEUED'
-        })
-    except Exception as sync_err:
-        logger.exception("Synchronous voice translation failed")
-        if os.path.exists(temp_path):
-            try:
-                os.remove(temp_path)
-            except Exception:
-                pass
-        return JsonResponse({'error': f'Failed to process voice: {str(sync_err)}'}, status=500)
+
+    def run_voice_task_in_thread():
+        try:
+            from app.tasks import process_voice_translation
+            sync_result = process_voice_translation(temp_path, target_lang, user_id=user_id)
+            cache.set(f"sync_task_{task_id}", sync_result, timeout=1800)
+        except Exception as sync_err:
+            logger.exception("Background thread voice translation failed")
+            err_data = {'status': 'FAILURE', 'error': str(sync_err)}
+            cache.set(f"sync_task_{task_id}", err_data, timeout=1800)
+
+    import threading
+    t = threading.Thread(target=run_voice_task_in_thread, daemon=True)
+    t.start()
+
+    return JsonResponse({
+        'task_id': task_id,
+        'status': 'QUEUED'
+    })
 
 @require_GET
 def task_status_api(request, task_id):
@@ -1578,7 +1583,7 @@ def document_task_status(request, task_id):
     if not task_id:
         return JsonResponse({'error': 'Task ID is required'}, status=400)
 
-    # 1. Check Django cache for synchronous fallback task results
+    # 1. Check Django cache for background thread / sync task results
     sync_result = cache.get(f"sync_task_{task_id}")
     if sync_result is not None:
         if sync_result.get('status') == 'SUCCESS':
@@ -1586,7 +1591,7 @@ def document_task_status(request, task_id):
                 'status': 'SUCCESS',
                 'result': sync_result
             })
-        else:
+        elif sync_result.get('status') == 'FAILURE':
             return JsonResponse({
                 'status': 'FAILURE',
                 'error': sync_result.get('error', 'An error occurred during task execution.')
@@ -1594,21 +1599,22 @@ def document_task_status(request, task_id):
 
     # 2. Check Celery AsyncResult
     try:
+        from celery.result import AsyncResult
         result = AsyncResult(task_id)
         if result.state == 'PENDING':
             return JsonResponse({
                 'status': 'PENDING',
-                'progress': 'Waiting in task queue...'
+                'progress': 'Processing document layout and translating...'
             })
         elif result.state == 'PROGRESS':
             info = result.info or {}
-            status_msg = info.get('status', 'Processing data...')
+            status_msg = info.get('status', 'Processing document layout...')
             return JsonResponse({
                 'status': 'PROGRESS',
                 'progress': status_msg
             })
         elif result.state == 'SUCCESS':
-            cache.set(f"sync_task_{task_id}", result.result, timeout=600)
+            cache.set(f"sync_task_{task_id}", result.result, timeout=1800)
             return JsonResponse({
                 'status': 'SUCCESS',
                 'result': result.result
@@ -1619,27 +1625,10 @@ def document_task_status(request, task_id):
                 'status': 'FAILURE',
                 'error': error_msg
             })
-        else:
-            return JsonResponse({
-                'status': result.state,
-                'progress': 'Task processing state changed'
-            })
     except Exception as e:
         logger.warning(f"Could not connect to Celery to fetch status: {str(e)}")
-        # Check cache one last time
-        sync_result = cache.get(f"sync_task_{task_id}")
-        if sync_result:
-            if sync_result.get('status') == 'SUCCESS':
-                return JsonResponse({
-                    'status': 'SUCCESS',
-                    'result': sync_result
-                })
-            else:
-                return JsonResponse({
-                    'status': 'FAILURE',
-                    'error': sync_result.get('error', 'Task failed.')
-                })
-        return JsonResponse({'status': 'PENDING', 'progress': 'Checking background task status...'})
+
+    return JsonResponse({'status': 'PENDING', 'progress': 'Processing document layout and translating...'})
 
 
 def download_translated_file(request, id):

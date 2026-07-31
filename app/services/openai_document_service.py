@@ -70,8 +70,8 @@ def extract_text_from_image_with_openai(image_path):
 def extract_text_from_pdf(pdf_path):
     """
     Extracts text page-by-page from a PDF file using PyMuPDF.
-    If a page's text extraction results in empty or very short content, it converts 
-    that page into a PNG in-memory and invokes the OpenAI Vision model as fallback OCR.
+    If a page is an image-based or scanned PDF page (no digital text, or small header overlay with embedded images),
+    it renders the page as a high-DPI image and invokes the OpenAI Vision model (gpt-4o-mini) for accurate OCR.
     """
     import fitz
     
@@ -83,11 +83,39 @@ def extract_text_from_pdf(pdf_path):
     
     for page_idx, page in enumerate(doc):
         text = page.get_text().strip()
-        # Fallback to Vision OCR if the page has no digital text (e.g. scanned PDF)
-        if len(text) < 30:
-            logger.info(f"Page {page_idx + 1} has insufficient digital text. Invoking OpenAI Vision fallback OCR...")
+        
+        # Calculate image area coverage on the page if images are present
+        images = page.get_images(full=True)
+        page_area = page.rect.width * page.rect.height if page.rect else 0
+        img_area = 0
+        if hasattr(page, 'get_image_info'):
             try:
-                pix = page.get_pixmap()
+                for info in page.get_image_info():
+                    bbox = info.get('bbox')
+                    if bbox:
+                        img_area += (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+            except Exception:
+                pass
+        image_coverage = (img_area / page_area) if page_area > 0 else 0
+
+        # Determine if Vision OCR should be invoked:
+        # 1) Digital text is very short (< 50 chars)
+        # 2) Page has embedded images and digital text is < 500 chars (scanned worksheet/form with a header)
+        # 3) Image coverage is > 10% of page area and text length is < 800 chars
+        # 4) Page has embedded images and low word count (< 40 words)
+        words_count = len(text.split())
+        should_run_ocr = (
+            len(text) < 50 or
+            (len(images) > 0 and len(text) < 500) or
+            (image_coverage > 0.10 and len(text) < 800) or
+            (len(images) > 0 and words_count < 40)
+        )
+        
+        if should_run_ocr:
+            logger.info(f"Page {page_idx + 1} detected as image-based/scanned (text len: {len(text)}, images: {len(images)}, coverage: {image_coverage:.1%}). Invoking OpenAI Vision OCR...")
+            try:
+                # Render page to PNG with high DPI for sharp text recognition
+                pix = page.get_pixmap(dpi=150)
                 png_bytes = pix.tobytes("png")
                 base64_image = base64.b64encode(png_bytes).decode("utf-8")
                 
@@ -99,29 +127,46 @@ def extract_text_from_pdf(pdf_path):
                             {
                                 "role": "user",
                                 "content": [
-                                    {"type": "text", "text": "Extract all text from this scanned document page exactly as it appears. Preserve layout. Output only the extracted text."},
-                                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+                                    {
+                                        "type": "text", 
+                                        "text": "You are a professional high-accuracy OCR model. Extract ALL text visible on this document page image exactly as it appears (including headers, subheadings, titles, questions, answers, numbers, bullet points, and exercises). Do not translate it. Preserve paragraphs, line breaks, and structure. Output ONLY the extracted text with no introductory or concluding remarks."
+                                    },
+                                    {
+                                        "type": "image_url", 
+                                        "image_url": {
+                                            "url": f"data:image/png;base64,{base64_image}"
+                                        }
+                                    }
                                 ]
                             }
                         ],
                         max_tokens=4096,
                         temperature=0.0
                     )
-                    text = response.choices[0].message.content.strip()
+                    ocr_text = response.choices[0].message.content.strip()
+                    
+                    if ocr_text:
+                        # If OCR text extracted more text than digital text, or digital text was minimal
+                        if len(ocr_text) > len(text) or len(text) < 50:
+                            text = ocr_text
+                        elif len(text) > 0 and ocr_text not in text:
+                            text = f"{text}\n\n{ocr_text}"
                 else:
-                    text = "[Error: OpenAI Vision OCR requested but client is unconfigured]"
+                    logger.warning("OpenAI API client is not configured for Vision OCR fallback.")
             except Exception as ocr_err:
                 logger.error(f"Failed Vision fallback OCR on page {page_idx + 1}: {str(ocr_err)}")
-                text = f"[Scanned Page {page_idx + 1} OCR Failed]"
                 
         pages_text.append(f"--- Page {page_idx + 1} ---\n{text}")
         
-    doc.close()
+    try:
+        doc.close()
+    except Exception:
+        pass
     return "\n\n".join(pages_text)
 
 def extract_text_from_docx(docx_path):
     """
-    Extracts text from a DOCX file using python-docx.
+    Extracts text from a DOCX file using python-docx (including paragraphs and tables).
     """
     import docx
     
@@ -129,10 +174,19 @@ def extract_text_from_docx(docx_path):
         raise FileNotFoundError(f"DOCX file not found at: {docx_path}")
         
     doc = docx.Document(docx_path)
-    paragraphs = []
+    lines = []
+    
     for para in doc.paragraphs:
-        paragraphs.append(para.text)
-    return "\n".join(paragraphs)
+        if para.text.strip():
+            lines.append(para.text)
+            
+    for table in doc.tables:
+        for row in table.rows:
+            row_text = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+            if row_text:
+                lines.append(" | ".join(row_text))
+                
+    return "\n".join(lines)
 
 def extract_text_from_txt(txt_path):
     """

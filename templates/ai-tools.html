@@ -920,9 +920,9 @@
                 return cookieValue;
             }
 
-            // Utility: Fetch with timeout support
+            // Utility: Fetch with timeout support (default 120s timeout)
             function fetchWithTimeout(resource, options = {}) {
-                const { timeout = 30000 } = options; // Default 30s timeout
+                const { timeout = 120000 } = options;
                 
                 const controller = new AbortController();
                 const id = setTimeout(() => controller.abort(), timeout);
@@ -1374,7 +1374,7 @@
                 });
             }
 
-            const maxDocPollAttempts = 60; // 60 attempts = 60 seconds max
+            const maxDocPollAttempts = 180; // 180 attempts = 3 minutes max
 
             function pollDocStatus(taskId, pollAttempts = 0) {
                 if (pollAttempts >= maxDocPollAttempts) {
@@ -1518,14 +1518,14 @@
                     formData.append('target_lang', docTargetCode);
                     formData.append('output_format', docOutputFormat.value);
 
-                    // 60-second upload timeout (covers synchronous fallback execution)
+                    // 180-second upload timeout
                     fetchWithTimeout('/api/upload-document/', {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken') || ''
                         },
                         body: formData,
-                        timeout: 60000
+                        timeout: 180000
                     })
                     .then(res => {
                         return res.json().then(data => {

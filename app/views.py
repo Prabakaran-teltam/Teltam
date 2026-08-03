@@ -273,7 +273,6 @@ def register_view(request):
             except Exception as e:
                 logger.exception("Failed to create user during registration")
                 messages.error(request, "Failed to create account. Please try again.")
-                
     return render(request, 'register.html')
 
 def logout_view(request):
@@ -288,7 +287,8 @@ def get_client_ip(request):
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('REMOTE_ADDR')
-    return ip
+    return ip 
+
 
 def validate_language_codes(source_lang, target_lang, allow_source_auto=True):
     """
@@ -301,7 +301,7 @@ def validate_language_codes(source_lang, target_lang, allow_source_auto=True):
         pass
     elif source_lang not in valid_codes:
         return False, f"Unsupported or invalid source language: '{source_lang}'"
-
+    
     if target_lang not in valid_codes:
         return False, f"Unsupported or invalid target language: '{target_lang}'"
     return True, None
@@ -1732,5 +1732,380 @@ def summarize_document_api(request):
     except Exception as e:
         logger.exception("Document summarization failed")
         return JsonResponse({'error': f"Failed to summarize document content: {str(e)}"}, status=500)
+
+
+def api_docs_view(request):
+    """
+    Public View: Developer API Documentation & Code Explorer.
+    """
+    return render(request, 'api_docs.html', {'request_host': request.get_host()})
+
+
+# ==============================================================================
+# DEVELOPER REST API & API KEY MANAGEMENT VIEWS
+# ==============================================================================
+
+@login_required
+def user_api_keys(request):
+    """
+    User Dashboard View: Manage Developer API Keys.
+    Only active subscribed users can generate and manage API keys.
+    """
+    from app.models import DeveloperAPIKey, UserSubscription
+    
+    # Check user subscription status
+    active_sub = request.user.subscriptions.filter(status='active').first()
+    has_active_sub = active_sub is not None
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            if not has_active_sub:
+                messages.error(request, "Developer API key generation requires an active paid subscription plan.")
+                return redirect('user_api_keys')
+                
+            key_name = request.POST.get('name', '').strip() or 'Default Secret Key'
+            new_key = DeveloperAPIKey.objects.create(
+                user=request.user,
+                name=key_name,
+                api_key=DeveloperAPIKey.generate_key()
+            )
+            messages.success(request, f"New Developer API Key '{new_key.name}' generated successfully!")
+            return redirect('user_api_keys')
+
+        elif action == 'toggle_status':
+            key_id = request.POST.get('key_id')
+            key_obj = get_object_or_404(DeveloperAPIKey, id=key_id, user=request.user)
+            key_obj.is_active = not key_obj.is_active
+            key_obj.save()
+            status_str = "activated" if key_obj.is_active else "deactivated"
+            messages.success(request, f"API key '{key_obj.name}' has been {status_str}.")
+            return redirect('user_api_keys')
+
+        elif action == 'delete':
+            key_id = request.POST.get('key_id')
+            key_obj = get_object_or_404(DeveloperAPIKey, id=key_id, user=request.user)
+            key_name = key_obj.name
+            key_obj.delete()
+            messages.success(request, f"API key '{key_name}' was deleted.")
+            return redirect('user_api_keys')
+
+    api_keys = DeveloperAPIKey.objects.filter(user=request.user).order_by('-created_at')
+
+    context = {
+        'active_sub': active_sub,
+        'has_active_sub': has_active_sub,
+        'api_keys': api_keys,
+        'request_host': request.get_host()
+    }
+    return render(request, 'user/api_keys.html', context)
+
+
+from django.views.decorators.csrf import csrf_exempt
+from app.decorators import developer_api_key_required
+
+@csrf_exempt
+@require_POST
+@developer_api_key_required
+def api_v1_translate_text(request):
+    """
+    Developer REST API v1: Live Text Translation.
+    Accepts text, target_lang, source_lang.
+    Returns JSON translation response.
+    """
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8')) if request.body else {}
+        else:
+            data = request.POST
+    except Exception:
+        return JsonResponse({'status': 'error', 'error': 'Invalid JSON request payload.'}, status=400)
+
+    text = data.get('text', '').strip()
+    target_lang = data.get('target_lang', '').strip()
+    source_lang = data.get('source_lang', 'auto').strip()
+
+    if not text:
+        return JsonResponse({'status': 'error', 'error': 'Parameter "text" is required.'}, status=400)
+    if not target_lang:
+        return JsonResponse({'status': 'error', 'error': 'Parameter "target_lang" is required.'}, status=400)
+
+    # Validate language codes
+    is_valid, err_msg = validate_language_codes(source_lang, target_lang, allow_source_auto=True)
+    if not is_valid:
+        return JsonResponse({'status': 'error', 'error': err_msg}, status=400)
+
+    try:
+        from app.services.openai_text_service import translate_text_with_openai_semantic
+        translated_text = translate_text_with_openai_semantic(text, target_lang=target_lang, source_lang=source_lang)
+    except Exception as api_err:
+        logger.warning(f"Developer API OpenAI translation failed: {str(api_err)}. Using Google fallback.")
+        try:
+            from deep_translator import GoogleTranslator
+            src = 'auto' if source_lang == 'auto' else source_lang
+            translator = GoogleTranslator(source=src, target=target_lang)
+            translated_text = translator.translate(text)
+        except Exception as fallback_err:
+            logger.exception("Developer API fallback translation failed")
+            return JsonResponse({'status': 'error', 'error': f"Translation failed: {str(fallback_err)}"}, status=500)
+
+    # Save translation log for developer user
+    try:
+        UserTranslationHistory.objects.create(
+            user=request.developer_user,
+            tool_type='text',
+            source_lang=source_lang,
+            target_lang=target_lang,
+            source_text=text,
+            translated_text=translated_text
+        )
+    except Exception as log_err:
+        logger.warning(f"Failed to log developer translation history: {str(log_err)}")
+
+    return JsonResponse({
+        'status': 'success',
+        'source_lang': source_lang,
+        'target_lang': target_lang,
+        'original_text': text,
+        'translated_text': translated_text,
+        'character_count': len(text)
+    })
+
+
+@csrf_exempt
+@require_POST
+@developer_api_key_required
+def api_v1_translate_document(request):
+    """
+    Developer REST API v1: Document Translation.
+    Accepts uploaded file, target_lang, source_lang, output_format.
+    Processes OCR + translation and returns extracted & translated text and download URL.
+    """
+    if 'file' not in request.FILES:
+        return JsonResponse({'status': 'error', 'error': 'No document file uploaded in parameter "file".'}, status=400)
+
+    uploaded_file = request.FILES['file']
+    target_lang = request.POST.get('target_lang', '').strip()
+    source_lang = request.POST.get('source_lang', 'auto').strip()
+    output_format = request.POST.get('output_format', 'pdf').strip().lower()
+
+    if not target_lang:
+        return JsonResponse({'status': 'error', 'error': 'Parameter "target_lang" is required.'}, status=400)
+    if output_format not in ['pdf', 'docx', 'txt']:
+        return JsonResponse({'status': 'error', 'error': 'Parameter "output_format" must be one of: pdf, docx, txt.'}, status=400)
+
+    # Validate file extension
+    ext = os.path.splitext(uploaded_file.name)[1].lower()
+    allowed_exts = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png']
+    if ext not in allowed_exts:
+        return JsonResponse({'status': 'error', 'error': f'Unsupported document format "{ext}". Allowed: PDF, DOCX, TXT, JPG, PNG.'}, status=400)
+
+    # Max size: 15MB
+    if uploaded_file.size > 15 * 1024 * 1024:
+        return JsonResponse({'status': 'error', 'error': 'File size exceeds maximum limit of 15MB.'}, status=400)
+
+    # Create temporary file
+    temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_filename = f"dev_doc_{uuid.uuid4().hex}{ext}"
+    temp_path = os.path.join(temp_dir, temp_filename)
+
+    try:
+        with open(temp_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+    except Exception as e:
+        logger.exception("Failed to write temporary developer document")
+        return JsonResponse({'status': 'error', 'error': 'Failed to save document on server.'}, status=500)
+
+    # Create DocumentTranslationHistory record
+    history = DocumentTranslationHistory.objects.create(
+        user=request.developer_user,
+        original_file=uploaded_file,
+        source_language=source_lang,
+        target_language=target_lang,
+        status='processing'
+    )
+
+    try:
+        from app.services.openai_document_service import (
+            extract_text_from_image_with_openai,
+            extract_text_from_pdf,
+            extract_text_from_docx,
+            extract_text_from_txt,
+            translate_text_with_openai,
+            generate_translated_file
+        )
+
+        # 1. Text Extraction
+        if ext == '.txt':
+            extracted_text = extract_text_from_txt(temp_path)
+        elif ext == '.pdf':
+            extracted_text = extract_text_from_pdf(temp_path)
+        elif ext == '.docx':
+            extracted_text = extract_text_from_docx(temp_path)
+        elif ext in ['.jpg', '.jpeg', '.png']:
+            extracted_text = extract_text_from_image_with_openai(temp_path)
+        else:
+            extracted_text = ""
+
+        if not extracted_text.strip():
+            extracted_text = f"[Empty Document: No text could be extracted from {uploaded_file.name}]"
+
+        # 2. Text Translation
+        translated_text = translate_text_with_openai(extracted_text, target_lang=target_lang, source_lang=source_lang)
+
+        # 3. Generate Translated Output File
+        out_filename = f"translated_{uuid.uuid4().hex[:8]}.{output_format}"
+        out_rel_path = os.path.join('documents', 'translated', out_filename)
+        out_full_path = os.path.join(settings.MEDIA_ROOT, out_rel_path)
+
+        generate_translated_file(translated_text, output_format, out_full_path, target_lang=target_lang)
+
+        # Update History Record
+        history.extracted_text = extracted_text
+        history.translated_text = translated_text
+        history.download_file = out_rel_path
+        history.status = 'success'
+        history.save()
+
+        # Clean up temp file
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
+        download_url = request.build_absolute_uri(reverse('download_translated_file', args=[history.id]))
+
+        return JsonResponse({
+            'status': 'success',
+            'history_id': history.id,
+            'source_lang': source_lang,
+            'target_lang': target_lang,
+            'extracted_text': extracted_text,
+            'translated_text': translated_text,
+            'download_url': download_url
+        })
+
+    except Exception as process_err:
+        logger.exception("Developer API document translation failed")
+        history.status = 'failure'
+        history.error_message = str(process_err)
+        history.save()
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+        return JsonResponse({'status': 'error', 'error': f"Document translation failed: {str(process_err)}"}, status=500)
+
+
+@csrf_exempt
+@require_POST
+@developer_api_key_required
+def api_v1_translate_voice(request):
+    """
+    Developer REST API v1: Voice / Audio Translation.
+    Accepts uploaded audio file and target_lang.
+    Transcribes audio via OpenAI Whisper and translates text into target_lang.
+    """
+    if 'file' not in request.FILES:
+        return JsonResponse({'status': 'error', 'error': 'No audio file uploaded in parameter "file".'}, status=400)
+
+    uploaded_file = request.FILES['file']
+    target_lang = request.POST.get('target_lang', '').strip()
+
+    if not target_lang:
+        return JsonResponse({'status': 'error', 'error': 'Parameter "target_lang" is required.'}, status=400)
+
+    # Validate audio extension
+    allowed_exts = ['.wav', '.mp3', '.m4a', '.webm', '.ogg', '.caf']
+    ext = os.path.splitext(uploaded_file.name)[1].lower()
+    if not ext:
+        content_type = getattr(uploaded_file, 'content_type', '') or ''
+        if 'webm' in content_type: ext = '.webm'
+        elif 'ogg' in content_type: ext = '.ogg'
+        elif 'wav' in content_type: ext = '.wav'
+        elif 'mp3' in content_type: ext = '.mp3'
+        elif 'm4a' in content_type: ext = '.m4a'
+        else: ext = '.wav'
+
+    if ext not in allowed_exts:
+        return JsonResponse({'status': 'error', 'error': f'Unsupported audio format "{ext}". Allowed: WAV, MP3, M4A, WebM, OGG.'}, status=400)
+
+    # Max size: 10MB
+    if uploaded_file.size > 10 * 1024 * 1024:
+        return JsonResponse({'status': 'error', 'error': 'Audio file size exceeds maximum limit of 10MB.'}, status=400)
+
+    # Save temporary audio file
+    temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_filename = f"dev_voice_{uuid.uuid4().hex}{ext}"
+    temp_path = os.path.join(temp_dir, temp_filename)
+
+    try:
+        with open(temp_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+    except Exception as e:
+        logger.exception("Failed to write temporary audio file")
+        return JsonResponse({'status': 'error', 'error': 'Failed to save audio file on server.'}, status=500)
+
+    try:
+        from app.services.openai_document_service import get_openai_client
+        client = get_openai_client()
+        if not client:
+            return JsonResponse({'status': 'error', 'error': 'OpenAI client is not configured on server.'}, status=500)
+
+        # 1. Audio Transcription using Whisper
+        with open(temp_path, 'rb') as audio_file:
+            transcript_res = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+        transcribed_text = transcript_res.text.strip()
+
+        # 2. Text Translation
+        from app.services.openai_text_service import translate_text_with_openai_semantic
+        translated_text = translate_text_with_openai_semantic(transcribed_text, target_lang=target_lang, source_lang="auto")
+
+        # Log history
+        try:
+            UserTranslationHistory.objects.create(
+                user=request.developer_user,
+                tool_type='voice',
+                source_lang='auto',
+                target_lang=target_lang,
+                source_text=f"[Audio Transcript] {transcribed_text}",
+                translated_text=translated_text
+            )
+        except Exception as log_err:
+            logger.warning(f"Failed to log voice translation history: {str(log_err)}")
+
+        # Clean up temp file
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
+        return JsonResponse({
+            'status': 'success',
+            'transcribed_text': transcribed_text,
+            'target_lang': target_lang,
+            'translated_text': translated_text
+        })
+
+    except Exception as voice_err:
+        logger.exception("Developer API voice translation failed")
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+        return JsonResponse({'status': 'error', 'error': f"Voice translation failed: {str(voice_err)}"}, status=500)
+
 
 

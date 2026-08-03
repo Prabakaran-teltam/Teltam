@@ -347,7 +347,13 @@
                     </a>
                 </li>
                 
-                <div class="sidebar-section-header">Account</div>
+                <div class="sidebar-section-header">Account &amp; API</div>
+                <li class="sidebar-item {% block nav_api_keys %}{% endblock %}">
+                    <a href="{% url 'user_api_keys' %}" class="sidebar-link">
+                        <i class="fas fa-code"></i>
+                        <span>Developer API Keys</span>
+                    </a>
+                </li>
                 <li class="sidebar-item {% block nav_history %}{% endblock %}">
                     <a href="{% url 'user_history_list' %}" class="sidebar-link">
                         <i class="fas fa-clock-rotate-left"></i>
@@ -462,6 +468,9 @@
                         sidebar.classList.remove('show');
                     }
                 }
+            // Automatically move all modals to document.body to prevent stacking context z-index freezes
+            document.querySelectorAll('.modal').forEach(modal => {
+                document.body.appendChild(modal);
             });
         });
     </script>

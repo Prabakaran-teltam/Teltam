@@ -138,6 +138,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Authentication Settings
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'user_dashboard_home'
+
 # Caching Configuration (used for live translator throttling and translation cache)
 CACHES = {
     'default': {

@@ -217,3 +217,24 @@ class DocumentTranslationHistory(models.Model):
         return f"{user_display} - {self.source_language} to {self.target_language} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
 
 
+class DeveloperAPIKey(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
+    name = models.CharField(max_length=100, default='Default Secret Key')
+    api_key = models.CharField(max_length=128, unique=True, db_index=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    usage_count = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name} ({'Active' if self.is_active else 'Inactive'})"
+
+    @staticmethod
+    def generate_key():
+        import secrets
+        return f"teltam_sk_{secrets.token_urlsafe(32)}"
+
+

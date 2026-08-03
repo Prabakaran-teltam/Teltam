@@ -13,19 +13,19 @@
     <!-- Custom Style Sheet -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
-<body class="bg-soft-gradient" style="padding-top: 85px;">
+<body class="bg-soft-gradient" style="padding-top: 75px;">
 
     <!-- Global Header Placeholder -->
     <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
 
     <!-- Redesigned Hero Section -->
-    <section class="hero-redesign py-5 py-lg-6 position-relative overflow-hidden animate-fade-in-up">
+    <section class="hero-redesign pt-2 pb-5 pt-lg-3 pb-lg-6 position-relative overflow-hidden animate-fade-in-up">
         <!-- Background Blur Shapes -->
         <div class="blur-shape blur-shape-1"></div>
         <div class="blur-shape blur-shape-2"></div>
         
         <div class="container position-relative" style="z-index: 2;">
-            <div class="row align-items-center py-4">
+            <div class="row align-items-center pt-1 pb-4">
                 <!-- Left Side: Content Area -->
                 <div class="col-lg-6 col-md-12 mb-5 mb-lg-0 text-start">
                     <span class="hero-badge"><i class="fas fa-sparkles text-indigo-600"></i> AI-Powered Translation Platform</span>
@@ -1455,7 +1455,7 @@
     <section class="py-5 bg-white">
         <div class="container py-4">
             <div class="p-5 rounded-4 text-center text-white bg-dark-gradient" style="box-shadow: var(--brand-accent-glow);">
-                <h2 class="display-5 fw-bold mb-3">Ready to Translate Globally?</h2>
+                <h2 class="display-5 fw-bold mb-3 text-white" style="color: #ffffff !important;">Ready to Translate Globally?</h2>
                 <p class="lead mx-auto mb-4" style="max-width: 600px; opacity: 0.85;">Join thousands of students, developers, and businesses using Teltam to communicate with the world.</p>
                 <div class="d-flex justify-content-center gap-3 flex-wrap">
                     <a href="/register/" class="btn btn-primary-gradient px-4 py-3">Get Started for Free</a>

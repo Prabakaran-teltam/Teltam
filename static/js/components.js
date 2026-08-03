@@ -61,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             <ul class="dropdown-menu border-0 shadow-sm rounded-3 mt-2 p-2" aria-labelledby="resourcesDropdown">
                                 <li><a class="dropdown-item rounded-2 py-2" href="/blog/"><i class="fas fa-blog me-2 text-primary"></i>Blog Articles</a></li>
                                 <li><a class="dropdown-item rounded-2 py-2" href="/videos/"><i class="fab fa-youtube me-2 text-danger"></i>Video Tutorials</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item rounded-2 py-2 fw-semibold text-indigo-600" href="/api-docs/"><i class="fas fa-code me-2 text-indigo-600"></i>Developer API Docs</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -107,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <li><a href="/about/" class="footer-link">About Us</a></li>
                             <li><a href="/services/" class="footer-link">Services</a></li>
                             <li><a href="/pricing/" class="footer-link">Pricing Plans</a></li>
+                            <li><a href="/api-docs/" class="footer-link text-indigo-300 fw-semibold"><i class="fas fa-code me-1.5"></i>Developer API</a></li>
                             <li><a href="/contact/" class="footer-link">Contact Us</a></li>
                         </ul>
                     </div>
@@ -114,10 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h5 class="text-white mb-3" style="font-family: var(--font-headings);">AI Features</h5>
                         <ul class="list-unstyled d-flex flex-column gap-2">
                             <li><a href="/ai-tools/" class="footer-link">Text Translation</a></li>
-                            <li><a href="/ai-tools/" class="footer-link">Transliteration</a></li>
-                            <li><a href="/ai-tools/" class="footer-link">Grammar Checker</a></li>
-                            <li><a href="/ai-tools/" class="footer-link">Voice Synthesis</a></li>
                             <li><a href="/ai-tools/" class="footer-link">Doc Translator</a></li>
+                            <li><a href="/ai-tools/" class="footer-link">Voice Translator</a></li>
+                            <li><a href="/api-docs/" class="footer-link">REST API Integration</a></li>
+                            <li><a href="/user/api-keys/" class="footer-link">API Keys Dashboard</a></li>
                         </ul>
                     </div>
                     <div class="col-lg-4 col-md-6">

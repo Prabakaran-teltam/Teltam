@@ -9,6 +9,7 @@ urlpatterns = [
     path('pricing/', views.pricing, name='pricing'),
     path('ai-tools/', views.ai_tools, name='ai_tools'),
     path('contact/', views.contact, name='contact'),
+    path('api-docs/', views.api_docs_view, name='api_docs'),
     
     # Public dynamic blog & video pages
     path('blog/', views.blog_list, name='blog_list'),
@@ -82,6 +83,14 @@ urlpatterns = [
     path('user/tools/file/', views.user_tool_file, name='user_tool_file'),
     path('user/tools/voice/', views.user_tool_voice, name='user_tool_voice'),
     path('user/history/', views.user_history_list, name='user_history_list'),
+    path('user/api-keys/', views.user_api_keys, name='user_api_keys'),
     path('user/logout/', views.user_logout, name='user_logout'),
+
+    # =====================================================================
+    # DEVELOPER REST API V1 ENDPOINTS (RESTRICTED TO SUBSCRIBED DEVELOPERS)
+    # =====================================================================
+    path('api/v1/translate/text/', views.api_v1_translate_text, name='api_v1_translate_text'),
+    path('api/v1/translate/document/', views.api_v1_translate_document, name='api_v1_translate_document'),
+    path('api/v1/translate/voice/', views.api_v1_translate_voice, name='api_v1_translate_voice'),
 ]
 

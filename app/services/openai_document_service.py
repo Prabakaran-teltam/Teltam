@@ -67,6 +67,28 @@ def extract_text_from_image_with_openai(image_path):
     )
     return response.choices[0].message.content.strip()
 
+def extract_text_from_multiple_images(image_paths):
+    """
+    Extracts structured text from a batch/list of image files using OpenAI's gpt-4o-mini Vision model.
+    Labels each image's text cleanly with header banners.
+    """
+    if not image_paths:
+        return ""
+        
+    all_extracted = []
+    for idx, img_path in enumerate(image_paths, 1):
+        filename = os.path.basename(img_path)
+        try:
+            txt = extract_text_from_image_with_openai(img_path)
+            if not txt.strip():
+                txt = f"[Image {idx}: No readable text found]"
+            all_extracted.append(f"--- Image {idx} ({filename}) ---\n{txt}")
+        except Exception as err:
+            logger.warning(f"Failed Vision OCR for image {filename}: {str(err)}")
+            all_extracted.append(f"--- Image {idx} ({filename}) ---\n[OCR Error: {str(err)}]")
+            
+    return "\n\n".join(all_extracted)
+
 def extract_text_from_pdf(pdf_path):
     """
     Extracts text page-by-page from a PDF file using PyMuPDF.

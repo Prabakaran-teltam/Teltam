@@ -596,21 +596,22 @@
 
                                     <!-- Upload Zone Drag/Drop -->
                                     <div class="border border-2 border-dashed rounded-4 p-5 text-center mb-4 position-relative upload-zone" id="docDropzone">
-                                        <input type="file" id="docFileInput" class="position-absolute w-100 h-100 top-0 start-0 opacity-0" style="cursor: pointer;" accept=".pdf,.docx,.txt,.jpg,.png">
+                                        <input type="file" id="docFileInput" class="position-absolute w-100 h-100 top-0 start-0 opacity-0" style="cursor: pointer;" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp" multiple>
                                         
                                         <div class="upload-zone-content" id="docUploadContent">
                                             <i class="fas fa-cloud-upload-alt text-indigo-600 display-4 mb-3" style="color: #4f46e5;"></i>
-                                            <h5 class="fw-bold text-slate-800">Drag and drop file here</h5>
-                                            <p class="text-muted small">Supports PDF, DOCX, TXT, JPG, PNG files up to 15MB</p>
+                                            <h5 class="fw-bold text-slate-800">Drag &amp; drop document or multiple images here</h5>
+                                            <p class="text-muted small">Supports PDF, DOCX, TXT, JPG, PNG, WEBP files (Multiple images supported, Max 30MB)</p>
                                             <button type="button" class="btn btn-outline-custom px-4 py-2 mt-2">Browse Files</button>
                                         </div>
                                         
                                         <!-- Selected File Info -->
                                         <div class="selected-file-indicator d-none" id="docSelectedFileInfo">
-                                            <i class="fas fa-file-invoice-dollar text-success display-4 mb-3"></i>
+                                            <i class="fas fa-images text-success display-4 mb-3"></i>
                                             <h5 class="fw-bold text-slate-800 file-name-display" id="docFileName">filename.pdf</h5>
-                                            <p class="text-muted small file-size-display" id="docFileSize">1.2 MB</p>
-                                            <button type="button" class="btn btn-link text-danger text-decoration-none small remove-file-btn" id="removeDocFileBtn"><i class="fas fa-trash me-1"></i> Remove document</button>
+                                            <p class="text-muted small file-size-display mb-2" id="docFileSize">1.2 MB</p>
+                                            <div id="publicMultiFilesList" class="d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
+                                            <button type="button" class="btn btn-link text-danger text-decoration-none small remove-file-btn" id="removeDocFileBtn"><i class="fas fa-trash me-1"></i> Remove selected files</button>
                                         </div>
                                     </div>
 
@@ -1317,12 +1318,28 @@
             const docExtractedText = document.getElementById('docExtractedText');
             const docTranslatedText = document.getElementById('docTranslatedText');
 
-            function handleDocSelect(file) {
-                if (file) {
-                    docFileName.innerText = file.name;
-                    // Format file size
-                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                    docFileSize.innerText = `${sizeMB} MB`;
+            const publicMultiFilesList = document.getElementById('publicMultiFilesList');
+
+            function handleDocSelect(files) {
+                if (files && files.length > 0) {
+                    if (files.length === 1) {
+                        docFileName.innerText = files[0].name;
+                        const sizeMB = (files[0].size / (1024 * 1024)).toFixed(2);
+                        docFileSize.innerText = `${sizeMB} MB`;
+                        if (publicMultiFilesList) publicMultiFilesList.innerHTML = '';
+                    } else {
+                        docFileName.innerText = `${files.length} Files Selected (Batch Upload)`;
+                        let totalBytes = 0;
+                        let badgesHtml = '';
+                        for (let i = 0; i < files.length; i++) {
+                            totalBytes += files[i].size;
+                            const sz = (files[i].size / (1024 * 1024)).toFixed(2);
+                            badgesHtml += `<span class="badge bg-light text-slate-700 border px-3 py-1.5 rounded-pill"><i class="fas fa-image text-indigo-500 me-1"></i> ${files[i].name} (${sz} MB)</span>`;
+                        }
+                        const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+                        docFileSize.innerText = `Total Size: ${totalMB} MB`;
+                        if (publicMultiFilesList) publicMultiFilesList.innerHTML = badgesHtml;
+                    }
                     
                     docUploadContent.classList.add('d-none');
                     docSelectedFileInfo.classList.remove('d-none');
@@ -1333,7 +1350,7 @@
             if (docFileInput) {
                 docFileInput.addEventListener('change', (e) => {
                     if (e.target.files.length > 0) {
-                        handleDocSelect(e.target.files[0]);
+                        handleDocSelect(e.target.files);
                     }
                 });
             }
@@ -1359,7 +1376,7 @@
                     const files = dt.files;
                     if (files.length > 0) {
                         docFileInput.files = files;
-                        handleDocSelect(files[0]);
+                        handleDocSelect(files);
                     }
                 });
             }
@@ -1368,6 +1385,7 @@
                 removeDocFileBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     docFileInput.value = '';
+                    if (publicMultiFilesList) publicMultiFilesList.innerHTML = '';
                     docSelectedFileInfo.classList.add('d-none');
                     docTranslateOptions.classList.add('d-none');
                     docUploadContent.classList.remove('d-none');
@@ -1460,12 +1478,12 @@
 
             if (startDocTranslateBtn) {
                 startDocTranslateBtn.addEventListener('click', () => {
-                    const file = docFileInput.files[0];
-                    if (!file) {
+                    const files = docFileInput.files;
+                    if (!files || files.length === 0) {
                         Swal.fire({
                             icon: 'warning',
-                            title: 'No File Selected',
-                            text: 'Please select a document first.',
+                            title: 'No Files Selected',
+                            text: 'Please select a document or images to translate first.',
                             confirmButtonColor: '#fbbf24',
                             customClass: {
                                 confirmButton: 'btn btn-warning text-white rounded-pill px-4'
@@ -1476,28 +1494,33 @@
                     }
 
                     // Pre-upload Client-side File Validation
-                    const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
-                    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-                    if (!allowedExtensions.includes(ext)) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Unsupported Format',
-                            text: `Unsupported file format "${ext}". Allowed: PDF, DOCX, TXT, JPG, PNG`,
-                            confirmButtonColor: '#fbbf24',
-                            customClass: {
-                                confirmButton: 'btn btn-warning text-white rounded-pill px-4'
-                            },
-                            buttonsStyling: false
-                        });
-                        return;
+                    const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.bmp'];
+                    let totalBytes = 0;
+                    for (let i = 0; i < files.length; i++) {
+                        const f = files[i];
+                        const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+                        if (!allowedExtensions.includes(ext)) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Unsupported Format',
+                                text: `Unsupported file format "${ext}" in "${f.name}". Allowed: PDF, DOCX, TXT, JPG, PNG, WEBP, BMP`,
+                                confirmButtonColor: '#fbbf24',
+                                customClass: {
+                                    confirmButton: 'btn btn-warning text-white rounded-pill px-4'
+                                },
+                                buttonsStyling: false
+                            });
+                            return;
+                        }
+                        totalBytes += f.size;
                     }
 
-                    const maxDocSize = 15 * 1024 * 1024; // 15MB
-                    if (file.size > maxDocSize) {
+                    const maxTotalSize = 30 * 1024 * 1024; // 30MB
+                    if (totalBytes > maxTotalSize) {
                         Swal.fire({
                             icon: 'warning',
-                            title: 'File Too Large',
-                            text: `File size exceeds maximum limit of 15MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+                            title: 'Files Exceed Size Limit',
+                            text: `Total size of selected files exceeds the 30MB limit. Current total: ${(totalBytes / (1024 * 1024)).toFixed(2)}MB`,
                             confirmButtonColor: '#fbbf24',
                             customClass: {
                                 confirmButton: 'btn btn-warning text-white rounded-pill px-4'
@@ -1510,10 +1533,12 @@
                     docTranslateOptions.classList.add('d-none');
                     docDropzone.classList.add('d-none');
                     docProgressIndicator.classList.remove('d-none');
-                    docProgressText.innerText = "Uploading document to Teltam server...";
+                    docProgressText.innerText = files.length > 1 ? `Uploading ${files.length} files to Teltam server...` : "Uploading document to Teltam server...";
 
                     const formData = new FormData();
-                    formData.append('file', file);
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('file', files[i]);
+                    }
                     formData.append('source_lang', docSourceCode);
                     formData.append('target_lang', docTargetCode);
                     formData.append('output_format', docOutputFormat.value);

@@ -79,25 +79,26 @@
 
             <!-- Uploader Dropzone -->
             <div id="docDropzone" class="drag-drop-zone text-center mb-4">
-                <input type="file" id="docFileInput" class="d-none" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
+                <input type="file" id="docFileInput" class="d-none" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp" multiple>
                 <div id="docUploadContent">
                     <div class="rounded-circle bg-indigo-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
                         <i class="fas fa-cloud-upload-alt text-indigo-600 fs-3"></i>
                     </div>
-                    <h5 class="fw-bold mb-1">Drag and drop your file here</h5>
-                    <p class="text-muted small mb-3">or click to browse from your computer</p>
-                    <span class="badge bg-slate-200 text-slate-700 px-3 py-2">PDF, DOCX, TXT, JPG, PNG (Max 15MB)</span>
+                    <h5 class="fw-bold mb-1">Drag &amp; drop single document or multiple images here</h5>
+                    <p class="text-muted small mb-3">Select multiple JPG, PNG, WEBP images or PDF/DOCX/TXT files at once</p>
+                    <span class="badge bg-slate-200 text-slate-700 px-3 py-2">Supports Multi-Image Batch Uploads (Max 30MB)</span>
                 </div>
 
                 <!-- Selected File Info -->
                 <div id="docSelectedFileInfo" class="d-none animate-fade-in">
                     <div class="rounded-circle bg-emerald-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
-                        <i class="fas fa-file-invoice text-emerald-600 fs-3"></i>
+                        <i class="fas fa-images text-emerald-600 fs-3"></i>
                     </div>
                     <h5 class="fw-bold mb-1 text-slate-800" id="docFileName">filename.pdf</h5>
-                    <p class="text-muted small mb-3" id="docFileSize">0.00 MB</p>
+                    <p class="text-muted small mb-2" id="docFileSize">0.00 MB</p>
+                    <div id="multiFilesList" class="d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
                     <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="removeDocFileBtn">
-                        <i class="fas fa-trash me-1"></i> Remove File
+                        <i class="fas fa-trash me-1"></i> Remove Selected Files
                     </button>
                 </div>
             </div>
@@ -276,12 +277,28 @@
             });
         }
 
-        function handleDocSelect(file) {
-            if (file) {
-                docFileName.innerText = file.name;
-                // Format file size
-                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                docFileSize.innerText = `${sizeMB} MB`;
+        const multiFilesList = document.getElementById('multiFilesList');
+
+        function handleDocSelect(files) {
+            if (files && files.length > 0) {
+                if (files.length === 1) {
+                    docFileName.innerText = files[0].name;
+                    const sizeMB = (files[0].size / (1024 * 1024)).toFixed(2);
+                    docFileSize.innerText = `${sizeMB} MB`;
+                    if (multiFilesList) multiFilesList.innerHTML = '';
+                } else {
+                    docFileName.innerText = `${files.length} Files Selected (Batch Upload)`;
+                    let totalBytes = 0;
+                    let badgesHtml = '';
+                    for (let i = 0; i < files.length; i++) {
+                        totalBytes += files[i].size;
+                        const sz = (files[i].size / (1024 * 1024)).toFixed(2);
+                        badgesHtml += `<span class="badge bg-light text-slate-700 border px-3 py-1.5 rounded-pill"><i class="fas fa-image text-indigo-500 me-1"></i> ${files[i].name} (${sz} MB)</span>`;
+                    }
+                    const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+                    docFileSize.innerText = `Total Size: ${totalMB} MB`;
+                    if (multiFilesList) multiFilesList.innerHTML = badgesHtml;
+                }
                 
                 docUploadContent.classList.add('d-none');
                 docSelectedFileInfo.classList.remove('d-none');
@@ -292,7 +309,7 @@
         if (docFileInput) {
             docFileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
-                    handleDocSelect(e.target.files[0]);
+                    handleDocSelect(e.target.files);
                 }
             });
         }
@@ -318,7 +335,7 @@
                 const files = dt.files;
                 if (files.length > 0) {
                     docFileInput.files = files;
-                    handleDocSelect(files[0]);
+                    handleDocSelect(files);
                 }
             });
         }
@@ -326,6 +343,7 @@
         removeDocFileBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             docFileInput.value = '';
+            if (multiFilesList) multiFilesList.innerHTML = '';
             docSelectedFileInfo.classList.add('d-none');
             docTranslateOptions.classList.add('d-none');
             docUploadContent.classList.remove('d-none');
@@ -407,35 +425,40 @@
         }
 
         startDocTranslateBtn.addEventListener('click', () => {
-            const file = docFileInput.files[0];
-            if (!file) {
+            const files = docFileInput.files;
+            if (!files || files.length === 0) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'No File Selected',
-                    text: 'Please select a document to translate first.',
+                    title: 'No Files Selected',
+                    text: 'Please select a document or images to translate first.',
                     confirmButtonColor: '#fbbf24'
                 });
                 return;
             }
 
-            const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
-            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-            if (!allowedExtensions.includes(ext)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Unsupported Format',
-                    text: `Format "${ext}" is not supported. Allowed formats: PDF, DOCX, TXT, JPG, PNG`,
-                    confirmButtonColor: '#fbbf24'
-                });
-                return;
+            const allowedExtensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.bmp'];
+            let totalBytes = 0;
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
+                const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+                if (!allowedExtensions.includes(ext)) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Unsupported Format',
+                        text: `Format "${ext}" in file "${f.name}" is not supported. Allowed formats: PDF, DOCX, TXT, JPG, PNG, WEBP, BMP`,
+                        confirmButtonColor: '#fbbf24'
+                    });
+                    return;
+                }
+                totalBytes += f.size;
             }
 
-            const maxDocSize = 15 * 1024 * 1024; // 15MB
-            if (file.size > maxDocSize) {
+            const maxTotalSize = 30 * 1024 * 1024; // 30MB
+            if (totalBytes > maxTotalSize) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'File Too Large',
-                    text: `File exceeds the 15MB maximum size limit.`,
+                    title: 'Files Exceed Size Limit',
+                    text: `Total size of selected files exceeds the 30MB limit.`,
                     confirmButtonColor: '#fbbf24'
                 });
                 return;
@@ -444,10 +467,12 @@
             docTranslateOptions.classList.add('d-none');
             docDropzone.classList.add('d-none');
             docProgressIndicator.classList.remove('d-none');
-            docProgressText.innerText = "Uploading document to Teltam server...";
+            docProgressText.innerText = files.length > 1 ? `Uploading ${files.length} files to Teltam server...` : "Uploading document to Teltam server...";
 
             const formData = new FormData();
-            formData.append('file', file);
+            for (let i = 0; i < files.length; i++) {
+                formData.append('file', files[i]);
+            }
             formData.append('source_lang', docSourceLanguage.value);
             formData.append('target_lang', docTargetLanguage.value);
             formData.append('output_format', docOutputFormat.value);

@@ -52,6 +52,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
     from app.models import DocumentTranslationHistory
     from app.services.openai_document_service import (
         extract_text_from_image_with_openai,
+        extract_text_from_multiple_images,
         extract_text_from_pdf,
         extract_text_from_docx,
         extract_text_from_txt,
@@ -60,6 +61,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
     )
     from django.core.files import File
     import traceback
+    import json
 
     try:
         # Fetch the history record
@@ -75,24 +77,42 @@ def process_document_translation(self, history_id, temp_file_path, output_format
     if self.request.id:
         self.update_state(state='PROGRESS', meta={'status': 'Extracting document text...'})
 
-    ext = os.path.splitext(temp_file_path)[1].lower()
+    # Parse multi-file path list if passed as JSON string
+    file_paths_list = []
+    if isinstance(temp_file_path, str) and temp_file_path.strip().startswith('['):
+        try:
+            file_paths_list = json.loads(temp_file_path)
+        except Exception:
+            file_paths_list = [temp_file_path]
+    elif isinstance(temp_file_path, list):
+        file_paths_list = temp_file_path
+    else:
+        file_paths_list = [temp_file_path]
+
     extracted_text = ""
 
     try:
         # 1. Text Extraction
-        if ext == '.txt':
-            extracted_text = extract_text_from_txt(temp_file_path)
-        elif ext == '.pdf':
-            extracted_text = extract_text_from_pdf(temp_file_path)
-        elif ext == '.docx':
-            extracted_text = extract_text_from_docx(temp_file_path)
-        elif ext in ['.jpg', '.jpeg', '.png']:
-            extracted_text = extract_text_from_image_with_openai(temp_file_path)
+        if len(file_paths_list) > 1:
+            if self.request.id:
+                self.update_state(state='PROGRESS', meta={'status': f'Extracting text from {len(file_paths_list)} images via AI Vision OCR...'})
+            extracted_text = extract_text_from_multiple_images(file_paths_list)
         else:
-            raise ValueError(f"Unsupported file format {ext}")
+            single_path = file_paths_list[0]
+            ext = os.path.splitext(single_path)[1].lower()
+            if ext == '.txt':
+                extracted_text = extract_text_from_txt(single_path)
+            elif ext == '.pdf':
+                extracted_text = extract_text_from_pdf(single_path)
+            elif ext == '.docx':
+                extracted_text = extract_text_from_docx(single_path)
+            elif ext in ['.jpg', '.jpeg', '.png', '.webp', '.bmp']:
+                extracted_text = extract_text_from_image_with_openai(single_path)
+            else:
+                raise ValueError(f"Unsupported file format {ext}")
 
         if not extracted_text.strip():
-            extracted_text = f"[Empty Document: No text could be extracted from {os.path.basename(temp_file_path)}]"
+            extracted_text = f"[Empty Document: No text could be extracted]"
 
         # Update history with extracted text
         history.extracted_text = extracted_text
@@ -162,12 +182,13 @@ def process_document_translation(self, history_id, temp_file_path, output_format
         }
 
     finally:
-        # Clean up temporary input file
-        if os.path.exists(temp_file_path):
-            try:
-                os.remove(temp_file_path)
-            except Exception as clean_err:
-                logger.warning(f"Failed to delete temp file {temp_file_path}: {str(clean_err)}")
+        # Clean up temporary input files
+        for p in file_paths_list:
+            if isinstance(p, str) and os.path.exists(p):
+                try:
+                    os.remove(p)
+                except Exception as clean_err:
+                    logger.warning(f"Failed to delete temp file {p}: {str(clean_err)}")
 
 @shared_task(bind=True)
 def process_voice_translation(self, temp_file_path, target_lang, user_id=None):

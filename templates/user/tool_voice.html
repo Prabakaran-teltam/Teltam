@@ -495,6 +495,45 @@
 
         stopRecordBtn.addEventListener('click', stopVoiceRecording);
 
+        // Audio File Drag & Drop + Upload Option Handler
+        const voiceFileInput = document.getElementById('voiceFileInput');
+        const audioUploadArea = document.querySelector('.audio-upload-area');
+
+        if (voiceFileInput) {
+            voiceFileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    uploadVoiceFile(e.target.files[0]);
+                }
+            });
+        }
+
+        if (audioUploadArea) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                audioUploadArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    audioUploadArea.style.borderColor = '#6366f1';
+                    audioUploadArea.style.background = 'rgba(99, 102, 241, 0.08)';
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                audioUploadArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    audioUploadArea.style.borderColor = '#e2e8f0';
+                    audioUploadArea.style.background = '#f8fafc';
+                }, false);
+            });
+
+            audioUploadArea.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files.length > 0) {
+                    if (voiceFileInput) voiceFileInput.files = files;
+                    uploadVoiceFile(files[0]);
+                }
+            });
+        }
+
         // Speak translation
         voiceSpeakBtn.addEventListener('click', () => {
             const text = voiceTranslationOutput.innerText;

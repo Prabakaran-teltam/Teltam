@@ -463,10 +463,10 @@ def upload_document(request):
         return JsonResponse({'error': 'Too many document uploads. Please wait a minute.'}, status=429)
     cache.set(limit_key, count + 1, timeout=60)
 
-    if 'file' not in request.FILES:
+    uploaded_files = request.FILES.getlist('file') or request.FILES.getlist('files')
+    if not uploaded_files:
         return JsonResponse({'error': 'No file uploaded'}, status=400)
 
-    uploaded_file = request.FILES['file']
     source_lang = request.POST.get('source_lang', 'auto').strip()
     target_lang = request.POST.get('target_lang', '').strip()
     output_format = request.POST.get('output_format', 'txt').strip()
@@ -479,30 +479,37 @@ def upload_document(request):
     if not is_valid:
         return JsonResponse({'error': err_msg}, status=400)
 
-    # Document type and size validations
-    allowed_exts = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png']
-    ext = os.path.splitext(uploaded_file.name)[1].lower()
-    if ext not in allowed_exts:
-        return JsonResponse({'error': f'Unsupported file format {ext}. Allowed: PDF, DOCX, TXT, JPG, PNG'}, status=400)
+    allowed_exts = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.bmp']
+    saved_temp_paths = []
+    total_size = 0
 
-    # Max size: 15MB
-    max_size = 15 * 1024 * 1024
-    if uploaded_file.size > max_size:
-        return JsonResponse({'error': 'File size exceeds maximum limit of 15MB'}, status=400)
-
-    # Save temporary file
     temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
     os.makedirs(temp_dir, exist_ok=True)
-    temp_filename = f"doc_{uuid.uuid4().hex}{ext}"
-    temp_path = os.path.join(temp_dir, temp_filename)
 
-    try:
-        with open(temp_path, 'wb+') as destination:
-            for chunk in uploaded_file.chunks():
-                destination.write(chunk)
-    except Exception as write_err:
-        logger.exception("Failed to write temporary file")
-        return JsonResponse({'error': 'Failed to save file on server.'}, status=500)
+    for f in uploaded_files:
+        ext = os.path.splitext(f.name)[1].lower()
+        if ext not in allowed_exts:
+            return JsonResponse({'error': f'Unsupported file format "{ext}" in {f.name}. Allowed: PDF, DOCX, TXT, JPG, PNG, WEBP, BMP'}, status=400)
+        total_size += f.size
+        
+        # Save temp file
+        temp_filename = f"doc_{uuid.uuid4().hex}{ext}"
+        temp_path = os.path.join(temp_dir, temp_filename)
+        try:
+            with open(temp_path, 'wb+') as destination:
+                for chunk in f.chunks():
+                    destination.write(chunk)
+            saved_temp_paths.append(temp_path)
+        except Exception as write_err:
+            logger.exception(f"Failed to write temporary file for {f.name}")
+            return JsonResponse({'error': f'Failed to save file {f.name} on server.'}, status=500)
+
+    # Max total size: 30MB for multi-image / doc uploads
+    if total_size > 30 * 1024 * 1024:
+        for p in saved_temp_paths:
+            if os.path.exists(p):
+                os.remove(p)
+        return JsonResponse({'error': 'Total file size exceeds maximum limit of 30MB'}, status=400)
 
     # Create translation history record
     history = DocumentTranslationHistory.objects.create(
@@ -512,13 +519,16 @@ def upload_document(request):
         status='pending'
     )
     
-    # Save original file to original_file FileField
+    # Save original file (first file in batch) to history model
     from django.core.files import File
     try:
-        with open(temp_path, 'rb') as f:
-            history.original_file.save(os.path.basename(temp_path), File(f), save=True)
+        with open(saved_temp_paths[0], 'rb') as f:
+            history.original_file.save(os.path.basename(saved_temp_paths[0]), File(f), save=True)
     except Exception as save_err:
         logger.exception(f"Failed to save original file to history model: {str(save_err)}")
+
+    # Format temp_path argument (single path or JSON list string for multi-image batch)
+    task_file_arg = json.dumps(saved_temp_paths) if len(saved_temp_paths) > 1 else saved_temp_paths[0]
 
     # Check if Celery is active and running
     celery_active = False
@@ -534,7 +544,7 @@ def upload_document(request):
     if celery_active:
         try:
             from app.tasks import process_document_translation
-            task = process_document_translation.delay(history.id, temp_path, output_format)
+            task = process_document_translation.delay(history.id, task_file_arg, output_format)
             return JsonResponse({
                 'task_id': task.id,
                 'history_id': history.id,
@@ -550,7 +560,7 @@ def upload_document(request):
     def run_document_task_in_thread():
         try:
             from app.tasks import process_document_translation
-            sync_result = process_document_translation(history.id, temp_path, output_format)
+            sync_result = process_document_translation(history.id, task_file_arg, output_format)
             cache.set(f"sync_task_{task_id}", sync_result, timeout=1800)
         except Exception as sync_err:
             logger.exception("Background thread document translation failed")
@@ -1752,7 +1762,7 @@ def user_api_keys(request):
     Only active subscribed users can generate and manage API keys.
     """
     from app.models import DeveloperAPIKey, UserSubscription
-    
+
     # Check user subscription status
     active_sub = request.user.subscriptions.filter(status='active').first()
     has_active_sub = active_sub is not None
@@ -1882,10 +1892,10 @@ def api_v1_translate_document(request):
     Accepts uploaded file, target_lang, source_lang, output_format.
     Processes OCR + translation and returns extracted & translated text and download URL.
     """
-    if 'file' not in request.FILES:
-        return JsonResponse({'status': 'error', 'error': 'No document file uploaded in parameter "file".'}, status=400)
+    uploaded_files = request.FILES.getlist('file') or request.FILES.getlist('files')
+    if not uploaded_files:
+        return JsonResponse({'status': 'error', 'error': 'No document or image file uploaded.'}, status=400)
 
-    uploaded_file = request.FILES['file']
     target_lang = request.POST.get('target_lang', '').strip()
     source_lang = request.POST.get('source_lang', 'auto').strip()
     output_format = request.POST.get('output_format', 'pdf').strip().lower()
@@ -1895,34 +1905,40 @@ def api_v1_translate_document(request):
     if output_format not in ['pdf', 'docx', 'txt']:
         return JsonResponse({'status': 'error', 'error': 'Parameter "output_format" must be one of: pdf, docx, txt.'}, status=400)
 
-    # Validate file extension
-    ext = os.path.splitext(uploaded_file.name)[1].lower()
-    allowed_exts = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png']
-    if ext not in allowed_exts:
-        return JsonResponse({'status': 'error', 'error': f'Unsupported document format "{ext}". Allowed: PDF, DOCX, TXT, JPG, PNG.'}, status=400)
+    allowed_exts = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.bmp']
+    saved_temp_paths = []
+    total_size = 0
 
-    # Max size: 15MB
-    if uploaded_file.size > 15 * 1024 * 1024:
-        return JsonResponse({'status': 'error', 'error': 'File size exceeds maximum limit of 15MB.'}, status=400)
-
-    # Create temporary file
     temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
     os.makedirs(temp_dir, exist_ok=True)
-    temp_filename = f"dev_doc_{uuid.uuid4().hex}{ext}"
-    temp_path = os.path.join(temp_dir, temp_filename)
 
-    try:
-        with open(temp_path, 'wb+') as destination:
-            for chunk in uploaded_file.chunks():
-                destination.write(chunk)
-    except Exception as e:
-        logger.exception("Failed to write temporary developer document")
-        return JsonResponse({'status': 'error', 'error': 'Failed to save document on server.'}, status=500)
+    for f in uploaded_files:
+        ext = os.path.splitext(f.name)[1].lower()
+        if ext not in allowed_exts:
+            return JsonResponse({'status': 'error', 'error': f'Unsupported document format "{ext}" in {f.name}. Allowed: PDF, DOCX, TXT, JPG, PNG, WEBP, BMP.'}, status=400)
+        total_size += f.size
+
+        temp_filename = f"dev_doc_{uuid.uuid4().hex}{ext}"
+        temp_path = os.path.join(temp_dir, temp_filename)
+        try:
+            with open(temp_path, 'wb+') as destination:
+                for chunk in f.chunks():
+                    destination.write(chunk)
+            saved_temp_paths.append(temp_path)
+        except Exception as e:
+            logger.exception(f"Failed to write temporary developer file for {f.name}")
+            return JsonResponse({'status': 'error', 'error': f'Failed to save document {f.name} on server.'}, status=500)
+
+    if total_size > 30 * 1024 * 1024:
+        for p in saved_temp_paths:
+            if os.path.exists(p):
+                os.remove(p)
+        return JsonResponse({'status': 'error', 'error': 'Total file size exceeds maximum limit of 30MB.'}, status=400)
 
     # Create DocumentTranslationHistory record
     history = DocumentTranslationHistory.objects.create(
         user=request.developer_user,
-        original_file=uploaded_file,
+        original_file=uploaded_files[0],
         source_language=source_lang,
         target_language=target_lang,
         status='processing'
@@ -1931,6 +1947,7 @@ def api_v1_translate_document(request):
     try:
         from app.services.openai_document_service import (
             extract_text_from_image_with_openai,
+            extract_text_from_multiple_images,
             extract_text_from_pdf,
             extract_text_from_docx,
             extract_text_from_txt,
@@ -1939,19 +1956,24 @@ def api_v1_translate_document(request):
         )
 
         # 1. Text Extraction
-        if ext == '.txt':
-            extracted_text = extract_text_from_txt(temp_path)
-        elif ext == '.pdf':
-            extracted_text = extract_text_from_pdf(temp_path)
-        elif ext == '.docx':
-            extracted_text = extract_text_from_docx(temp_path)
-        elif ext in ['.jpg', '.jpeg', '.png']:
-            extracted_text = extract_text_from_image_with_openai(temp_path)
+        if len(saved_temp_paths) > 1:
+            extracted_text = extract_text_from_multiple_images(saved_temp_paths)
         else:
-            extracted_text = ""
+            single_path = saved_temp_paths[0]
+            ext = os.path.splitext(single_path)[1].lower()
+            if ext == '.txt':
+                extracted_text = extract_text_from_txt(single_path)
+            elif ext == '.pdf':
+                extracted_text = extract_text_from_pdf(single_path)
+            elif ext == '.docx':
+                extracted_text = extract_text_from_docx(single_path)
+            elif ext in ['.jpg', '.jpeg', '.png', '.webp', '.bmp']:
+                extracted_text = extract_text_from_image_with_openai(single_path)
+            else:
+                extracted_text = ""
 
         if not extracted_text.strip():
-            extracted_text = f"[Empty Document: No text could be extracted from {uploaded_file.name}]"
+            extracted_text = f"[Empty Document: No text could be extracted]"
 
         # 2. Text Translation
         translated_text = translate_text_with_openai(extracted_text, target_lang=target_lang, source_lang=source_lang)
@@ -1970,12 +1992,13 @@ def api_v1_translate_document(request):
         history.status = 'success'
         history.save()
 
-        # Clean up temp file
-        if os.path.exists(temp_path):
-            try:
-                os.remove(temp_path)
-            except Exception:
-                pass
+        # Clean up temp files
+        for p in saved_temp_paths:
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except Exception:
+                    pass
 
         download_url = request.build_absolute_uri(reverse('download_translated_file', args=[history.id]))
 

@@ -69,11 +69,17 @@
             <div class="row g-4">
                 <!-- Source Text (Left) -->
                 <div class="col-md-6">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="small text-muted fw-medium">Source Text</span>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small text-muted fw-medium">Source Text</span>
+                            <label for="textFileInput" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1" style="font-size: 0.78rem; cursor: pointer;" title="Upload or Drag &amp; Drop Text/Image File">
+                                <i class="fas fa-cloud-upload-alt me-1"></i> Upload File / Image
+                            </label>
+                            <input type="file" id="textFileInput" class="d-none" accept=".txt,.pdf,.docx,.jpg,.jpeg,.png,.webp">
+                        </div>
                         <span class="small text-muted" id="charCount">0 / 5000</span>
                     </div>
-                    <textarea id="sourceText" class="form-control shadow-none" rows="10" placeholder="Type or paste your text here (e.g. 'hello, how are you?')..." style="resize: none; font-size: 1.05rem;"></textarea>
+                    <textarea id="sourceText" class="form-control shadow-none" rows="10" placeholder="Type, paste, or drag &amp; drop document/image files here..." style="resize: none; font-size: 1.05rem;"></textarea>
                 </div>
 
                 <!-- Translated Text (Right) -->
@@ -173,6 +179,89 @@
                     charCount.classList.add("text-danger");
                 } else {
                     charCount.classList.remove("text-danger");
+                }
+            });
+        }
+
+        // File upload & Drag-and-Drop handler for text area
+        const textFileInput = document.getElementById("textFileInput");
+        
+        function handleFileContentRead(file) {
+            if (!file) return;
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            
+            if (['.txt'].includes(ext)) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    sourceText.value = e.target.result;
+                    sourceText.dispatchEvent(new Event('input'));
+                };
+                reader.readAsText(file);
+            } else {
+                // Submit to document extraction endpoint to read text
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('source_lang', 'auto');
+                formData.append('target_lang', 'en');
+                formData.append('output_format', 'txt');
+
+                if (sourceText) sourceText.value = "Extracting text from file via Teltam AI OCR engine...";
+
+                fetch('/api/upload-document/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '' },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.task_id) {
+                        const poll = (attempts = 0) => {
+                            if (attempts > 30) return;
+                            fetch(`/api/task-status/${data.task_id}/`)
+                            .then(r => r.json())
+                            .then(st => {
+                                if (st.status === 'SUCCESS' && st.result) {
+                                    sourceText.value = st.result.extracted_text || "";
+                                    sourceText.dispatchEvent(new Event('input'));
+                                } else if (st.status === 'PENDING' || st.status === 'PROGRESS') {
+                                    setTimeout(() => poll(attempts + 1), 1000);
+                                }
+                            });
+                        };
+                        poll();
+                    }
+                })
+                .catch(err => console.error("File extraction error:", err));
+            }
+        }
+
+        if (textFileInput) {
+            textFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileContentRead(e.target.files[0]);
+                }
+            });
+        }
+
+        if (sourceText) {
+            ['dragenter', 'dragover'].forEach(evt => {
+                sourceText.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    sourceText.style.borderColor = '#6366f1';
+                    sourceText.style.background = 'rgba(99, 102, 241, 0.02)';
+                });
+            });
+            ['dragleave', 'drop'].forEach(evt => {
+                sourceText.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    sourceText.style.borderColor = '#e2e8f0';
+                    sourceText.style.background = '#ffffff';
+                });
+            });
+            sourceText.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    handleFileContentRead(files[0]);
                 }
             });
         }

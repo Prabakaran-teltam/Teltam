@@ -452,6 +452,9 @@
                             <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-voice-translator" data-bs-toggle="pill" data-bs-target="#pane-voice-translator" type="button" role="tab" aria-controls="pane-voice-translator" aria-selected="false">
                                 <i class="fas fa-microphone"></i> Voice Translator
                             </button>
+                            <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-camera-translator" data-bs-toggle="pill" data-bs-target="#pane-camera-translator" type="button" role="tab" aria-controls="pane-camera-translator" aria-selected="false">
+                                <i class="fas fa-camera"></i> Live Camera OCR
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -881,7 +884,79 @@
 
                                 </div>
                             </div>
-    </div>
+                        </div>
+
+                        <!-- Tool 4: Live Camera Translator Pane -->
+                        <div class="tab-pane fade" id="pane-camera-translator" role="tabpanel" aria-labelledby="tab-camera-translator">
+                            <div class="gradient-border-wrapper">
+                                <div class="translation-widget-premium">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-slate-100">
+                                        <div>
+                                            <h4 class="fw-bold mb-1 text-slate-900">Live Camera OCR &amp; Real-Time Translation</h4>
+                                            <p class="text-slate-600 small mb-0">Use your web or mobile camera stream to capture text frames and translate live.</p>
+                                        </div>
+                                        <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(244, 63, 94, 0.08); color: #f43f5e; font-weight: 500;"><i class="fas fa-camera me-1"></i> Vision OCR Engine</span>
+                                    </div>
+                                    
+                                    <div class="row g-4">
+                                        <div class="col-lg-6">
+                                            <div class="p-3 bg-dark rounded-4 text-white position-relative text-center overflow-hidden" style="min-height: 320px; display: flex; align-items: center; justify-content: center; background: #090d16;">
+                                                <div id="pubCamPlaceholder" class="p-4">
+                                                    <div class="rounded-circle bg-slate-800 d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                                                        <i class="fas fa-video-slash text-slate-400 fs-3"></i>
+                                                    </div>
+                                                    <h6 class="fw-bold text-white mb-1">Camera Stream Inactive</h6>
+                                                    <p class="text-slate-400 small mb-3">Click 'Start Camera' below to scan text live.</p>
+                                                    <button type="button" id="pubStartCamBtn" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none;">
+                                                        <i class="fas fa-video me-1"></i> Start Live Camera
+                                                    </button>
+                                                </div>
+                                                <video id="pubCamVideo" class="w-100 h-100 rounded-3 d-none" autoplay playsinline muted style="object-fit: cover; max-height: 360px;"></video>
+                                                <canvas id="pubCamCanvas" class="d-none"></canvas>
+                                            </div>
+                                            <div class="d-flex gap-2 mt-3">
+                                                <button type="button" id="pubToggleCamBtn" class="btn btn-outline-primary btn-sm rounded-pill w-50 fw-bold py-2"><i class="fas fa-video me-1"></i> Start Camera</button>
+                                                <button type="button" id="pubSnapCamBtn" class="btn btn-outline-secondary btn-sm rounded-pill w-50 fw-bold py-2" disabled><i class="fas fa-camera-retro me-1"></i> Take Snapshot</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <div class="mb-3">
+                                                <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">TARGET LANGUAGE</label>
+                                                <div class="custom-dropdown-container dropdown" id="pubCamTargetDropdownContainer">
+                                                    <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="selected-flag fs-5">🇪🇸</span>
+                                                            <div class="text-start">
+                                                                <div class="selected-lang-name fw-semibold text-slate-800" style="font-size: 0.95rem;">Spanish</div>
+                                                                <div class="selected-lang-native text-muted" style="font-size: 0.75rem;">Español</div>
+                                                            </div>
+                                                        </div>
+                                                        <i class="fas fa-chevron-down text-indigo-500 ms-2" style="font-size: 0.85rem;"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu custom-dropdown-menu p-3 shadow-lg">
+                                                        <div class="dropdown-search-wrapper mb-2">
+                                                            <i class="fas fa-search"></i>
+                                                            <input type="text" class="form-control dropdown-search-input" placeholder="Search target language...">
+                                                        </div>
+                                                        <div class="dropdown-options-grid"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">EXTRACTED OCR TEXT</label>
+                                                <textarea id="pubCamOcrText" class="form-control bg-light shadow-none" rows="3" readonly placeholder="Extracted frame text will appear here..."></textarea>
+                                            </div>
+
+                                            <div>
+                                                <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">LIVE TRANSLATION</label>
+                                                <textarea id="pubCamTranslatedText" class="form-control bg-light shadow-none" rows="4" readonly placeholder="Live translation output will appear here..."></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -1235,6 +1310,104 @@
             initDropdown('voiceTargetDropdownContainer', false, 'es', (code) => { 
                 voiceTargetCode = code;
             });
+
+            // Camera Target Dropdown
+            let pubCamTargetCode = 'es';
+            initDropdown('pubCamTargetDropdownContainer', false, 'es', (code) => {
+                pubCamTargetCode = code;
+            });
+
+            // Public Camera JS Handlers
+            const pubCamVideo = document.getElementById('pubCamVideo');
+            const pubCamCanvas = document.getElementById('pubCamCanvas');
+            const pubCamPlaceholder = document.getElementById('pubCamPlaceholder');
+            const pubStartCamBtn = document.getElementById('pubStartCamBtn');
+            const pubToggleCamBtn = document.getElementById('pubToggleCamBtn');
+            const pubSnapCamBtn = document.getElementById('pubSnapCamBtn');
+            const pubCamOcrText = document.getElementById('pubCamOcrText');
+            const pubCamTranslatedText = document.getElementById('pubCamTranslatedText');
+
+            let pubMediaStream = null;
+            let isPubCamActive = false;
+
+            async function startPubCamera() {
+                try {
+                    if (pubMediaStream) {
+                        pubMediaStream.getTracks().forEach(t => t.stop());
+                    }
+                    pubMediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    pubCamVideo.srcObject = pubMediaStream;
+                    pubCamVideo.classList.remove('d-none');
+                    pubCamPlaceholder.classList.add('d-none');
+                    isPubCamActive = true;
+                    if (pubToggleCamBtn) pubToggleCamBtn.innerText = "Stop Camera";
+                    if (pubSnapCamBtn) pubSnapCamBtn.disabled = false;
+                } catch (e) {
+                    console.error("Public camera access error:", e);
+                    Swal.fire({ icon: 'error', title: 'Camera Error', text: 'Could not access camera stream.' });
+                }
+            }
+
+            function stopPubCamera() {
+                if (pubMediaStream) {
+                    pubMediaStream.getTracks().forEach(t => t.stop());
+                    pubMediaStream = null;
+                }
+                pubCamVideo.srcObject = null;
+                pubCamVideo.classList.add('d-none');
+                pubCamPlaceholder.classList.remove('d-none');
+                isPubCamActive = false;
+                if (pubToggleCamBtn) pubToggleCamBtn.innerText = "Start Camera";
+                if (pubSnapCamBtn) pubSnapCamBtn.disabled = true;
+            }
+
+            if (pubStartCamBtn) pubStartCamBtn.addEventListener('click', startPubCamera);
+            if (pubToggleCamBtn) {
+                pubToggleCamBtn.addEventListener('click', () => {
+                    if (isPubCamActive) stopPubCamera();
+                    else startPubCamera();
+                });
+            }
+
+            if (pubSnapCamBtn) {
+                pubSnapCamBtn.addEventListener('click', async () => {
+                    if (!isPubCamActive || !pubCamVideo.videoWidth) return;
+                    pubCamCanvas.width = pubCamVideo.videoWidth;
+                    pubCamCanvas.height = pubCamVideo.videoHeight;
+                    const ctx = pubCamCanvas.getContext('2d');
+                    ctx.drawImage(pubCamVideo, 0, 0, pubCamCanvas.width, pubCamCanvas.height);
+                    const base64Data = pubCamCanvas.toDataURL('image/jpeg', 0.85);
+
+                    pubCamOcrText.value = "Extracting OCR text from frame...";
+                    pubCamTranslatedText.value = "Translating text...";
+
+                    try {
+                        const res = await fetch('/api/translate/camera/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken') || ''
+                            },
+                            body: JSON.stringify({
+                                image_data: base64Data,
+                                target_lang: pubCamTargetCode,
+                                source_lang: 'auto'
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            pubCamOcrText.value = data.extracted_text || "No readable text detected in frame.";
+                            pubCamTranslatedText.value = data.translated_text || "";
+                        } else {
+                            pubCamOcrText.value = "Error: " + (data.error || "OCR failed");
+                            pubCamTranslatedText.value = "";
+                        }
+                    } catch (err) {
+                        pubCamOcrText.value = "Error connecting to OCR engine.";
+                        pubCamTranslatedText.value = "";
+                    }
+                });
+            }
 
 
             // Auto-focus search input when any dropdown opens

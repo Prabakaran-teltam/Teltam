@@ -29,6 +29,7 @@ urlpatterns = [
     path('download/document/<int:id>/', views.download_translated_file, name='download_translated_file'),
     path('api/summarize-document/', views.summarize_document_api, name='summarize_document_api'),
     path('api/upload-voice/', views.upload_voice_api, name='upload_voice_api'),
+    path('api/translate/camera/', views.api_translate_camera, name='api_translate_camera'),
     path('api/task-status/<str:task_id>/', views.task_status_api, name='task_status_api'),
 
     # =====================================================================
@@ -82,6 +83,7 @@ urlpatterns = [
     path('user/tools/text/', views.user_tool_text, name='user_tool_text'),
     path('user/tools/file/', views.user_tool_file, name='user_tool_file'),
     path('user/tools/voice/', views.user_tool_voice, name='user_tool_voice'),
+    path('user/tools/camera/', views.user_tool_camera, name='user_tool_camera'),
     path('user/history/', views.user_history_list, name='user_history_list'),
     path('user/api-keys/', views.user_api_keys, name='user_api_keys'),
     path('user/logout/', views.user_logout, name='user_logout'),
@@ -92,5 +94,6 @@ urlpatterns = [
     path('api/v1/translate/text/', views.api_v1_translate_text, name='api_v1_translate_text'),
     path('api/v1/translate/document/', views.api_v1_translate_document, name='api_v1_translate_document'),
     path('api/v1/translate/voice/', views.api_v1_translate_voice, name='api_v1_translate_voice'),
+    path('api/v1/translate/camera/', views.api_v1_translate_camera, name='api_v1_translate_camera'),
 ]
 

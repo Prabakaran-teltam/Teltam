@@ -196,6 +196,7 @@
                     <a href="#text-api" class="doc-nav-link mb-1"><i class="fas fa-keyboard me-2"></i>Text Translation API</a>
                     <a href="#doc-api" class="doc-nav-link mb-1"><i class="fas fa-file-pdf me-2"></i>Document Translation API</a>
                     <a href="#voice-api" class="doc-nav-link mb-1"><i class="fas fa-microphone me-2"></i>Voice Translation API</a>
+                    <a href="#camera-api" class="doc-nav-link mb-1"><i class="fas fa-camera me-2"></i>Camera Frame OCR API</a>
 
                     <div class="text-uppercase text-muted fw-bold small px-3 mt-4 mb-2" style="letter-spacing: 0.1em;">Reference</div>
                     <a href="#errors" class="doc-nav-link mb-1"><i class="fas fa-triangle-exclamation me-2"></i>Error Codes</a>
@@ -457,6 +458,68 @@ console.log(data);</pre>
   "transcribed_text": "Hello, thank you for choosing Teltam translation services.",
   "target_lang": "es",
   "translated_text": "Hola, gracias por elegir los servicios de traducción de Teltam."
+}
+                        </pre>
+                    </div>
+                </div>
+
+                <!-- Section 6: Camera Frame OCR Translation API -->
+                <div class="doc-card p-4 p-md-5" id="camera-api">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="badge bg-danger fs-6 px-3 py-2 fw-bold">POST</span>
+                        <code class="text-muted small">/api/v1/translate/camera/</code>
+                    </div>
+                    <p class="text-slate-700 mb-4">Accepts base64 camera image frames or image file payloads to perform real-time Vision OCR extraction and translate into target language.</p>
+
+                    <h5 class="fw-bold text-dark mb-3">Request Parameters (JSON / Form Data)</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table param-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>image_data</code></td>
+                                    <td>string</td>
+                                    <td><span class="badge bg-danger">Required*</span></td>
+                                    <td>Base64 encoded camera frame image string (e.g. <code>data:image/jpeg;base64,...</code>).</td>
+                                </tr>
+                                <tr>
+                                    <td><code>file</code></td>
+                                    <td>file</td>
+                                    <td><span class="badge bg-danger">Required*</span></td>
+                                    <td>Image file upload (JPG, PNG, WEBP, BMP) if <code>image_data</code> base64 is not provided.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>target_lang</code></td>
+                                    <td>string</td>
+                                    <td><span class="badge bg-danger">Required</span></td>
+                                    <td>Target language code (e.g., <code>es</code>, <code>ta</code>, <code>fr</code>, <code>hi</code>).</td>
+                                </tr>
+                                <tr>
+                                    <td><code>source_lang</code></td>
+                                    <td>string</td>
+                                    <td><span class="badge bg-secondary">Optional</span></td>
+                                    <td>Source language code. Default is <code>auto</code> for automatic detection.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-2">Sample JSON Response (200 OK)</h5>
+                    <div class="code-block p-3">
+                        <pre class="mb-0 text-success">{
+  "status": "success",
+  "has_text": true,
+  "source_lang": "auto",
+  "target_lang": "es",
+  "extracted_text": "WELCOME TO TELTAM REAL-TIME CAMERA TRANSLATION",
+  "translated_text": "BIENVENIDO A LA TRADUCCIÓN DE CÁMARA EN TIEMPO REAL DE TELTAM"
 }</pre>
                     </div>
                 </div>

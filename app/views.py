@@ -776,6 +776,131 @@ def task_status_api(request, task_id):
             'error': f"Failed to check task status: Celery broker is currently offline."
         })
 
+@csrf_exempt
+@require_POST
+def api_translate_camera(request):
+    """
+    POST API for Live Camera Real-Time OCR & Translation.
+    Accepts base64 image_data or file upload, target_lang, source_lang.
+    Extracts text via OpenAI Vision OCR and translates it live into target_lang.
+    """
+    import base64
+    import re
+    from app.services.openai_document_service import get_openai_client, translate_text_with_openai
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8')) if request.body else {}
+        else:
+            data = request.POST
+
+        image_data = data.get('image_data', '').strip()
+        target_lang = data.get('target_lang', '').strip()
+        source_lang = data.get('source_lang', 'auto').strip()
+
+        # Support uploaded image file as fallback if image_data base64 is not passed
+        if not image_data and 'file' in request.FILES:
+            uploaded_file = request.FILES['file']
+            base64_bytes = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            ext = os.path.splitext(uploaded_file.name)[1].lower().replace('.', '')
+            mime = f"image/{ext if ext in ['png', 'webp', 'gif', 'bmp'] else 'jpeg'}"
+            image_data = f"data:{mime};base64,{base64_bytes}"
+
+        if not image_data:
+            return JsonResponse({'error': 'Parameter "image_data" (base64) or "file" is required.'}, status=400)
+        if not target_lang:
+            return JsonResponse({'error': 'Parameter "target_lang" is required.'}, status=400)
+
+        # Rate limiting by IP
+        ip = get_client_ip(request)
+        limit_key = f"rate_limit_camera_{ip}"
+        count = cache.get(limit_key, 0)
+        if count >= 60: # Up to 60 frames per minute
+            return JsonResponse({'error': 'Camera frame rate limit reached. Please pause scanning for a moment.'}, status=429)
+        cache.set(limit_key, count + 1, timeout=60)
+
+        # Format base64 image for OpenAI Vision API
+        if ',' in image_data:
+            header, base64_str = image_data.split(',', 1)
+            mime_match = re.search(r'data:(image/[^;]+);base64', header)
+            mime_type = mime_match.group(1) if mime_match else 'image/jpeg'
+        else:
+            base64_str = image_data
+            mime_type = 'image/jpeg'
+
+        openai_client = get_openai_client()
+        if not openai_client:
+            return JsonResponse({'error': 'OpenAI API client is not configured.'}, status=500)
+
+        # Call OpenAI Vision for fast OCR frame extraction
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "You are a professional high-speed camera OCR model. Extract all readable text visible in this camera image frame exactly as it appears. Preserve line breaks. Do not summarize and do not add any comments or explanations. Output ONLY the extracted text. If no readable text is visible in the frame, output ONLY '[NO_TEXT]'."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{mime_type};base64,{base64_str}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=2048,
+            temperature=0.0
+        )
+        extracted_text = response.choices[0].message.content.strip()
+
+        if not extracted_text or extracted_text.upper() == '[NO_TEXT]':
+            return JsonResponse({
+                'status': 'success',
+                'has_text': False,
+                'extracted_text': '',
+                'translated_text': '',
+                'source_lang': source_lang,
+                'target_lang': target_lang
+            })
+
+        # Perform translation on extracted text
+        translated_text = translate_text_with_openai(
+            text=extracted_text,
+            target_lang=target_lang,
+            source_lang=source_lang
+        )
+
+        # Save to UserTranslationHistory if logged in
+        if request.user.is_authenticated:
+            try:
+                UserTranslationHistory.objects.create(
+                    user=request.user,
+                    tool_type='camera',
+                    source_text=extracted_text,
+                    translated_text=translated_text,
+                    source_lang=source_lang,
+                    target_lang=target_lang
+                )
+            except Exception as hist_err:
+                logger.warning(f"Could not save camera history: {str(hist_err)}")
+
+        return JsonResponse({
+            'status': 'success',
+            'has_text': True,
+            'extracted_text': extracted_text,
+            'translated_text': translated_text,
+            'source_lang': source_lang,
+            'target_lang': target_lang
+        })
+
+    except Exception as e:
+        logger.exception("Camera frame OCR translation failed")
+        return JsonResponse({'error': f"Camera processing failed: {str(e)}"}, status=500)
+
 # =====================================================================
 # CUSTOM ADMIN DASHBOARD VIEWS
 # =====================================================================
@@ -1071,6 +1196,7 @@ def user_dashboard_home(request):
     text_count = history.filter(tool_type='text').count()
     file_count = history.filter(tool_type='file').count()
     voice_count = history.filter(tool_type='voice').count()
+    camera_count = history.filter(tool_type='camera').count()
     
     # Active subscription
     subscription = request.user.subscriptions.filter(status='active').first()
@@ -1084,6 +1210,7 @@ def user_dashboard_home(request):
         'text_count': text_count,
         'file_count': file_count,
         'voice_count': voice_count,
+        'camera_count': camera_count,
         'subscription': subscription,
         'payment_history': payment_history,
     }
@@ -1143,6 +1270,12 @@ def user_tool_voice(request):
     """Renders the voice recording/audio upload translation workspace."""
     from app.constants import LANGUAGES
     return render(request, 'user/tool_voice.html', {'languages': LANGUAGES})
+
+@login_required(login_url='login')
+def user_tool_camera(request):
+    """Renders the live camera real-time OCR translation tool workspace."""
+    from app.constants import LANGUAGES
+    return render(request, 'user/tool_camera.html', {'languages': LANGUAGES})
 
 @login_required(login_url='login')
 def user_history_list(request):
@@ -2129,6 +2262,107 @@ def api_v1_translate_voice(request):
             except Exception:
                 pass
         return JsonResponse({'status': 'error', 'error': f"Voice translation failed: {str(voice_err)}"}, status=500)
+
+
+@csrf_exempt
+@require_POST
+@developer_api_key_required
+def api_v1_translate_camera(request):
+    """
+    Developer REST API v1: Live Camera Real-Time OCR & Translation.
+    Accepts image_data (base64) or file upload, target_lang, source_lang.
+    Returns JSON response with extracted_text and translated_text.
+    """
+    import base64
+    import re
+    from app.services.openai_document_service import get_openai_client, translate_text_with_openai
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8')) if request.body else {}
+        else:
+            data = request.POST
+
+        image_data = data.get('image_data', '').strip()
+        target_lang = data.get('target_lang', '').strip()
+        source_lang = data.get('source_lang', 'auto').strip()
+
+        if not image_data and 'file' in request.FILES:
+            uploaded_file = request.FILES['file']
+            base64_bytes = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            ext = os.path.splitext(uploaded_file.name)[1].lower().replace('.', '')
+            mime = f"image/{ext if ext in ['png', 'webp', 'gif', 'bmp'] else 'jpeg'}"
+            image_data = f"data:{mime};base64,{base64_bytes}"
+
+        if not image_data:
+            return JsonResponse({'status': 'error', 'error': 'Parameter "image_data" (base64) or "file" is required.'}, status=400)
+        if not target_lang:
+            return JsonResponse({'status': 'error', 'error': 'Parameter "target_lang" is required.'}, status=400)
+
+        if ',' in image_data:
+            header, base64_str = image_data.split(',', 1)
+            mime_match = re.search(r'data:(image/[^;]+);base64', header)
+            mime_type = mime_match.group(1) if mime_match else 'image/jpeg'
+        else:
+            base64_str = image_data
+            mime_type = 'image/jpeg'
+
+        openai_client = get_openai_client()
+        if not openai_client:
+            return JsonResponse({'status': 'error', 'error': 'OpenAI API client is not configured.'}, status=500)
+
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "You are a professional high-speed camera OCR model. Extract all readable text visible in this camera image frame exactly as it appears. Preserve line breaks. Do not summarize and do not add any comments or explanations. Output ONLY the extracted text. If no readable text is visible in the frame, output ONLY '[NO_TEXT]'."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{mime_type};base64,{base64_str}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=2048,
+            temperature=0.0
+        )
+        extracted_text = response.choices[0].message.content.strip()
+
+        if not extracted_text or extracted_text.upper() == '[NO_TEXT]':
+            return JsonResponse({
+                'status': 'success',
+                'has_text': False,
+                'extracted_text': '',
+                'translated_text': '',
+                'source_lang': source_lang,
+                'target_lang': target_lang
+            })
+
+        translated_text = translate_text_with_openai(
+            text=extracted_text,
+            target_lang=target_lang,
+            source_lang=source_lang
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'has_text': True,
+            'source_lang': source_lang,
+            'target_lang': target_lang,
+            'extracted_text': extracted_text,
+            'translated_text': translated_text
+        })
+
+    except Exception as e:
+        logger.exception("Developer API camera frame translation failed")
+        return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
 
 
 

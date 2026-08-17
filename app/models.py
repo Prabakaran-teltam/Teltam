@@ -112,6 +112,7 @@ class UserTranslationHistory(models.Model):
         ('text', 'Text Translator'),
         ('file', 'File Translator'),
         ('voice', 'Voice Translator'),
+        ('camera', 'Live Camera Translator'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='translation_history')
     tool_type = models.CharField(max_length=20, choices=TOOL_CHOICES)

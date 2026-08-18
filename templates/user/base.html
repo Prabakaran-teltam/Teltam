@@ -15,6 +15,26 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     
     <style>
+        /* Zoho Puvi Font-Face Declarations */
+        @font-face {
+            font-family: 'Zoho Puvi';
+            src: local('Zoho Puvi'), local('ZohoPuvi-Regular'), local('ZohoPuvi');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Zoho Puvi';
+            src: local('Zoho Puvi SemiBold'), local('ZohoPuvi-SemiBold');
+            font-weight: 600;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Zoho Puvi';
+            src: local('Zoho Puvi Bold'), local('ZohoPuvi-Bold');
+            font-weight: 700;
+            font-style: normal;
+        }
+
         :root {
             --sidebar-width: 260px;
             --brand-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
@@ -26,17 +46,23 @@
             --card-border: #f1f5f9;
             --text-main: #334155;
             --text-muted: #94a3b8;
+            --font-headings: 'Zoho Puvi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-body: 'Zoho Puvi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        *, body, button, input, select, textarea {
+            font-family: 'Zoho Puvi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Zoho Puvi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
             background-color: var(--light-bg);
             color: var(--text-main);
             overflow-x: hidden;
         }
 
         h1, h2, h3, h4, h5, h6, .display-font {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Zoho Puvi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
 
         /* Sidebar Styling */

@@ -19,20 +19,33 @@
             margin: 0 auto;
         }
         
-        /* Navigation Buttons at Top */
+        /* Navigation Buttons Outer Layer (Fits Only Buttons) */
+        .tools-nav-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        
         .tools-nav-wrapper {
+            display: inline-flex;
+            align-items: center;
             background: #ffffff;
             border: 1.5px solid #e2e8f0;
-            border-radius: 50px;
-            padding: 8px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-            margin: 0 auto;
+            border-radius: 60px;
+            padding: 6px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+            max-width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @media (max-width: 768px) {
-            .tools-nav-wrapper {
-                border-radius: 20px;
-                padding: 12px;
-            }
+        
+        .tools-nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 6px !important;
+            margin: 0;
+            padding: 0;
+            flex-wrap: nowrap;
         }
         
         .tool-nav-btn {
@@ -43,15 +56,15 @@
             font-family: var(--font-headings);
             font-size: 0.95rem;
             border-radius: 50px !important;
-            padding: 10px 24px !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 10px 22px !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
             box-shadow: none;
+            white-space: nowrap;
         }
         
         .tool-nav-btn:hover {
             background: #f1f5f9;
             color: var(--color-indigo-600) !important;
-            transform: translateY(-1px);
         }
         
         .tool-nav-btn.active {
@@ -59,7 +72,63 @@
             border-color: transparent !important;
             color: #ffffff !important;
             box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25) !important;
-            transform: translateY(-1px);
+        }
+
+        /* Mobile View User-Friendly Responsive Interface */
+        @media (max-width: 768px) {
+            .tools-nav-container {
+                padding: 0 4px;
+            }
+            .tools-nav-wrapper {
+                width: 100%;
+                border-radius: 20px;
+                padding: 5px;
+                background: #ffffff;
+                box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+            }
+            .tools-nav-pills {
+                width: 100%;
+                overflow-x: auto;
+                flex-wrap: nowrap !important;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Firefox */
+                padding: 2px 0;
+            }
+            .tools-nav-pills::-webkit-scrollbar {
+                display: none; /* Chrome/Safari/Edge */
+            }
+            .tool-nav-btn {
+                padding: 9px 15px !important;
+                font-size: 0.85rem !important;
+                flex-shrink: 0;
+                scroll-snap-align: start;
+                border-radius: 16px !important;
+            }
+            .tool-nav-btn i {
+                font-size: 0.88rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .tools-nav-pills {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+            .tool-nav-btn {
+                width: 100% !important;
+                padding: 8px 10px !important;
+                font-size: 0.8rem !important;
+                justify-content: center !important;
+                text-align: center !important;
+                border-radius: 14px !important;
+                flex-direction: row !important;
+            }
+            .tool-nav-btn span {
+                font-size: 0.8rem !important;
+            }
         }
         
         /* Smooth Slide-up Fade Transition */
@@ -343,6 +412,61 @@
             box-shadow: 0 5px 12px rgba(124, 58, 237, 0.2);
         }
         
+        /* Mobile Layout Optimizations */
+        @media (max-width: 576px) {
+            .translation-widget-premium {
+                padding: 1.2rem 0.85rem !important;
+                border-radius: 18px !important;
+            }
+            .gradient-border-wrapper {
+                border-radius: 20px !important;
+            }
+            .btn-translate-gradient {
+                width: 100% !important;
+                padding: 12px 20px !important;
+                font-size: 0.95rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                border-radius: 16px !important;
+            }
+            .textarea-container-custom {
+                padding: 12px !important;
+                min-height: 180px !important;
+                border-radius: 12px !important;
+            }
+            .textarea-custom {
+                font-size: 0.95rem !important;
+            }
+            .textarea-footer {
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+            }
+            .textarea-footer > div {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .upload-zone {
+                padding: 1.5rem 0.85rem !important;
+            }
+            .upload-zone i.display-4 {
+                font-size: 2.2rem !important;
+            }
+            .upload-zone h5 {
+                font-size: 1rem !important;
+            }
+            .swap-btn-custom {
+                width: 36px !important;
+                height: 36px !important;
+            }
+            .custom-dropdown-menu {
+                width: calc(100vw - 32px) !important;
+                max-width: 350px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+        }
+        
         /* Upload Zone */
         .upload-zone {
             border: 2px dashed #cbd5e1 !important;
@@ -439,21 +563,21 @@
         <div class="container ai-tools-container px-2 px-md-4">
             
             <!-- Tool Buttons Top Navigation Bar -->
-            <div class="row mb-5">
-                <div class="col-12">
+            <div class="row mb-5 justify-content-center">
+                <div class="col-12 tools-nav-container">
                     <div class="tools-nav-wrapper">
-                        <div class="nav nav-pills justify-content-center gap-2 flex-wrap" id="tools-tab" role="tablist">
+                        <div class="nav nav-pills tools-nav-pills justify-content-center gap-2" id="tools-tab" role="tablist">
                             <button class="nav-link tool-nav-btn active d-flex align-items-center gap-2" id="tab-text-translator" data-bs-toggle="pill" data-bs-target="#pane-text-translator" type="button" role="tab" aria-controls="pane-text-translator" aria-selected="true">
-                                <i class="fas fa-language"></i> Text Translator
+                                <i class="fas fa-language"></i> <span>Text Translator</span>
                             </button>
                             <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-doc-translator" data-bs-toggle="pill" data-bs-target="#pane-doc-translator" type="button" role="tab" aria-controls="pane-doc-translator" aria-selected="false">
-                                <i class="fas fa-file-pdf"></i> Document Translator
+                                <i class="fas fa-file-pdf"></i> <span>Document Translator</span>
                             </button>
                             <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-voice-translator" data-bs-toggle="pill" data-bs-target="#pane-voice-translator" type="button" role="tab" aria-controls="pane-voice-translator" aria-selected="false">
-                                <i class="fas fa-microphone"></i> Voice Translator
+                                <i class="fas fa-microphone"></i> <span>Voice Translator</span>
                             </button>
                             <button class="nav-link tool-nav-btn d-flex align-items-center gap-2" id="tab-camera-translator" data-bs-toggle="pill" data-bs-target="#pane-camera-translator" type="button" role="tab" aria-controls="pane-camera-translator" aria-selected="false">
-                                <i class="fas fa-camera"></i> Live Camera OCR
+                                <i class="fas fa-camera"></i> <span>Live Camera OCR</span>
                             </button>
                         </div>
                     </div>

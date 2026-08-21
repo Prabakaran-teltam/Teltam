@@ -319,9 +319,96 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .sidebar-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Ultra Mobile-Friendly Tool Switcher Capsule Bar */
+        .mobile-tool-nav-wrapper {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .mobile-tool-nav-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tool-nav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: #475569;
+            text-decoration: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        .tool-nav-pill:hover {
+            color: #0f172a;
+            background: #f1f5f9;
+        }
+
+        /* Active Tool States with Theme Color Gradients */
+        .tool-nav-pill.active-overview {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        .tool-nav-pill.active-text {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .tool-nav-pill.active-file {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .tool-nav-pill.active-voice {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        .tool-nav-pill.active-camera {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+        }
+
+        /* Responsive Mobile Breakpoints */
         @media (max-width: 991.98px) {
             .sidebar {
                 transform: translateX(-100%);
+                z-index: 1050;
             }
             .sidebar.show {
                 transform: translateX(0);
@@ -332,22 +419,52 @@
             .sidebar-toggle {
                 display: block;
             }
+            .topbar {
+                padding: 0 1rem;
+                height: 64px;
+            }
+            .main-content {
+                padding: 1.25rem 1rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .topbar {
+                padding: 0 0.75rem;
+            }
+            .main-content {
+                padding: 1rem 0.75rem;
+            }
+            .mobile-tool-nav-wrapper {
+                border-radius: 16px;
+                padding: 4px;
+            }
+            .tool-nav-pill {
+                padding: 7px 13px;
+                font-size: 0.82rem;
+            }
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
+    <!-- Mobile Overlay Backdrop -->
+    <div class="sidebar-backdrop d-lg-none" id="sidebarBackdrop"></div>
+
     <!-- Sidebar Menu -->
     <div class="sidebar" id="sidebar">
         <div>
-            <div class="sidebar-brand">
-                <a class="d-flex align-items-center gap-2 text-decoration-none" href="/">
-                    <span class="d-flex align-items-center justify-content-center bg-indigo-600 rounded-3 text-white" style="width: 36px; height: 36px; background: var(--brand-gradient);">
+            <div class="sidebar-brand d-flex align-items-center justify-content-between">
+                <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'user_dashboard_home' %}">
+                    <span class="d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 36px; height: 36px; background: var(--brand-gradient);">
                         <i class="fas fa-language" style="font-size: 1.25rem;"></i>
                     </span>
-                    <span class="fs-4 fw-bold text-white" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Teltam<span class="text-indigo-600" style="color: #a855f7;">.ai</span></span>
+                    <span class="fs-4 fw-bold text-white" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Teltam<span style="color: #a855f7;">.ai</span></span>
                 </a>
+                <button class="btn text-slate-400 d-lg-none border-0 p-1 shadow-none" id="sidebarCloseBtn" aria-label="Close Mobile Sidebar">
+                    <i class="fas fa-xmark fs-4"></i>
+                </button>
             </div>
             
             <ul class="sidebar-menu">
@@ -380,7 +497,7 @@
                 <li class="sidebar-item {% block nav_tool_camera %}{% endblock %}">
                     <a href="{% url 'user_tool_camera' %}" class="sidebar-link">
                         <i class="fas fa-camera"></i>
-                        <span>Live Camera Translator</span>
+                        <span>Live Camera AR</span>
                     </a>
                 </li>
                 
@@ -438,28 +555,53 @@
     <div class="content-wrapper">
         <!-- Topbar Header -->
         <header class="topbar">
-            <div class="d-flex align-items-center gap-3">
-                <button class="sidebar-toggle" id="sidebar-toggle">
-                    <i class="fas fa-bars"></i>
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+                <button class="sidebar-toggle p-1 rounded-2 me-1 me-md-0" id="sidebar-toggle" aria-label="Toggle Navigation Drawer">
+                    <i class="fas fa-bars fs-5 text-slate-700"></i>
                 </button>
-                <h4 class="mb-0 fw-bold text-slate-800">{% block header_title %}Workspace{% endblock %}</h4>
+                
+                <!-- Teltam Logo & Name visible in topbar on mobile and desktop -->
+                <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'user_dashboard_home' %}">
+                    <span class="d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 34px; height: 34px; background: var(--brand-gradient);">
+                        <i class="fas fa-language" style="font-size: 1.15rem;"></i>
+                    </span>
+                    <span class="fs-5 fw-bold text-slate-900" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Teltam<span style="color: #a855f7;">.ai</span></span>
+                </a>
+
+                <div class="vr bg-secondary opacity-25 d-none d-sm-block ms-1 me-1" style="height: 20px;"></div>
+                <h5 class="mb-0 fw-bold text-slate-800 text-truncate d-none d-sm-block" style="max-width: 220px;">{% block header_title %}Workspace{% endblock %}</h5>
             </div>
             
-            <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                    <i class="fas fa-home me-1"></i> Public Site
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 px-md-3" title="Return to Public Homepage">
+                    <i class="fas fa-globe me-1"></i> <span class="d-none d-sm-inline">Public Site</span>
                 </a>
                 
                 <div class="vr bg-secondary opacity-25" style="height: 24px;"></div>
                 
-                <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; background: var(--brand-gradient); font-size: 0.9rem;">
-                        {{ request.user.first_name|slice:":2"|upper|default:request.user.username|slice:":2"|upper }}
-                    </div>
-                    <div class="d-none d-md-block">
-                        <h6 class="mb-0 fw-semibold" style="font-size: 0.88rem;">{{ request.user.first_name|default:request.user.username }}</h6>
-                        <span class="text-muted" style="font-size: 0.72rem;">{{ request.user.email }}</span>
-                    </div>
+                <!-- Interactive User Profile Avatar Dropdown -->
+                <div class="dropdown">
+                    <button class="btn p-0 border-0 d-flex align-items-center gap-2 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px; background: var(--brand-gradient); font-size: 0.9rem;">
+                            {{ request.user.first_name|slice:":2"|upper|default:request.user.username|slice:":2"|upper }}
+                        </div>
+                        <div class="d-none d-md-block text-start">
+                            <h6 class="mb-0 fw-semibold text-slate-800" style="font-size: 0.88rem; line-height: 1.2;">{{ request.user.first_name|default:request.user.username }}</h6>
+                            <span class="text-muted d-block" style="font-size: 0.72rem;">{{ request.user.email }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-slate-400 d-none d-md-block ms-1" style="font-size: 0.75rem;"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" style="border-radius: 14px; min-width: 220px; border: 1px solid #e2e8f0;">
+                        <li class="px-3 py-2 border-bottom mb-1">
+                            <span class="fw-bold text-slate-800 d-block" style="font-size: 0.9rem;">{{ request.user.first_name|default:request.user.username }}</span>
+                            <span class="text-muted small d-block text-truncate" style="font-size: 0.78rem;">{{ request.user.email }}</span>
+                        </li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'user_profile' %}"><i class="fas fa-user-gear me-2 text-indigo-500"></i> Profile Settings</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'user_api_keys' %}"><i class="fas fa-code me-2 text-indigo-500"></i> Developer API Keys</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'user_history_list' %}"><i class="fas fa-clock-rotate-left me-2 text-indigo-500"></i> Logs &amp; History</a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item rounded-2 py-2 text-danger fw-semibold" href="{% url 'user_logout' %}"><i class="fas fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
+                    </ul>
                 </div>
             </div>
         </header>
@@ -479,6 +621,32 @@
                 </div>
             {% endif %}
 
+            <!-- Mobile-Friendly Quick Tool Navigation Switcher Capsule Bar -->
+            <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="mobile-tool-nav-wrapper w-100 w-lg-auto">
+                    <a href="{% url 'user_dashboard_home' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_dashboard_home' %}active-overview{% endif %}">
+                        <i class="fas fa-chart-pie"></i> Overview
+                    </a>
+                    <a href="{% url 'user_tool_text' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_tool_text' %}active-text{% endif %}">
+                        <i class="fas fa-keyboard text-indigo-500"></i> Text
+                    </a>
+                    <a href="{% url 'user_tool_file' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_tool_file' %}active-file{% endif %}">
+                        <i class="fas fa-file-pdf text-emerald-500"></i> Document
+                    </a>
+                    <a href="{% url 'user_tool_voice' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_tool_voice' %}active-voice{% endif %}">
+                        <i class="fas fa-microphone text-amber-500"></i> Voice
+                    </a>
+                    <a href="{% url 'user_tool_camera' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_tool_camera' %}active-camera{% endif %}">
+                        <i class="fas fa-camera text-rose-500"></i> Camera AR
+                    </a>
+                </div>
+                <div class="d-none d-lg-flex align-items-center gap-2 me-2">
+                    <span class="badge bg-emerald-light text-emerald rounded-pill px-3 py-1.5 fw-semibold" style="font-size: 0.78rem;">
+                        <i class="fas fa-shield-check me-1"></i> AI Services Live
+                    </span>
+                </div>
+            </div>
+
             <div class="animate-fade-in">
                 {% block content %}{% endblock %}
             </div>
@@ -491,21 +659,42 @@
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('sidebar-toggle');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const closeBtn = document.getElementById('sidebarCloseBtn');
             
+            function openSidebar() {
+                if (sidebar) sidebar.classList.add('show');
+                if (backdrop) backdrop.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                if (sidebar) sidebar.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+
             if (toggle) {
                 toggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('show');
+                    if (sidebar && sidebar.classList.contains('show')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
             }
 
-            // Close sidebar on clicks outside (tablet/mobile view)
-            document.addEventListener('click', (e) => {
-                if (window.innerWidth < 992) {
-                    if (sidebar && sidebar.classList.contains('show') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                        sidebar.classList.remove('show');
-                    }
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+            // Close sidebar on clicks outside or esc key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) {
+                    closeSidebar();
                 }
-            // Automatically move all modals to document.body to prevent stacking context z-index freezes
+            });
+
+            // Automatically move all modals to document.body
             document.querySelectorAll('.modal').forEach(modal => {
                 document.body.appendChild(modal);
             });

@@ -5,21 +5,21 @@ from django.utils.text import slugify
 
 from django.contrib.auth.models import User
 
+import re
+
 def extract_youtube_id(url):
     """
-    Helper function to extract YouTube video ID from various YouTube URL formats.
+    Robust function to extract clean 11-character YouTube video ID from any format.
     """
     if not url:
         return ""
-    parsed = urlparse.urlparse(url)
-    if parsed.hostname == 'youtu.be':
-        return parsed.path[1:]
-    if parsed.hostname in ('www.youtube.com', 'youtube.com'):
-        if parsed.path == '/watch':
-            p = urlparse.parse_qs(parsed.query)
-            return p.get('v', [''])[0]
-        if parsed.path.startswith(('/embed/', '/v/')):
-            return parsed.path.split('/')[2]
+    pattern = r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})'
+    match = re.search(pattern, str(url))
+    if match:
+        return match.group(1)
+    clean_str = str(url).strip()
+    if len(clean_str) == 11 and re.match(r'^[a-zA-Z0-9_-]{11}$', clean_str):
+        return clean_str
     return ""
 
 class Blog(models.Model):
@@ -237,5 +237,22 @@ class DeveloperAPIKey(models.Model):
     def generate_key():
         import secrets
         return f"teltam_sk_{secrets.token_urlsafe(32)}"
+
+
+class PageViewLog(models.Model):
+    path = models.CharField(max_length=255, db_index=True)
+    page_name = models.CharField(max_length=100, default='Page View')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='page_views')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        user_str = self.user.username if self.user else 'Guest'
+        return f"{self.page_name} ({self.path}) - {user_str} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
 
 

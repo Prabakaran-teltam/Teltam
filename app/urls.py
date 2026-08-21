@@ -9,6 +9,12 @@ urlpatterns = [
     path('pricing/', views.pricing, name='pricing'),
     path('ai-tools/', views.ai_tools, name='ai_tools'),
     path('contact/', views.contact, name='contact'),
+    path('terms/', views.terms_view, name='terms'),
+    path('terms-and-conditions/', views.terms_view, name='terms_alias'),
+    path('privacy/', views.privacy_view, name='privacy'),
+    path('privacy-policy/', views.privacy_view, name='privacy_alias'),
+    path('refund-policy/', views.refund_policy_view, name='refund_policy'),
+    path('refund/', views.refund_policy_view, name='refund_alias'),
     path('api-docs/', views.api_docs_view, name='api_docs'),
     
     # Public dynamic blog & video pages

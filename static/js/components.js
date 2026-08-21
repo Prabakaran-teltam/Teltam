@@ -96,10 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             Empowering global connection through state-of-the-art LLM translation, contextual transliteration, and real-time pronunciation engine. Translate your content accurately.
                         </p>
                         <div class="d-flex gap-2">
-                            <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;"><i class="fab fa-twitter"></i></a>
-                            <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;"><i class="fab fa-linkedin-in"></i></a>
-                            <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;"><i class="fab fa-github"></i></a>
+                            <a href="https://www.facebook.com/people/Teltam/61576516457281/" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="https://www.instagram.com/teltam.ai" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="https://www.linkedin.com/company/teltamaitranslator/" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://www.youtube.com/@somethingtalk125" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" title="YouTube"><i class="fab fa-youtube"></i></a>
                         </div>
                     </div>
                     <div class="col-lg-2 col-md-6 col-6">
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <li><a href="/about/" class="footer-link">About Us</a></li>
                             <li><a href="/services/" class="footer-link">Services</a></li>
                             <li><a href="/pricing/" class="footer-link">Pricing Plans</a></li>
-                            <li><a href="/api-docs/" class="footer-link text-indigo-300 fw-semibold"><i class="fas fa-code me-1.5"></i>Developer API</a></li>
+                            <li><a href="/terms/" class="footer-link">Terms &amp; Conditions</a></li>
                             <li><a href="/contact/" class="footer-link">Contact Us</a></li>
                         </ul>
                     </div>
@@ -138,8 +138,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         <p class="mb-0 text-slate-400" style="color: #64748b; font-size: 0.9rem;">&copy; 2026 Teltam AI. All rights reserved. Created with passion for linguistic precision.</p>
                     </div>
                     <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
-                        <a href="#" class="footer-link me-3" style="font-size: 0.9rem;">Privacy Policy</a>
-                        <a href="#" class="footer-link" style="font-size: 0.9rem;">Terms of Service</a>
+                        <a href="/privacy/" class="footer-link me-3" style="font-size: 0.9rem;">Privacy Policy</a>
+                        <a href="/terms/" class="footer-link me-3" style="font-size: 0.9rem;">Terms of Service</a>
+                        <a href="/refund-policy/" class="footer-link" style="font-size: 0.9rem;">Refund Policy</a>
                     </div>
                 </div>
             </div>

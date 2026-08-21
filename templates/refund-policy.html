@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Policy - Teltam.ai</title>
+    <meta name="description" content="Refund Policy for Teltam AI platform governing purchases, non-refundable service terms, and billing clarifications.">
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .refund-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+            background: #ffffff;
+            padding: 2.5rem;
+        }
+        @media (max-width: 575.98px) {
+            .refund-card {
+                padding: 1.5rem 1rem;
+            }
+        }
+        .refund-paragraph {
+            color: #475569;
+            line-height: 1.75;
+            font-size: 1.02rem;
+            margin-bottom: 1.25rem;
+        }
+        .refund-badge-date {
+            background-color: rgba(239, 68, 68, 0.08);
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .non-refundable-alert {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(220, 38, 38, 0.12) 100%);
+            border-left: 4px solid #dc2626;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin: 1.75rem 0;
+        }
+    </style>
+</head>
+<body class="bg-soft-gradient" style="padding-top: 85px;">
+
+    <!-- Global Header Placeholder -->
+    <header id="global-header" data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}" data-user-name="{{ request.user.first_name|default:request.user.username }}"></header>
+
+    <!-- Subpage Hero Section -->
+    <section class="py-5 bg-white border-bottom animate-fade-in-up">
+        <div class="container text-center py-4">
+            <h1 class="display-4 fw-bold mb-3">Refund <span class="text-gradient-primary">Policy</span></h1>
+            <p class="lead text-slate-700 mx-auto mb-3" style="max-width: 650px; font-size: 1.1rem;">
+                Please read this refund policy carefully before purchasing our services.
+            </p>
+            <div>
+                <span class="refund-badge-date">
+                    <i class="fas fa-calendar-check"></i> Last Updated: December 16, 2025
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Refund Policy Content Section -->
+    <section class="py-5">
+        <div class="container py-3">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="refund-card animate-fade-in">
+                        
+                        <p class="refund-paragraph lead text-slate-800 fw-medium">
+                            Thank you for choosing Teltam. We strive to provide the best possible services to our customers.
+                        </p>
+
+                        <!-- Non-Refundable Banner -->
+                        <div class="non-refundable-alert">
+                            <h4 class="fw-bold text-danger mb-1"><i class="fas fa-ban me-2"></i> All our services are non-refundable.</h4>
+                            <p class="mb-0 text-slate-700 small">
+                                Once a service has been purchased, the payment made for the service shall not be refunded under any circumstances.
+                            </p>
+                        </div>
+
+                        <p class="refund-paragraph">
+                            Once a service has been purchased, the payment made for the service shall not be refunded under any circumstances, including but not limited to:
+                        </p>
+
+                        <!-- Circumstances list -->
+                        <div class="bg-light p-4 rounded-4 border mb-4">
+                            <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
+                                <li class="d-flex align-items-start gap-3">
+                                    <span class="badge bg-danger-subtle text-danger rounded-circle p-2 mt-1"><i class="fas fa-xmark"></i></span>
+                                    <div>
+                                        <strong class="text-slate-900">Change of mind after purchase</strong>
+                                        <p class="text-slate-600 mb-0 small">Decisions to discontinue or alter service requirements after payment completion.</p>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start gap-3">
+                                    <span class="badge bg-danger-subtle text-danger rounded-circle p-2 mt-1"><i class="fas fa-xmark"></i></span>
+                                    <div>
+                                        <strong class="text-slate-900">Discontinuation or non-usage of the service</strong>
+                                        <p class="text-slate-600 mb-0 small">Failure or decision not to utilize active translation, API, or OCR quotas during the subscription validity period.</p>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start gap-3">
+                                    <span class="badge bg-danger-subtle text-danger rounded-circle p-2 mt-1"><i class="fas fa-xmark"></i></span>
+                                    <div>
+                                        <strong class="text-slate-900">Dissatisfaction with the service after delivery</strong>
+                                        <p class="text-slate-600 mb-0 small">Subjective dissatisfaction with delivered translations or output processing after fulfillment.</p>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start gap-3">
+                                    <span class="badge bg-danger-subtle text-danger rounded-circle p-2 mt-1"><i class="fas fa-xmark"></i></span>
+                                    <div>
+                                        <strong class="text-slate-900">Any technical or operational issues beyond our reasonable control</strong>
+                                        <p class="text-slate-600 mb-0 small">External network disruptions, third-party ISP outages, or force majeure events.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <p class="refund-paragraph">
+                            We encourage users to carefully review the service details before making a purchase decision. If you have any questions regarding our services, pricing, or policies, please contact us prior to completing your purchase.
+                        </p>
+
+                        <div class="p-3 bg-indigo-100 rounded-3 border border-indigo-200 mb-4" style="background-color: rgba(99, 102, 241, 0.06);">
+                            <p class="refund-paragraph mb-0 fw-semibold text-slate-800">
+                                <i class="fas fa-circle-info text-indigo-600 me-2"></i> By using our Platform and purchasing our services, you acknowledge and agree to this Refund Policy.
+                            </p>
+                        </div>
+
+                        <p class="refund-paragraph mb-0">
+                            For any concerns or clarifications related to this Refund Policy, please contact us using the contact information provided on our website (<a href="/contact/" class="text-indigo-600 fw-semibold">Contact Page</a>).
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer Placeholder -->
+    <footer id="global-footer"></footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Component and Main Scripts -->
+    <script src="{% static 'js/components.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

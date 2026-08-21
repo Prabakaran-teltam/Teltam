@@ -30,7 +30,6 @@
             <div class="row align-items-center pt-1 pb-4">
                 <!-- Left Side: Content Area -->
                 <div class="col-lg-6 col-md-12 mb-5 mb-lg-0 text-start">
-                    <span class="hero-badge"><i class="fas fa-sparkles text-indigo-600"></i> AI-Powered Translation Platform</span>
                     <h1 class="display-4 fw-bold mb-3 text-slate-900" style="letter-spacing: -1.5px; line-height: 1.15; font-size: clamp(2.5rem, 5vw, 3.5rem);">
                         Translate, Transliterate &amp; <span class="text-gradient-primary">Communicate Globally</span> with AI
                     </h1>
@@ -1307,45 +1306,45 @@
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4">
                     <div class="glass-card p-4 testimonial-card bg-white">
-                        <div class="stars-rating mb-2">
+                        <div class="stars-rating mb-2" style="color: #f59e0b;">
                             <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                         </div>
-                        <p class="text-slate-700 italic">"Teltam changed how I learn languages. The transliteration matches local dialects perfectly and the voice synth sounds completely human."</p>
+                        <p class="text-slate-700 italic">"Teltam changed how I learn languages. The transliteration matches regional Indian dialects perfectly and the voice synth sounds completely natural and human."</p>
                         <div class="d-flex align-items-center gap-3 mt-4">
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">AS</div>
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 44px; height: 44px; background: linear-gradient(135deg, #6366f1, #4f46e5);">AS</div>
                             <div>
-                                <h6 class="fw-bold mb-0">Alejandro Silva</h6>
-                                <small class="text-muted">Language Student</small>
+                                <h6 class="fw-bold mb-0">Arun Sundaram</h6>
+                                <small class="text-muted">Language Researcher, Chennai</small>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="glass-card p-4 testimonial-card bg-white">
-                        <div class="stars-rating mb-2">
+                        <div class="stars-rating mb-2" style="color: #f59e0b;">
                             <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                         </div>
-                        <p class="text-slate-700 italic">"Our engineering firm uses the Teltam API for localizing design documents. Context preservation has saved us hundreds of manual proofing hours."</p>
+                        <p class="text-slate-700 italic">"Our software engineering team uses the Teltam API for localizing design documents into Indian languages. Context preservation has saved us hundreds of manual proofing hours."</p>
                         <div class="d-flex align-items-center gap-3 mt-4">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">SL</div>
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 44px; height: 44px; background: linear-gradient(135deg, #10b981, #059669);">PL</div>
                             <div>
-                                <h6 class="fw-bold mb-0">Sarah Jenkins</h6>
-                                <small class="text-muted">Tech Product Manager</small>
+                                <h6 class="fw-bold mb-0">Priya Lakshmi</h6>
+                                <small class="text-muted">Tech Product Lead, Bengaluru</small>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4 mx-auto">
                     <div class="glass-card p-4 testimonial-card bg-white">
-                        <div class="stars-rating mb-2">
+                        <div class="stars-rating mb-2" style="color: #f59e0b;">
                             <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                         </div>
-                        <p class="text-slate-700 italic">"The document translation feature maintains formatting exactly! I translate contracts between French and English in just a few clicks."</p>
+                        <p class="text-slate-700 italic">"The document translation feature maintains formatting exactly! I translate contracts between English, Hindi, and Tamil in just a few clicks with complete precision."</p>
                         <div class="d-flex align-items-center gap-3 mt-4">
-                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px;">MD</div>
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b, #d97706);">RD</div>
                             <div>
-                                <h6 class="fw-bold mb-0">Marc Dubois</h6>
-                                <small class="text-muted">Legal Consultant</small>
+                                <h6 class="fw-bold mb-0">Rajesh Deshmukh</h6>
+                                <small class="text-muted">Legal Consultant, Mumbai</small>
                             </div>
                         </div>
                     </div>
@@ -1369,34 +1368,87 @@
             </div>
 
             <div class="row g-4">
-                <!-- Blog Preview -->
+                <!-- Blog Preview Column -->
                 <div class="col-md-6">
-                    <div class="glass-card overflow-hidden h-100">
-                        <div class="p-4">
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-indigo-100 text-indigo-700" style="background: rgba(79, 70, 229, 0.08);">AI & Tech</span>
-                                <span class="text-muted small">June 8, 2026</span>
+                    <h5 class="fw-bold mb-3 text-slate-800"><i class="fas fa-blog me-2" style="color: #4f46e5;"></i> Recent Article</h5>
+                    {% if latest_blogs %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for blog in latest_blogs %}
+                            <div class="glass-card overflow-hidden h-100 p-4 bg-white border">
+                                <!-- Blog Image Container -->
+                                <a href="{% url 'blog_view' slug=blog.slug %}" class="d-block overflow-hidden rounded-3 mb-3 position-relative" style="height: 190px;">
+                                    {% if blog.featured_image %}
+                                        <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                                            <i class="fas fa-newspaper fa-3x mb-2 opacity-75"></i>
+                                            <span class="fw-semibold small px-3 text-center text-truncate w-100">{{ blog.title }}</span>
+                                        </div>
+                                    {% endif %}
+                                </a>
+
+                                <div class="d-flex gap-2 align-items-center mb-2">
+                                    <span class="badge text-white" style="background-color: #4f46e5; font-size: 0.78rem;">{{ blog.category }}</span>
+                                    <span class="text-muted small"><i class="far fa-calendar-alt me-1"></i> {{ blog.created_date|date:"M d, Y" }}</span>
+                                </div>
+                                <h5 class="fw-bold mb-2">
+                                    <a href="{% url 'blog_view' slug=blog.slug %}" class="text-decoration-none text-slate-900 text-indigo-hover">{{ blog.title }}</a>
+                                </h5>
+                                <p class="text-slate-600 small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ blog.short_description }}</p>
+                                <a href="{% url 'blog_view' slug=blog.slug %}" class="text-indigo-600 fw-semibold text-decoration-none small d-inline-flex align-items-center">Read Full Article <i class="fas fa-arrow-right ms-1.5"></i></a>
                             </div>
-                            <h4 class="fw-bold"><a href="/blog/detail/" class="text-decoration-none text-dark">How LLMs are Revolutionizing Dialect & Idiom Translations</a></h4>
-                            <p class="text-slate-700 mt-2">Discover how modern neural network pipelines look past basic word replacements to decode true cultural context...</p>
-                            <a href="/blog/detail/" class="text-indigo-600 fw-semibold text-decoration-none d-inline-flex align-items-center mt-3">Read Full Article <i class="fas fa-arrow-right ms-2"></i></a>
+                            {% endfor %}
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="glass-card p-4 text-center text-muted bg-white">
+                            <i class="fas fa-newspaper fa-2x mb-2 text-indigo-300"></i>
+                            <p class="mb-0">No published blog articles yet.</p>
+                        </div>
+                    {% endif %}
                 </div>
                 
-                <!-- Video Preview -->
+                <!-- Video Preview Column -->
                 <div class="col-md-6">
-                    <div class="glass-card overflow-hidden h-100">
-                        <div class="p-4">
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-danger-subtle text-danger">Video Guide</span>
-                                <span class="text-muted small">5 Mins Watch</span>
+                    <h5 class="fw-bold mb-3 text-slate-800"><i class="fab fa-youtube text-danger me-2"></i> Featured Video Guide</h5>
+                    {% if latest_videos %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for video in latest_videos %}
+                            <div class="glass-card overflow-hidden h-100 p-4 bg-white border">
+                                <!-- Video Thumbnail Container with Play Overlay -->
+                                <a href="{% url 'video_view' slug=video.slug %}" class="d-block overflow-hidden rounded-3 mb-3 position-relative" style="height: 190px;">
+                                    {% if video.thumbnail_image %}
+                                        <img src="{{ video.thumbnail_image.url }}" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% elif video.youtube_video_id %}
+                                        <img src="https://img.youtube.com/vi/{{ video.youtube_video_id }}/hqdefault.jpg" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                                            <i class="fab fa-youtube fa-3x mb-2 opacity-75"></i>
+                                        </div>
+                                    {% endif %}
+                                    <!-- Play Icon Overlay -->
+                                    <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow" style="width: 48px; height: 48px;">
+                                        <i class="fas fa-play" style="margin-left: 3px;"></i>
+                                    </div>
+                                </a>
+
+                                <div class="d-flex gap-2 align-items-center mb-2">
+                                    <span class="badge text-white" style="background-color: #dc3545; font-size: 0.78rem;"><i class="fab fa-youtube me-1"></i> {{ video.category }}</span>
+                                    <span class="text-muted small"><i class="far fa-clock me-1"></i> {{ video.created_date|date:"M d, Y" }}</span>
+                                </div>
+                                <h5 class="fw-bold mb-2">
+                                    <a href="{% url 'video_view' slug=video.slug %}" class="text-decoration-none text-slate-900 text-indigo-hover">{{ video.title }}</a>
+                                </h5>
+                                <p class="text-slate-600 small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ video.short_description }}</p>
+                                <a href="{% url 'video_view' slug=video.slug %}" class="text-danger fw-semibold text-decoration-none small d-inline-flex align-items-center"><i class="fas fa-play me-1.5"></i> Watch Tutorial</a>
                             </div>
-                            <h4 class="fw-bold"><a href="/videos/detail/" class="text-decoration-none text-dark">Getting Started with Teltam Document Translators</a></h4>
-                            <p class="text-slate-700 mt-2">Watch our quick walkthrough showing how to translate complex PDFs while preserving alignment, tables, and images.</p>
-                            <a href="/videos/detail/" class="text-indigo-600 fw-semibold text-decoration-none d-inline-flex align-items-center mt-3">Watch Tutorial <i class="fas fa-play me-2 order-first text-danger"></i></a>
+                            {% endfor %}
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="glass-card p-4 text-center text-muted bg-white">
+                            <i class="fab fa-youtube fa-2x mb-2 text-danger opacity-50"></i>
+                            <p class="mb-0">No published video guides yet.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

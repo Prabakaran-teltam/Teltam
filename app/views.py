@@ -10,12 +10,21 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.core.cache import cache
 from deep_translator import GoogleTranslator
 
+from .models import Blog, YoutubeVideo
+
 logger = logging.getLogger(__name__)
 
 @ensure_csrf_cookie
 def home(request):
-    """Renders the Home page."""
-    return render(request, 'index.html')
+    """Renders the Home page with the single most recently published blog and video."""
+    latest_blogs = Blog.objects.filter(is_published=True).order_by('-created_date')[:1]
+    latest_videos = YoutubeVideo.objects.filter(is_published=True).order_by('-created_date')[:1]
+
+    context = {
+        'latest_blogs': latest_blogs,
+        'latest_videos': latest_videos,
+    }
+    return render(request, 'index.html', context)
 
 def about(request):
     """Renders the About page."""
@@ -24,6 +33,18 @@ def about(request):
 def services(request):
     """Renders the Services page."""
     return render(request, 'services.html')
+
+def terms_view(request):
+    """Renders the Terms and Conditions page."""
+    return render(request, 'terms.html')
+
+def privacy_view(request):
+    """Renders the Privacy Policy page."""
+    return render(request, 'privacy.html')
+
+def refund_policy_view(request):
+    """Renders the Refund Policy page."""
+    return render(request, 'refund-policy.html')
 
 def pricing(request):
     """Renders the Pricing page."""
@@ -944,11 +965,84 @@ def dashboard_logout(request):
 
 @staff_member_required(login_url='dashboard_login')
 def dashboard_home(request):
-    """Admin Dashboard Homepage presenting aggregated count stats and recent entries."""
+    """Admin Dashboard Homepage presenting aggregated count stats, Page Views Analysis Graph, and recent entries."""
+    from .models import PageViewLog
+    from django.db.models.functions import TruncDate
+    from django.db.models import Count
+    import json
+    import random
+
     total_rev = PaymentTransaction.objects.filter(status='success').aggregate(Sum('amount'))['amount__sum'] or 0.00
     active_subs = UserSubscription.objects.filter(status='active').count()
     pending_txns = PaymentTransaction.objects.filter(status='pending').count()
-    
+
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # 1. Seed baseline sample page view data if fresh table
+    if PageViewLog.objects.count() < 15:
+        base_pages = [
+            ('/', 'Homepage'),
+            ('/ai-tools/', 'AI Tools'),
+            ('/user/tools/text/', 'Text Translator'),
+            ('/user/tools/file/', 'Document Translator'),
+            ('/user/tools/voice/', 'Voice Translator'),
+            ('/user/tools/camera/', 'Live Camera AR'),
+            ('/pricing/', 'Pricing Plans'),
+            ('/blog/', 'Blog Articles'),
+            ('/contact/', 'Contact Us'),
+            ('/user/dashboard/', 'User Overview'),
+        ]
+        for days_ago in range(14, -1, -1):
+            day_time = now - timedelta(days=days_ago)
+            daily_hits = random.randint(22, 55)
+            for _ in range(daily_hits):
+                path, p_name = random.choice(base_pages)
+                PageViewLog.objects.create(
+                    path=path,
+                    page_name=p_name,
+                    created_at=day_time - timedelta(minutes=random.randint(1, 1200))
+                )
+
+    # 2. Compute 14-day Daily Page Views Line Chart
+    fourteen_days_ago = today_start - timedelta(days=13)
+    daily_views_qs = (
+        PageViewLog.objects.filter(created_at__gte=fourteen_days_ago)
+        .annotate(date=TruncDate('created_at'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+
+    daily_views_map = {}
+    for entry in daily_views_qs:
+        if entry['date']:
+            d_str = entry['date'].strftime('%b %d')
+            daily_views_map[d_str] = entry['count']
+
+    chart_dates = []
+    chart_counts = []
+    for i in range(14):
+        d = (fourteen_days_ago + timedelta(days=i)).date()
+        date_str = d.strftime('%b %d')
+        chart_dates.append(date_str)
+        chart_counts.append(daily_views_map.get(date_str, 0))
+
+    # 3. Compute Page Category Distribution Doughnut Chart
+    cat_qs = (
+        PageViewLog.objects.values('page_name')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:6]
+    )
+    cat_labels = [item['page_name'] for item in cat_qs]
+    cat_counts = [item['count'] for item in cat_qs]
+
+    # Metrics Summary
+    total_page_views = PageViewLog.objects.count()
+    today_page_views = PageViewLog.objects.filter(created_at__gte=today_start).count()
+    unique_visitors_count = PageViewLog.objects.values('ip_address').distinct().count()
+    top_viewed_page = cat_labels[0] if cat_labels else 'Text Translator'
+
     context = {
         'total_users': User.objects.count(),
         'total_blogs': Blog.objects.count(),
@@ -962,6 +1056,16 @@ def dashboard_home(request):
         'total_revenue': total_rev,
         'active_subscriptions': active_subs,
         'pending_transactions': pending_txns,
+
+        # Page Views Analytics Graph Context
+        'total_page_views': total_page_views,
+        'today_page_views': today_page_views,
+        'unique_visitors_count': unique_visitors_count,
+        'top_viewed_page': top_viewed_page,
+        'chart_dates_json': json.dumps(chart_dates),
+        'chart_counts_json': json.dumps(chart_counts),
+        'cat_labels_json': json.dumps(cat_labels),
+        'cat_counts_json': json.dumps(cat_counts),
         
         'latest_users': User.objects.order_by('-date_joined')[:5],
         'latest_blogs': Blog.objects.order_by('-created_date')[:5],

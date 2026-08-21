@@ -32,8 +32,11 @@
                 <!-- Video Screen -->
                 <div class="col-lg-8 mb-4">
                     <!-- Responsive Video Frame Wrapper -->
-                    <div class="ratio ratio-16x9 rounded-4 overflow-hidden mb-4 bg-black border" style="box-shadow: 0 15px 35px rgba(0,0,0,0.08);">
-                        <iframe src="https://www.youtube.com/embed/{{ video.youtube_video_id }}" title="{{ video.title }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <div class="ratio ratio-16x9 rounded-4 overflow-hidden mb-3 bg-black border" style="box-shadow: 0 15px 35px rgba(0,0,0,0.08);">
+                        <iframe src="https://www.youtube-nocookie.com/embed/{{ video.youtube_video_id }}?rel=0" title="{{ video.title }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                    <div class="d-flex justify-content-end mb-4">
+                        <a href="{{ video.youtube_video_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5"><i class="fab fa-youtube me-1.5"></i> Watch on YouTube</a>
                     </div>
 
                     <!-- Video Details Title -->

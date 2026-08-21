@@ -13,10 +13,18 @@
             <div class="position-absolute rounded-circle" style="width: 250px; height: 250px; background: rgba(255,255,255,0.06); top: -80px; right: -80px;"></div>
             
             <div class="position-relative z-1">
-                <h1 class="display-6 fw-bold mb-2">Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
-                <p class="lead mb-0 opacity-80" style="max-width: 600px; font-size: 1.05rem;">
-                    Access real-time translations, OCR document processing, and contextual audio transcription tools instantly from your workspaces.
+                <h1 class="display-6 fw-bold mb-2 fs-3 fs-md-2">Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+                <p class="lead mb-3 opacity-90" style="max-width: 600px; font-size: 0.98rem;">
+                    Access real-time AI translations, document OCR, voice transcriptions, and live camera overlays from your user workspace.
                 </p>
+                <div class="d-flex flex-wrap gap-2 pt-1">
+                    <a href="{% url 'user_tool_text' %}" class="btn btn-light text-indigo-700 fw-bold rounded-pill px-3.5 py-1.5 shadow-sm" style="font-size: 0.88rem;">
+                        <i class="fas fa-play me-1"></i> Start Translating
+                    </a>
+                    <a href="{% url 'user_history_list' %}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5" style="font-size: 0.88rem;">
+                        <i class="fas fa-clock-rotate-left me-1"></i> View History
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -69,16 +77,16 @@
 </div>
 
 <!-- Statistics Widgets -->
-<div class="row g-4 mb-5">
+<div class="row g-3 g-md-4 mb-4">
     <!-- Card: Total Translations -->
-    <div class="col-sm-6 col-xl-3">
-        <div class="dashboard-card p-4">
+    <div class="col-6 col-xl-3">
+        <div class="dashboard-card p-3 p-md-4 h-100">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <span class="text-muted d-block mb-1 fw-medium small">Total Translations</span>
                     <h3 class="mb-0 fw-bold display-font text-slate-800">{{ total_translations }}</h3>
                 </div>
-                <div class="card-icon-container bg-indigo-light">
+                <div class="card-icon-container bg-indigo-light d-none d-sm-flex">
                     <i class="fas fa-language"></i>
                 </div>
             </div>
@@ -86,14 +94,14 @@
     </div>
 
     <!-- Card: Text Translations -->
-    <div class="col-sm-6 col-xl-3">
-        <div class="dashboard-card p-4">
+    <div class="col-6 col-xl-3">
+        <div class="dashboard-card p-3 p-md-4 h-100">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <span class="text-muted d-block mb-1 fw-medium small">Text Translations</span>
                     <h3 class="mb-0 fw-bold display-font text-slate-800">{{ text_count }}</h3>
                 </div>
-                <div class="card-icon-container bg-purple-light">
+                <div class="card-icon-container bg-purple-light d-none d-sm-flex">
                     <i class="fas fa-keyboard"></i>
                 </div>
             </div>
@@ -101,14 +109,14 @@
     </div>
 
     <!-- Card: Document Translations -->
-    <div class="col-sm-6 col-xl-3">
-        <div class="dashboard-card p-4">
+    <div class="col-6 col-xl-3">
+        <div class="dashboard-card p-3 p-md-4 h-100">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-muted d-block mb-1 fw-medium small">Documents Translated</span>
+                    <span class="text-muted d-block mb-1 fw-medium small">Documents</span>
                     <h3 class="mb-0 fw-bold display-font text-slate-800">{{ file_count }}</h3>
                 </div>
-                <div class="card-icon-container bg-emerald-light">
+                <div class="card-icon-container bg-emerald-light d-none d-sm-flex">
                     <i class="fas fa-file-pdf"></i>
                 </div>
             </div>
@@ -116,14 +124,14 @@
     </div>
 
     <!-- Card: Voice Translations -->
-    <div class="col-sm-6 col-xl-3">
-        <div class="dashboard-card p-4">
+    <div class="col-6 col-xl-3">
+        <div class="dashboard-card p-3 p-md-4 h-100">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-muted d-block mb-1 fw-medium small">Voice Transcriptions</span>
+                    <span class="text-muted d-block mb-1 fw-medium small">Voice &amp; Audio</span>
                     <h3 class="mb-0 fw-bold display-font text-slate-800">{{ voice_count }}</h3>
                 </div>
-                <div class="card-icon-container bg-amber-light" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;">
+                <div class="card-icon-container bg-amber-light d-none d-sm-flex" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;">
                     <i class="fas fa-microphone"></i>
                 </div>
             </div>
@@ -132,64 +140,64 @@
 </div>
 
 <!-- Translation Tools Quick Launch Grid -->
-<div class="row g-4 mb-5">
+<div class="row g-3 g-md-4 mb-4">
     <div class="col-12">
-        <h4 class="fw-bold mb-3 text-slate-800"><i class="fas fa-bolt me-2 text-warning"></i> Quick Access Translation Workspaces</h4>
+        <h4 class="fw-bold mb-2 text-slate-800"><i class="fas fa-bolt me-2 text-warning"></i> Quick Access Translation Workspaces</h4>
     </div>
     
     <!-- Tool Launch: Text -->
-    <div class="col-md-6 col-lg-3">
-        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+    <div class="col-6 col-lg-3">
+        <div class="dashboard-card p-3 p-md-4 h-100 d-flex flex-column justify-content-between">
             <div>
-                <div class="card-icon-container bg-purple-light mb-3">
+                <div class="card-icon-container bg-purple-light mb-2.5">
                     <i class="fas fa-keyboard"></i>
                 </div>
-                <h5 class="fw-bold text-slate-800">Text Translator</h5>
-                <p class="text-muted small">Translate phrases instantly with pronunciation analysis and context grammar notes.</p>
+                <h5 class="fw-bold text-slate-800 fs-6 fs-md-5">Text Translator</h5>
+                <p class="text-muted small d-none d-md-block">Translate phrases instantly with pronunciation analysis and context grammar notes.</p>
             </div>
-            <a href="{% url 'user_tool_text' %}" class="btn btn-brand-primary mt-3 d-block text-center">Open Workspace</a>
+            <a href="{% url 'user_tool_text' %}" class="btn btn-brand-primary btn-sm mt-2 mt-md-3 d-block text-center fw-bold py-2">Open Text</a>
         </div>
     </div>
 
     <!-- Tool Launch: File -->
-    <div class="col-md-6 col-lg-3">
-        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+    <div class="col-6 col-lg-3">
+        <div class="dashboard-card p-3 p-md-4 h-100 d-flex flex-column justify-content-between">
             <div>
-                <div class="card-icon-container bg-emerald-light mb-3">
+                <div class="card-icon-container bg-emerald-light mb-2.5">
                     <i class="fas fa-file-pdf"></i>
                 </div>
-                <h5 class="fw-bold text-slate-800">Document Translator</h5>
-                <p class="text-muted small">Translate PDFs, DOCX, TXT, or images (OCR) while preserving layouts and download localized files.</p>
+                <h5 class="fw-bold text-slate-800 fs-6 fs-md-5">Document OCR</h5>
+                <p class="text-muted small d-none d-md-block">Translate PDFs, DOCX, TXT, or images (OCR) while preserving layouts and download localized files.</p>
             </div>
-            <a href="{% url 'user_tool_file' %}" class="btn btn-brand-primary mt-3 d-block text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16,185,129,0.2);">Open Workspace</a>
+            <a href="{% url 'user_tool_file' %}" class="btn btn-brand-primary btn-sm mt-2 mt-md-3 d-block text-center fw-bold py-2" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16,185,129,0.2);">Open Doc</a>
         </div>
     </div>
 
     <!-- Tool Launch: Voice -->
-    <div class="col-md-6 col-lg-3">
-        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+    <div class="col-6 col-lg-3">
+        <div class="dashboard-card p-3 p-md-4 h-100 d-flex flex-column justify-content-between">
             <div>
-                <div class="card-icon-container bg-amber-light mb-3" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;">
+                <div class="card-icon-container bg-amber-light mb-2.5" style="background-color: rgba(245,158,11,0.08); color: #f59e0b;">
                     <i class="fas fa-microphone"></i>
                 </div>
-                <h5 class="fw-bold text-slate-800">Voice Translator</h5>
-                <p class="text-muted small">Record speech directly or upload voice audio files to transcribe and translate them immediately.</p>
+                <h5 class="fw-bold text-slate-800 fs-6 fs-md-5">Voice Audio</h5>
+                <p class="text-muted small d-none d-md-block">Record speech directly or upload voice audio files to transcribe and translate them immediately.</p>
             </div>
-            <a href="{% url 'user_tool_voice' %}" class="btn btn-brand-primary mt-3 d-block text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 12px rgba(245,158,11,0.2);">Open Workspace</a>
+            <a href="{% url 'user_tool_voice' %}" class="btn btn-brand-primary btn-sm mt-2 mt-md-3 d-block text-center fw-bold py-2" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 12px rgba(245,158,11,0.2);">Open Voice</a>
         </div>
     </div>
 
     <!-- Tool Launch: Live Camera -->
-    <div class="col-md-6 col-lg-3">
-        <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+    <div class="col-6 col-lg-3">
+        <div class="dashboard-card p-3 p-md-4 h-100 d-flex flex-column justify-content-between">
             <div>
-                <div class="card-icon-container bg-rose-light mb-3" style="background-color: rgba(244,63,94,0.08); color: #f43f5e;">
+                <div class="card-icon-container bg-rose-light mb-2.5" style="background-color: rgba(244,63,94,0.08); color: #f43f5e;">
                     <i class="fas fa-camera"></i>
                 </div>
-                <h5 class="fw-bold text-slate-800">Live Camera OCR</h5>
-                <p class="text-muted small">Capture live web/mobile camera frames for real-time OCR extraction and live text translation overlay.</p>
+                <h5 class="fw-bold text-slate-800 fs-6 fs-md-5">Camera AR</h5>
+                <p class="text-muted small d-none d-md-block">Capture live web/mobile camera frames for real-time OCR extraction and live text translation overlay.</p>
             </div>
-            <a href="{% url 'user_tool_camera' %}" class="btn btn-brand-primary mt-3 d-block text-center" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); box-shadow: 0 4px 12px rgba(244,63,94,0.2);">Open Workspace</a>
+            <a href="{% url 'user_tool_camera' %}" class="btn btn-brand-primary btn-sm mt-2 mt-md-3 d-block text-center fw-bold py-2" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); box-shadow: 0 4px 12px rgba(244,63,94,0.2);">Open Lens</a>
         </div>
     </div>
 </div>

@@ -515,10 +515,21 @@
             docFileInput.value = '';
             docCompleteIndicator.classList.add('d-none');
             docSelectedFileInfo.classList.add('d-none');
+            docTranslateOptions.classList.add('d-none');
             docUploadContent.classList.remove('d-none');
             docDropzone.classList.remove('d-none');
             extractedTextPreview.value = "";
             translatedTextPreview.value = "";
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Ready for new document translation!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
         });
 
         // ----------------------------------------------------

@@ -52,46 +52,82 @@
         display: block;
     }
 
-    /* Camera Scanner Frame Target Box */
+    /* Google Lens Scanner Target Brackets */
     .scanner-target-box {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 80%;
-        height: 60%;
-        border: 2px dashed rgba(255, 255, 255, 0.5);
-        border-radius: 16px;
+        width: 84%;
+        height: 68%;
+        border-radius: 18px;
         pointer-events: none;
-        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45);
+        z-index: 5;
         transition: all 0.3s ease;
     }
-
-    .scanner-target-box.scanning {
+    .lens-corner {
+        position: absolute;
+        width: 24px;
+        height: 24px;
         border-color: #38bdf8;
-        animation: scannerPulse 2s infinite ease-in-out;
+        border-style: solid;
+        border-width: 0;
     }
-
-    @keyframes scannerPulse {
-        0%, 100% { border-color: #38bdf8; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45), 0 0 15px rgba(56, 189, 248, 0.4); }
-        50% { border-color: #818cf8; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45), 0 0 25px rgba(129, 140, 248, 0.7); }
+    .lens-corner-tl { top: 0; left: 0; border-top-width: 3.5px; border-left-width: 3.5px; border-top-left-radius: 12px; }
+    .lens-corner-tr { top: 0; right: 0; border-top-width: 3.5px; border-right-width: 3.5px; border-top-right-radius: 12px; }
+    .lens-corner-bl { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; border-bottom-left-radius: 12px; }
+    .lens-corner-br { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; border-bottom-right-radius: 12px; }
+    
+    .lens-scan-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2.5px;
+        background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, #38bdf8, transparent);
+        box-shadow: 0 0 15px #38bdf8;
+        animation: scanLineAnim 2.2s ease-in-out infinite alternate;
+        opacity: 0;
+    }
+    .scanner-target-box.scanning .lens-scan-line {
+        opacity: 1;
+    }
+    @keyframes scanLineAnim {
+        0% { top: 5%; opacity: 0.9; }
+        50% { opacity: 1; }
+        100% { top: 92%; opacity: 0.9; }
     }
 
     /* Floating HUD Live Translation Banner Overlay */
     .camera-hud-overlay {
         position: absolute;
-        bottom: 16px;
-        left: 16px;
-        right: 16px;
-        background: rgba(15, 23, 42, 0.82);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 14px;
-        padding: 1rem 1.25rem;
+        bottom: 14px;
+        left: 14px;
+        right: 14px;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(255, 255, 255, 0.18);
+        border-radius: 16px;
+        padding: 14px 18px;
         color: #ffffff;
         z-index: 10;
-        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: left;
+    }
+    .lens-translated-text-display {
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: #fef08a; /* Google Lens Yellow */
+        line-height: 1.4;
+        margin-bottom: 4px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    .lens-original-text-subtitle {
+        font-size: 0.78rem;
+        color: #cbd5e1;
+        opacity: 0.9;
     }
 
     .status-badge-pulse {
@@ -188,20 +224,33 @@
                     <!-- Hidden Capture Canvas -->
                     <canvas id="captureCanvas" class="d-none"></canvas>
 
-                    <!-- Target Alignment Frame Overlay -->
-                    <div id="scannerTargetBox" class="scanner-target-box d-none"></div>
+                    <!-- Google Lens Target Alignment Corner Brackets Box -->
+                    <div id="scannerTargetBox" class="scanner-target-box d-none">
+                        <div class="lens-corner lens-corner-tl"></div>
+                        <div class="lens-corner lens-corner-tr"></div>
+                        <div class="lens-corner lens-corner-bl"></div>
+                        <div class="lens-corner lens-corner-br"></div>
+                        <div class="lens-scan-line"></div>
+                    </div>
 
-                    <!-- Live HUD Translation Box Overlay -->
+                    <!-- Live Google Lens AR Floating Translation Overlay -->
                     <div id="cameraHudOverlay" class="camera-hud-overlay d-none">
                         <div class="d-flex align-items-center justify-content-between mb-1">
                             <span class="badge bg-indigo-500 text-white rounded-pill px-2.5 py-1" style="font-size: 0.7rem; font-weight: 600;">
-                                <i class="fas fa-sparkles me-1"></i> LIVE TRANSLATION
+                                <i class="fas fa-sparkles me-1"></i> GOOGLE LENS LIVE
                             </span>
-                            <span id="hudTimestamp" class="small text-slate-400" style="font-size: 0.72rem;">Live Stream</span>
+                            <span id="hudTimestamp" class="small text-slate-400" style="font-size: 0.72rem;">Scanning Every 1.5s</span>
                         </div>
-                        <h6 id="hudTranslatedText" class="fw-bold mb-0 text-white" style="font-size: 1.05rem; line-height: 1.4;">
-                            Point camera at text to translate live...
-                        </h6>
+                        <div id="hudTranslatedText" class="lens-translated-text-display">
+                            Point camera at text (street signs, documents, books)...
+                        </div>
+                        <div id="hudOriginalTextSubtitle" class="lens-original-text-subtitle">
+                            Original: Detect Language
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end gap-2 mt-2 pt-2 border-top border-secondary opacity-75">
+                            <button type="button" id="userLensSpeakBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1"></i> Speak</button>
+                            <button type="button" id="userLensCopyBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-copy me-1"></i> Copy</button>
+                        </div>
                     </div>
                 </div>
 
@@ -522,11 +571,18 @@
                     const now = new Date();
                     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-                    if (data.has_text && data.translated_text) {
+                    if (data.extracted_text && data.translated_text) {
                         cameraExtractedText.value = data.extracted_text;
                         cameraTranslatedText.value = data.translated_text;
 
-                        hudTranslatedText.innerText = data.translated_text;
+                        if (hudTranslatedText) {
+                            hudTranslatedText.innerText = data.translated_text;
+                            hudTranslatedText.style.color = '#fef08a';
+                        }
+                        const hudSub = document.getElementById('hudOriginalTextSubtitle');
+                        if (hudSub) {
+                            hudSub.innerText = `Original: ${data.extracted_text.length > 70 ? data.extracted_text.substring(0, 70) + '...' : data.extracted_text}`;
+                        }
                         hudTimestamp.innerText = `Updated at ${timeStr}`;
 
                         addSessionHistory(data.extracted_text, data.translated_text, timeStr);
@@ -538,6 +594,31 @@
                 isRequestInFlight = false;
                 if (camOcrSpinner) camOcrSpinner.classList.add('d-none');
             }
+        }
+
+        // Overlay Action Handlers (Speak & Copy)
+        const userLensSpeakBtn = document.getElementById('userLensSpeakBtn');
+        const userLensCopyBtn = document.getElementById('userLensCopyBtn');
+
+        if (userLensCopyBtn) {
+            userLensCopyBtn.addEventListener('click', () => {
+                const txt = hudTranslatedText ? hudTranslatedText.innerText : '';
+                if (txt && txt.indexOf('Point camera') === -1) {
+                    navigator.clipboard.writeText(txt);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Translation copied!', showConfirmButton: false, timer: 1500 });
+                }
+            });
+        }
+
+        if (userLensSpeakBtn) {
+            userLensSpeakBtn.addEventListener('click', () => {
+                const txt = hudTranslatedText ? hudTranslatedText.innerText : '';
+                if (txt && txt.indexOf('Point camera') === -1) {
+                    const utterance = new SpeechSynthesisUtterance(txt);
+                    utterance.lang = cameraTargetLanguage.value || 'en';
+                    window.speechSynthesis.speak(utterance);
+                }
+            });
         }
 
         // Add scan entry to local session history list

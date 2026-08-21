@@ -103,6 +103,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Update text areas
                 outputText.value = data.translated_text;
                 outputText.innerText = data.translated_text; // compatibility
+
+                // Populate linguistic insights if container exists
+                const activeDetails = document.getElementById("activeDetailsContainer");
+                if (activeDetails) {
+                    activeDetails.classList.remove("d-none");
+                    const translitEl = document.getElementById("outputTranslit");
+                    const pronEl = document.getElementById("outputPron");
+                    const grammarEl = document.getElementById("outputGrammar");
+                    if (translitEl) translitEl.innerText = data.transliteration || "-";
+                    if (pronEl) pronEl.innerText = data.pronunciation || "-";
+                    if (grammarEl) grammarEl.innerText = data.grammar_analysis || "No grammar issues detected.";
+                }
+
+                // Reveal Translate Another button if present
+                const newTransBtn = document.getElementById("newTransBtn") || document.getElementById("textNewTransBtn");
+                if (newTransBtn) {
+                    newTransBtn.classList.remove("d-none");
+                }
             })
             .catch(error => {
                 if (translationSpinner) translationSpinner.classList.add("d-none");
@@ -111,6 +129,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Translation request failed:", error);
             });
         };
+
+        // Reset & Translate Another Handler
+        const resetForNewTranslation = () => {
+            if (sourceText) {
+                sourceText.value = "";
+                sourceText.focus();
+            }
+            if (outputText) {
+                outputText.value = "";
+                outputText.innerText = "";
+            }
+            const charCount = document.getElementById("charCount") || document.getElementById("charCounter");
+            if (charCount) charCount.innerText = "0 / 5000";
+
+            const clearBtn = document.getElementById("clearSourceBtn");
+            if (clearBtn) clearBtn.classList.add("d-none");
+
+            const activeDetails = document.getElementById("activeDetailsContainer");
+            if (activeDetails) activeDetails.classList.add("d-none");
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Ready for new translation!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        };
+
+        // Attach new translation button click
+        document.querySelectorAll("#newTransBtn, #textNewTransBtn").forEach(btn => {
+            btn.addEventListener("click", resetForNewTranslation);
+        });
 
         // Attach debounced translate for typing in textarea
         const debouncedTranslate = debounce(() => triggerTranslation(true), 800);
@@ -121,6 +175,20 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 outputText.value = "";
                 outputText.innerText = "";
+            }
+        });
+
+        // Keyboard Shortcut: Ctrl + Enter to Translate, Ctrl + Shift + X to Clear/New
+        document.addEventListener("keydown", (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                if (document.activeElement === sourceText || sourceText.value.trim().length > 0) {
+                    e.preventDefault();
+                    triggerTranslation(false);
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'x') {
+                e.preventDefault();
+                resetForNewTranslation();
             }
         });
 

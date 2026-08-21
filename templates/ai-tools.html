@@ -540,6 +540,103 @@
             }
         }
 
+        /* Google Lens AR Overlay & Viewport Styling */
+        .lens-camera-viewport {
+            position: relative;
+            background: #090d16;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.3);
+            border: 2px solid #1e293b;
+            min-height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lens-video-stream {
+            width: 100%;
+            height: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            display: block;
+        }
+        .lens-scanner-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 84%;
+            height: 68%;
+            border-radius: 18px;
+            pointer-events: none;
+            z-index: 5;
+            transition: all 0.3s ease;
+        }
+        .lens-corner {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-color: #38bdf8;
+            border-style: solid;
+            border-width: 0;
+        }
+        .lens-corner-tl { top: 0; left: 0; border-top-width: 3.5px; border-left-width: 3.5px; border-top-left-radius: 12px; }
+        .lens-corner-tr { top: 0; right: 0; border-top-width: 3.5px; border-right-width: 3.5px; border-top-right-radius: 12px; }
+        .lens-corner-bl { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; border-bottom-left-radius: 12px; }
+        .lens-corner-br { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; border-bottom-right-radius: 12px; }
+        
+        .lens-scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2.5px;
+            background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, #38bdf8, transparent);
+            box-shadow: 0 0 15px #38bdf8;
+            animation: scanLineAnim 2.2s ease-in-out infinite alternate;
+            opacity: 0;
+        }
+        .lens-scanner-box.scanning .lens-scan-line {
+            opacity: 1;
+        }
+        @keyframes scanLineAnim {
+            0% { top: 5%; opacity: 0.9; }
+            50% { opacity: 1; }
+            100% { top: 92%; opacity: 0.9; }
+        }
+
+        /* Google Lens AR Floating Overlay ON TOP OF CAMERA FRAME */
+        .lens-ar-live-overlay {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            right: 14px;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            padding: 14px 18px;
+            color: #ffffff;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+        }
+        .lens-translated-text-display {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #fef08a; /* Google Lens Yellow */
+            line-height: 1.4;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .lens-original-text-subtitle {
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            opacity: 0.9;
+        }
+
     </style>
 </head>
 <body class="bg-soft-gradient" style="padding-top: 85px;">
@@ -1024,23 +1121,55 @@
                                     
                                     <div class="row g-4">
                                         <div class="col-lg-6">
-                                            <div class="p-3 bg-dark rounded-4 text-white position-relative text-center overflow-hidden" style="min-height: 320px; display: flex; align-items: center; justify-content: center; background: #090d16;">
+                                            <!-- Google Lens Camera Viewport -->
+                                            <div class="lens-camera-viewport text-white position-relative text-center overflow-hidden" id="pubCamContainer">
+                                                <!-- Placeholder when camera is stopped -->
                                                 <div id="pubCamPlaceholder" class="p-4">
                                                     <div class="rounded-circle bg-slate-800 d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
                                                         <i class="fas fa-video-slash text-slate-400 fs-3"></i>
                                                     </div>
                                                     <h6 class="fw-bold text-white mb-1">Camera Stream Inactive</h6>
-                                                    <p class="text-slate-400 small mb-3">Click 'Start Camera' below to scan text live.</p>
+                                                    <p class="text-slate-400 small mb-3">Open live camera mode to translate text overlay live in Google Lens style.</p>
                                                     <button type="button" id="pubStartCamBtn" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none;">
-                                                        <i class="fas fa-video me-1"></i> Start Live Camera
+                                                        <i class="fas fa-video me-1"></i> Open Google Lens Camera
                                                     </button>
                                                 </div>
-                                                <video id="pubCamVideo" class="w-100 h-100 rounded-3 d-none" autoplay playsinline muted style="object-fit: cover; max-height: 360px;"></video>
+
+                                                <!-- Live Video Stream -->
+                                                <video id="pubCamVideo" class="lens-video-stream d-none" autoplay playsinline muted></video>
                                                 <canvas id="pubCamCanvas" class="d-none"></canvas>
+
+                                                <!-- Google Lens Corner Brackets Scanner Box -->
+                                                <div id="pubLensScannerBox" class="lens-scanner-box d-none">
+                                                    <div class="lens-corner lens-corner-tl"></div>
+                                                    <div class="lens-corner lens-corner-tr"></div>
+                                                    <div class="lens-corner lens-corner-bl"></div>
+                                                    <div class="lens-corner lens-corner-br"></div>
+                                                    <div class="lens-scan-line"></div>
+                                                </div>
+
+                                                <!-- Google Lens AR Live Overlay (ON TOP OF CAMERA FRAME) -->
+                                                <div id="pubLensAROverlay" class="lens-ar-live-overlay d-none">
+                                                    <div class="lens-ar-header">
+                                                        <span class="lens-live-badge"><i class="fas fa-sparkles me-1"></i> GOOGLE LENS LIVE</span>
+                                                        <span id="pubLensStatusText" class="small text-slate-400" style="font-size: 0.72rem;">Scanning Every 1.5s</span>
+                                                    </div>
+                                                    <div id="pubLensTranslatedDisplay" class="lens-translated-text-display">
+                                                        Point camera at text (street signs, documents, books)...
+                                                    </div>
+                                                    <div id="pubLensOriginalSubtitle" class="lens-original-text-subtitle">
+                                                        Original: Detect Language
+                                                    </div>
+                                                    <div class="d-flex align-items-center justify-content-end gap-2 mt-2 pt-2 border-top border-secondary opacity-75">
+                                                        <button type="button" id="pubLensSpeakBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1"></i> Speak</button>
+                                                        <button type="button" id="pubLensCopyBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-copy me-1"></i> Copy</button>
+                                                    </div>
+                                                </div>
                                             </div>
+
                                             <div class="d-flex gap-2 mt-3">
                                                 <button type="button" id="pubToggleCamBtn" class="btn btn-outline-primary btn-sm rounded-pill w-50 fw-bold py-2"><i class="fas fa-video me-1"></i> Start Camera</button>
-                                                <button type="button" id="pubSnapCamBtn" class="btn btn-outline-secondary btn-sm rounded-pill w-50 fw-bold py-2" disabled><i class="fas fa-camera-retro me-1"></i> Take Snapshot</button>
+                                                <button type="button" id="pubPauseCamBtn" class="btn btn-outline-danger btn-sm rounded-pill w-50 fw-bold py-2" disabled><i class="fas fa-pause me-1"></i> Freeze Frame</button>
                                             </div>
                                         </div>
 
@@ -1441,18 +1570,29 @@
                 pubCamTargetCode = code;
             });
 
-            // Public Camera JS Handlers
+            // Public Camera JS Handlers (Google Lens Style Live AR Overlay)
             const pubCamVideo = document.getElementById('pubCamVideo');
             const pubCamCanvas = document.getElementById('pubCamCanvas');
             const pubCamPlaceholder = document.getElementById('pubCamPlaceholder');
             const pubStartCamBtn = document.getElementById('pubStartCamBtn');
             const pubToggleCamBtn = document.getElementById('pubToggleCamBtn');
-            const pubSnapCamBtn = document.getElementById('pubSnapCamBtn');
+            const pubPauseCamBtn = document.getElementById('pubPauseCamBtn');
             const pubCamOcrText = document.getElementById('pubCamOcrText');
             const pubCamTranslatedText = document.getElementById('pubCamTranslatedText');
 
+            const pubLensScannerBox = document.getElementById('pubLensScannerBox');
+            const pubLensAROverlay = document.getElementById('pubLensAROverlay');
+            const pubLensTranslatedDisplay = document.getElementById('pubLensTranslatedDisplay');
+            const pubLensOriginalSubtitle = document.getElementById('pubLensOriginalSubtitle');
+            const pubLensStatusText = document.getElementById('pubLensStatusText');
+            const pubLensSpeakBtn = document.getElementById('pubLensSpeakBtn');
+            const pubLensCopyBtn = document.getElementById('pubLensCopyBtn');
+
             let pubMediaStream = null;
             let isPubCamActive = false;
+            let isPubScanPaused = false;
+            let pubScanIntervalTimer = null;
+            let isPubScanInProgress = false;
 
             async function startPubCamera() {
                 try {
@@ -1463,9 +1603,24 @@
                     pubCamVideo.srcObject = pubMediaStream;
                     pubCamVideo.classList.remove('d-none');
                     pubCamPlaceholder.classList.add('d-none');
+                    if (pubLensScannerBox) {
+                        pubLensScannerBox.classList.remove('d-none');
+                        pubLensScannerBox.classList.add('scanning');
+                    }
+                    if (pubLensAROverlay) pubLensAROverlay.classList.remove('d-none');
+                    
                     isPubCamActive = true;
-                    if (pubToggleCamBtn) pubToggleCamBtn.innerText = "Stop Camera";
-                    if (pubSnapCamBtn) pubSnapCamBtn.disabled = false;
+                    isPubScanPaused = false;
+
+                    if (pubToggleCamBtn) pubToggleCamBtn.innerHTML = '<i class="fas fa-video-slash me-1"></i> Stop Camera';
+                    if (pubPauseCamBtn) {
+                        pubPauseCamBtn.disabled = false;
+                        pubPauseCamBtn.innerHTML = '<i class="fas fa-pause me-1"></i> Freeze Frame';
+                    }
+
+                    // Start Real-Time Continuous Frame Capture (Google Lens Style)
+                    startPubScanLoop();
+                    captureAndTranslatePubFrame();
                 } catch (e) {
                     console.error("Public camera access error:", e);
                     Swal.fire({ icon: 'error', title: 'Camera Error', text: 'Could not access camera stream.' });
@@ -1473,6 +1628,7 @@
             }
 
             function stopPubCamera() {
+                stopPubScanLoop();
                 if (pubMediaStream) {
                     pubMediaStream.getTracks().forEach(t => t.stop());
                     pubMediaStream = null;
@@ -1480,9 +1636,82 @@
                 pubCamVideo.srcObject = null;
                 pubCamVideo.classList.add('d-none');
                 pubCamPlaceholder.classList.remove('d-none');
+                if (pubLensScannerBox) {
+                    pubLensScannerBox.classList.add('d-none');
+                    pubLensScannerBox.classList.remove('scanning');
+                }
+                if (pubLensAROverlay) pubLensAROverlay.classList.add('d-none');
+
                 isPubCamActive = false;
-                if (pubToggleCamBtn) pubToggleCamBtn.innerText = "Start Camera";
-                if (pubSnapCamBtn) pubSnapCamBtn.disabled = true;
+                isPubScanPaused = false;
+                if (pubToggleCamBtn) pubToggleCamBtn.innerHTML = '<i class="fas fa-video me-1"></i> Start Camera';
+                if (pubPauseCamBtn) {
+                    pubPauseCamBtn.disabled = true;
+                    pubPauseCamBtn.innerHTML = '<i class="fas fa-pause me-1"></i> Freeze Frame';
+                }
+            }
+
+            function startPubScanLoop() {
+                stopPubScanLoop();
+                pubScanIntervalTimer = setInterval(() => {
+                    if (isPubCamActive && !isPubScanPaused && !isPubScanInProgress) {
+                        captureAndTranslatePubFrame();
+                    }
+                }, 1500);
+            }
+
+            function stopPubScanLoop() {
+                if (pubScanIntervalTimer) {
+                    clearInterval(pubScanIntervalTimer);
+                    pubScanIntervalTimer = null;
+                }
+            }
+
+            async function captureAndTranslatePubFrame() {
+                if (!isPubCamActive || isPubScanPaused || isPubScanInProgress || !pubCamVideo.videoWidth) return;
+                isPubScanInProgress = true;
+
+                pubCamCanvas.width = pubCamVideo.videoWidth;
+                pubCamCanvas.height = pubCamVideo.videoHeight;
+                const ctx = pubCamCanvas.getContext('2d');
+                ctx.drawImage(pubCamVideo, 0, 0, pubCamCanvas.width, pubCamCanvas.height);
+                const base64Data = pubCamCanvas.toDataURL('image/jpeg', 0.85);
+
+                if (pubLensStatusText) pubLensStatusText.innerText = "Scanning text...";
+
+                try {
+                    const res = await fetch('/api/translate/camera/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken') || ''
+                        },
+                        body: JSON.stringify({
+                            image_data: base64Data,
+                            target_lang: pubCamTargetCode,
+                            source_lang: 'auto'
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success' && data.extracted_text) {
+                        if (pubLensTranslatedDisplay) {
+                            pubLensTranslatedDisplay.innerText = data.translated_text || data.extracted_text;
+                            pubLensTranslatedDisplay.style.color = '#fef08a';
+                        }
+                        if (pubLensOriginalSubtitle) {
+                            pubLensOriginalSubtitle.innerText = `Original: ${data.extracted_text.length > 80 ? data.extracted_text.substring(0, 80) + '...' : data.extracted_text}`;
+                        }
+                        if (pubCamOcrText) pubCamOcrText.value = data.extracted_text;
+                        if (pubCamTranslatedText) pubCamTranslatedText.value = data.translated_text;
+                        if (pubLensStatusText) pubLensStatusText.innerText = "Live Lens Active";
+                    } else {
+                        if (pubLensStatusText) pubLensStatusText.innerText = "Searching for text...";
+                    }
+                } catch (err) {
+                    console.warn("Camera stream translation request warning:", err);
+                } finally {
+                    isPubScanInProgress = false;
+                }
             }
 
             if (pubStartCamBtn) pubStartCamBtn.addEventListener('click', startPubCamera);
@@ -1493,42 +1722,40 @@
                 });
             }
 
-            if (pubSnapCamBtn) {
-                pubSnapCamBtn.addEventListener('click', async () => {
-                    if (!isPubCamActive || !pubCamVideo.videoWidth) return;
-                    pubCamCanvas.width = pubCamVideo.videoWidth;
-                    pubCamCanvas.height = pubCamVideo.videoHeight;
-                    const ctx = pubCamCanvas.getContext('2d');
-                    ctx.drawImage(pubCamVideo, 0, 0, pubCamCanvas.width, pubCamCanvas.height);
-                    const base64Data = pubCamCanvas.toDataURL('image/jpeg', 0.85);
+            if (pubPauseCamBtn) {
+                pubPauseCamBtn.addEventListener('click', () => {
+                    if (!isPubCamActive) return;
+                    isPubScanPaused = !isPubScanPaused;
+                    if (isPubScanPaused) {
+                        pubPauseCamBtn.innerHTML = '<i class="fas fa-play me-1"></i> Resume Live Lens';
+                        if (pubLensStatusText) pubLensStatusText.innerText = "Frozen Frame";
+                        if (pubLensScannerBox) pubLensScannerBox.classList.remove('scanning');
+                    } else {
+                        pubPauseCamBtn.innerHTML = '<i class="fas fa-pause me-1"></i> Freeze Frame';
+                        if (pubLensStatusText) pubLensStatusText.innerText = "Live Lens Active";
+                        if (pubLensScannerBox) pubLensScannerBox.classList.add('scanning');
+                    }
+                });
+            }
 
-                    pubCamOcrText.value = "Extracting OCR text from frame...";
-                    pubCamTranslatedText.value = "Translating text...";
+            // Google Lens AR Overlay Actions (Speak / Copy)
+            if (pubLensCopyBtn) {
+                pubLensCopyBtn.addEventListener('click', () => {
+                    const txt = pubLensTranslatedDisplay ? pubLensTranslatedDisplay.innerText : '';
+                    if (txt && txt.indexOf('Point camera') === -1) {
+                        navigator.clipboard.writeText(txt);
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Translation copied to clipboard!', showConfirmButton: false, timer: 1500 });
+                    }
+                });
+            }
 
-                    try {
-                        const res = await fetch('/api/translate/camera/', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': getCookie('csrftoken') || ''
-                            },
-                            body: JSON.stringify({
-                                image_data: base64Data,
-                                target_lang: pubCamTargetCode,
-                                source_lang: 'auto'
-                            })
-                        });
-                        const data = await res.json();
-                        if (data.status === 'success') {
-                            pubCamOcrText.value = data.extracted_text || "No readable text detected in frame.";
-                            pubCamTranslatedText.value = data.translated_text || "";
-                        } else {
-                            pubCamOcrText.value = "Error: " + (data.error || "OCR failed");
-                            pubCamTranslatedText.value = "";
-                        }
-                    } catch (err) {
-                        pubCamOcrText.value = "Error connecting to OCR engine.";
-                        pubCamTranslatedText.value = "";
+            if (pubLensSpeakBtn) {
+                pubLensSpeakBtn.addEventListener('click', () => {
+                    const txt = pubLensTranslatedDisplay ? pubLensTranslatedDisplay.innerText : '';
+                    if (txt && txt.indexOf('Point camera') === -1) {
+                        const utterance = new SpeechSynthesisUtterance(txt);
+                        utterance.lang = pubCamTargetCode || 'en';
+                        window.speechSynthesis.speak(utterance);
                     }
                 });
             }

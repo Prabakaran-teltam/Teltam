@@ -108,8 +108,16 @@
             </div>
 
             <!-- Action Bar -->
-            <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-4">
-                <span class="text-muted small d-none d-md-inline-block"><i class="fas fa-keyboard me-1"></i> Press <kbd class="bg-light text-dark border font-monospace px-1">Ctrl + Enter</kbd> to translate instantly.</span>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-top pt-4 mt-4">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" id="translateBtn" class="btn btn-brand-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                        <i class="fas fa-language me-1.5"></i> Translate Text
+                    </button>
+                    <button type="button" id="newTransBtn" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-bold">
+                        <i class="fas fa-rotate me-1.5"></i> Translate Another
+                    </button>
+                </div>
+                <span class="text-muted small d-none d-md-inline-block"><i class="fas fa-keyboard me-1"></i> Press <kbd class="bg-light text-dark border font-monospace px-1">Ctrl + Enter</kbd> to translate or <kbd class="bg-light text-dark border font-monospace px-1">Ctrl + Shift + X</kbd> to reset.</span>
             </div>
         </div>
     </div>

@@ -28,8 +28,13 @@
             --text-muted: #64748b;
         }
 
-        *, body, button, input, select, textarea {
+        *:not(i):not(.fa):not(.fas):not(.far):not(.fal):not(.fab):not(.fa-solid):not(.fa-regular):not(.fa-brands):not([class^="fa-"]):not([class*=" fa-"]), body, button, input, select, textarea {
             font-family: 'Zoho Puvi', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+
+        /* Protect Font Awesome Icons */
+        .fa, .fas, .far, .fal, .fab, .fa-solid, .fa-regular, .fa-light, .fa-thin, .fa-duotone, .fa-brands, [class^="fa-"], [class*=" fa-"], i {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
         }
 
         body {

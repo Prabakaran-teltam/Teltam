@@ -101,17 +101,26 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(data => {
                 // Update text areas
-                outputText.value = data.translated_text;
-                outputText.innerText = data.translated_text; // compatibility
+                outputText.value = data.translated_text || "";
+                outputText.innerText = data.translated_text || ""; // compatibility
+
+                // Unconditionally update Transliteration element if present
+                const translitEl = document.getElementById("outputTranslit");
+                if (translitEl) {
+                    const val = data.transliteration || data.transliterated_text || "";
+                    if (translitEl.tagName === 'TEXTAREA' || translitEl.tagName === 'INPUT') {
+                        translitEl.value = val;
+                    } else {
+                        translitEl.innerText = val || "-";
+                    }
+                }
 
                 // Populate linguistic insights if container exists
                 const activeDetails = document.getElementById("activeDetailsContainer");
                 if (activeDetails) {
                     activeDetails.classList.remove("d-none");
-                    const translitEl = document.getElementById("outputTranslit");
                     const pronEl = document.getElementById("outputPron");
                     const grammarEl = document.getElementById("outputGrammar");
-                    if (translitEl) translitEl.innerText = data.transliteration || "-";
                     if (pronEl) pronEl.innerText = data.pronunciation || "-";
                     if (grammarEl) grammarEl.innerText = data.grammar_analysis || "No grammar issues detected.";
                 }
@@ -237,102 +246,127 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Speech synthesis mock (Pronunciation Speaker Button)
+    // High-Definition Text-to-Speech Player with automatic backend API & tuned WebSpeech fallback
+    window.playTextToSpeech = function(text, langCode, triggerBtn = null) {
+        if (!text || !text.trim() || text.includes("Translating")) return;
+
+        // Stop any existing playing audio or speech synthesis
+        if (window.currentTtsAudio) {
+            try { window.currentTtsAudio.pause(); } catch(e) {}
+            window.currentTtsAudio = null;
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+
+        let origBtnHTML = null;
+        if (triggerBtn) {
+            origBtnHTML = triggerBtn.innerHTML;
+            triggerBtn.innerHTML = `<i class="fas fa-volume-high fa-beat me-1 text-indigo-600"></i> Speaking...`;
+            triggerBtn.disabled = true;
+        }
+
+        const restoreBtn = () => {
+            if (triggerBtn && origBtnHTML) {
+                triggerBtn.innerHTML = origBtnHTML;
+                triggerBtn.disabled = false;
+            }
+        };
+
+        // Helper for tuned local Web Speech API as fallback
+        const speakLocalTuned = (txt, targetLang) => {
+            if (!('speechSynthesis' in window)) {
+                restoreBtn();
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(txt);
+            // Calibrate speaking rate to 0.88 for maximum clarity (articulate, natural speed)
+            utterance.rate = 0.88;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            const langMap = {
+                en: "en-US", es: "es-ES", fr: "fr-FR", de: "de-DE",
+                ta: "ta-IN", hi: "hi-IN", te: "te-IN", kn: "kn-IN",
+                ml: "ml-IN", mr: "mr-IN", bn: "bn-IN", gu: "gu-IN",
+                zh: "zh-CN", ja: "ja-JP", ko: "ko-KR", ar: "ar-SA"
+            };
+            const targetLocale = langMap[targetLang] || targetLang;
+            utterance.lang = targetLocale;
+
+            // Ensure voices are loaded
+            let voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length > 0) {
+                const langPrefix = targetLocale.split('-')[0].toLowerCase();
+                const matching = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
+                if (matching.length > 0) {
+                    let best = matching.find(v => 
+                        v.name.includes("Google") || 
+                        v.name.includes("Natural") || 
+                        v.name.includes("Neural") || 
+                        v.name.includes("Online") || 
+                        v.name.includes("Microsoft") || 
+                        v.name.includes("Apple")
+                    ) || matching[0];
+                    utterance.voice = best;
+                }
+            }
+
+            utterance.onend = restoreBtn;
+            utterance.onerror = restoreBtn;
+            window.speechSynthesis.speak(utterance);
+        };
+
+        // 1. Primary: Call backend /api/tts/ for OpenAI HD / server-side crisp MP3 audio
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                          (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+        fetch('/api/tts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                text: text,
+                lang: langCode || 'en'
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === 'success' && data.audio_url) {
+                const audio = new Audio(data.audio_url);
+                window.currentTtsAudio = audio;
+                audio.onended = restoreBtn;
+                audio.onerror = () => speakLocalTuned(text, langCode);
+                audio.play().catch(err => {
+                    console.warn("Autoplay blocked/failed, using tuned local TTS fallback:", err);
+                    speakLocalTuned(text, langCode);
+                });
+            } else {
+                speakLocalTuned(text, langCode);
+            }
+        })
+        .catch(err => {
+            console.warn("Backend TTS endpoint error, using tuned local TTS fallback:", err);
+            speakLocalTuned(text, langCode);
+        });
+    };
+
+    // Speech synthesis handler (Pronunciation Speaker Button)
     const speakBtn = document.getElementById("speakBtn");
     if (speakBtn && outputText) {
         speakBtn.addEventListener("click", () => {
             const textToSpeak = outputText.value || outputText.innerText;
-            if (textToSpeak && !textToSpeak.includes("Translating")) {
-                // Cancel any ongoing local speech synthesis
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
-                
-                // Identify target language code
-                const langCode = targetLang ? targetLang.value : 'en';
-                const langCodeMap = { 
-                    en: "en", 
-                    es: "es", 
-                    fr: "fr", 
-                    de: "de", 
-                    ta: "ta",
-                    hi: "hi",
-                    te: "te"
-                };
-                const tl = langCodeMap[langCode] || langCode;
-
-                // Animate button
-                speakBtn.classList.add("text-indigo-600");
-                setTimeout(() => speakBtn.classList.remove("text-indigo-600"), 1000);
-
-                // Try playing via Google Translate TTS for highly clear native voice
-                try {
-                    const encodedText = encodeURIComponent(textToSpeak);
-                    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${tl}&client=tw-ob&q=${encodedText}`;
-                    
-                    if (window.currentTtsAudio) {
-                        window.currentTtsAudio.pause();
-                    }
-                    
-                    const audio = new Audio(ttsUrl);
-                    window.currentTtsAudio = audio;
-                    
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(err => {
-                            console.warn("Google TTS play failed. Falling back to local Web Speech API.", err);
-                            speakWithWebSpeechFallback(textToSpeak, tl);
-                        });
-                    }
-                } catch (e) {
-                    console.warn("Google TTS setup failed. Falling back to local Web Speech API.", e);
-                    speakWithWebSpeechFallback(textToSpeak, tl);
-                }
+            const langCode = targetLang ? targetLang.value : 'en';
+            if (textToSpeak) {
+                window.playTextToSpeech(textToSpeak, langCode, speakBtn);
             }
         });
-    }
-
-    // Local Web Speech Fallback helper
-    function speakWithWebSpeechFallback(text, langCode) {
-        if (!('speechSynthesis' in window)) return;
-        const utterance = new SpeechSynthesisUtterance(text);
-        const localeMap = {
-            en: "en-US",
-            es: "es-ES",
-            fr: "fr-FR",
-            de: "de-DE",
-            ta: "ta-IN",
-            hi: "hi-IN",
-            te: "te-IN"
-        };
-        const targetLocale = localeMap[langCode] || langCode;
-        utterance.lang = targetLocale;
-
-        const voices = window.speechSynthesis.getVoices();
-        let bestVoice = null;
-        if (voices && voices.length > 0) {
-            const matchLocale = targetLocale.toLowerCase().replace('_', '-');
-            const langPrefix = matchLocale.split('-')[0];
-            const localeMatches = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
-            if (localeMatches.length > 0) {
-                bestVoice = localeMatches.find(v => 
-                    v.name.includes("Google") || 
-                    v.name.includes("Natural") || 
-                    v.name.includes("Premium") || 
-                    v.name.includes("Microsoft")
-                );
-                if (!bestVoice) {
-                    bestVoice = localeMatches.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(matchLocale));
-                }
-                if (!bestVoice) {
-                    bestVoice = localeMatches[0];
-                }
-            }
-        }
-        if (bestVoice) {
-            utterance.voice = bestVoice;
-        }
-        window.speechSynthesis.speak(utterance);
     }
 
     // Copy to clipboard
@@ -346,6 +380,43 @@ document.addEventListener("DOMContentLoaded", () => {
                     copyBtn.innerHTML = `<i class="fas fa-check text-success"></i>`;
                     setTimeout(() => { copyBtn.innerHTML = origIcon; }, 1500);
                 });
+            }
+        });
+    }
+
+    // Transliteration Speak & Copy Handlers
+    const translitSpeakBtn = document.getElementById("translitSpeakBtn");
+    const outputTranslit = document.getElementById("outputTranslit");
+    if (translitSpeakBtn && outputTranslit) {
+        translitSpeakBtn.addEventListener("click", () => {
+            const textToSpeak = outputTranslit.value || outputTranslit.innerText;
+            if (textToSpeak && !textToSpeak.includes("Translating")) {
+                window.playTextToSpeech(textToSpeak, 'en', translitSpeakBtn);
+            }
+        });
+    }
+
+    const translitCopyBtn = document.getElementById("translitCopyBtn");
+    if (translitCopyBtn && outputTranslit) {
+        translitCopyBtn.addEventListener("click", () => {
+            const text = outputTranslit.value || outputTranslit.innerText;
+            if (text && !text.includes("Translating")) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const origIcon = translitCopyBtn.innerHTML;
+                    translitCopyBtn.innerHTML = `<i class="fas fa-check text-success me-1"></i> Copied`;
+                    setTimeout(() => { translitCopyBtn.innerHTML = origIcon; }, 1500);
+                });
+            }
+        });
+    }
+
+    const docSpeakTranslitBtn = document.getElementById("docSpeakTranslitBtn");
+    const docTransliteratedText = document.getElementById("docTransliteratedText");
+    if (docSpeakTranslitBtn && docTransliteratedText) {
+        docSpeakTranslitBtn.addEventListener("click", () => {
+            const textToSpeak = docTransliteratedText.value || docTransliteratedText.innerText;
+            if (textToSpeak) {
+                window.playTextToSpeech(textToSpeak, 'en', docSpeakTranslitBtn);
             }
         });
     }

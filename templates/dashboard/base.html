@@ -336,6 +336,17 @@
                         {% endif %}
                     </a>
                 </li>
+                <li class="sidebar-item {% block nav_ai_enquiries %}{% endblock %}">
+                    <a href="{% url 'dashboard_ai_class_enquiry_list' %}" class="sidebar-link d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-graduation-cap text-warning"></i>
+                            <span>AI Class Enquiries</span>
+                        </div>
+                        {% if global_pending_enquiries_count > 0 %}
+                            <span class="badge bg-warning text-dark rounded-pill px-2 py-1" style="font-size: 0.75rem;">{{ global_pending_enquiries_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
                 <li class="sidebar-item {% block nav_users %}{% endblock %}">
                     <a href="{% url 'dashboard_user_list' %}" class="sidebar-link">
                         <i class="fas fa-users-cog"></i>

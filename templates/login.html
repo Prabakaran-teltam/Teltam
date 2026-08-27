@@ -124,7 +124,7 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label for="loginPassword" class="form-label fw-bold text-slate-700 mb-0">Password</label>
-                                <a href="#" class="small text-indigo-600 text-decoration-none fw-semibold" onclick="Swal.fire({icon: 'info', title: 'Forgot Password', text: 'Forgot password code trigger (Mock)', confirmButtonColor: '#4f46e5', customClass: {confirmButton: 'btn btn-primary rounded-pill px-4'}, buttonsStyling: false});">Forgot password?</a>
+                                <a href="{% url 'forgot_password' %}" class="small text-indigo-600 text-decoration-none fw-semibold">Forgot password?</a>
                             </div>
                             <div class="auth-input-group">
                                 <i class="fas fa-lock"></i>

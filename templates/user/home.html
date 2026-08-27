@@ -241,11 +241,11 @@
                                     <span class="text-muted small text-truncate d-block" style="max-width: 350px;">{{ log.translated_text }}</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <span class="badge bg-light text-slate-700 border">{{ log.source_lang|upper }}</span>
-                                <i class="fas fa-arrow-right mx-1 text-muted small"></i>
-                                <span class="badge bg-light text-indigo-700 border">{{ log.target_lang|upper }}</span>
-                            </td>
+                             <td class="text-nowrap">
+                                 <span class="badge px-2.5 py-1 rounded-pill" style="color: #dc2626 !important; background-color: #fee2e2 !important; border: 1px solid #fca5a5 !important; font-weight: 700; font-size: 0.78rem;">{{ log.source_lang|upper }}</span>
+                                 <i class="fas fa-arrow-right mx-1 text-danger small"></i>
+                                 <span class="badge px-2.5 py-1 rounded-pill" style="color: #dc2626 !important; background-color: #fee2e2 !important; border: 1px solid #fca5a5 !important; font-weight: 700; font-size: 0.78rem;">{{ log.target_lang|upper }}</span>
+                             </td>
                             <td><small class="text-muted">{{ log.created_date|date:"M d, Y, g:i A" }}</small></td>
                         </tr>
                         {% empty %}

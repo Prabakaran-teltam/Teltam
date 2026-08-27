@@ -34,6 +34,7 @@ class Blog(models.Model):
     meta_title = models.CharField(max_length=255, blank=True)
     meta_description = models.TextField(blank=True)
     is_published = models.BooleanField(default=False)
+    is_notification_sent = models.BooleanField(default=False, help_text="Designates whether email notification has been sent to registered users.")
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -118,6 +119,7 @@ class UserTranslationHistory(models.Model):
     tool_type = models.CharField(max_length=20, choices=TOOL_CHOICES)
     source_text = models.TextField()
     translated_text = models.TextField(blank=True, null=True)
+    transliterated_text = models.TextField(blank=True, null=True)
     source_lang = models.CharField(max_length=50)
     target_lang = models.CharField(max_length=50)
     file_name = models.CharField(max_length=255, blank=True, null=True)
@@ -203,6 +205,7 @@ class DocumentTranslationHistory(models.Model):
     original_file = models.FileField(upload_to='documents/originals/', null=True, blank=True)
     extracted_text = models.TextField(blank=True, null=True)
     translated_text = models.TextField(blank=True, null=True)
+    transliterated_text = models.TextField(blank=True, null=True)
     source_language = models.CharField(max_length=50)
     target_language = models.CharField(max_length=50)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -253,6 +256,68 @@ class PageViewLog(models.Model):
     def __str__(self):
         user_str = self.user.username if self.user else 'Guest'
         return f"{self.page_name} ({self.path}) - {user_str} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class AIClassEnquiry(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('contacted', 'Contacted'),
+        ('enrolled', 'Enrolled'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    full_name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    message = models.TextField(blank=True, default='')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "AI Class Enquiry"
+        verbose_name_plural = "AI Class Enquiries"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.full_name} ({self.email}) - {self.phone_number}"
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Blog)
+def on_blog_post_saved(sender, instance, created, **kwargs):
+    """
+    Signal handler that triggers asynchronous mass email dispatch to 100+ registered users
+    when a Blog post is published (is_published=True) and notifications haven't been sent yet.
+    """
+    if instance.is_published and not instance.is_notification_sent:
+        try:
+            from app.tasks import send_new_blog_notifications_task
+            
+            celery_active = False
+            try:
+                from project.celery import app as celery_app
+                inspect = celery_app.control.inspect(timeout=0.15)
+                pings = inspect.ping() if inspect else None
+                celery_active = bool(pings)
+            except Exception:
+                celery_active = False
+
+            if celery_active:
+                send_new_blog_notifications_task.delay(instance.id)
+            else:
+                import threading
+                def run_thread():
+                    try:
+                        send_new_blog_notifications_task(instance.id)
+                    except Exception as err:
+                        logging.getLogger(__name__).exception(f"Error in blog notification thread: {err}")
+
+                t = threading.Thread(target=run_thread, daemon=True)
+                t.start()
+        except Exception as sig_err:
+            logging.getLogger(__name__).exception(f"Failed to trigger blog notification signal: {sig_err}")
 
 
 

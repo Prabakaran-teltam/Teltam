@@ -3,11 +3,20 @@ import uuid
 import json
 import hashlib
 import logging
+import random
+import time
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.core.cache import cache
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from deep_translator import GoogleTranslator
 
 from .models import Blog, YoutubeVideo
@@ -89,7 +98,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import timedelta
 import base64
 
-from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory
+from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory, AIClassEnquiry, PageViewLog
 from .forms import BlogForm, YoutubeVideoForm, ContactForm, UserProfileForm
 from .phonepe_service import PhonePeService
 
@@ -258,43 +267,303 @@ def login_view(request):
                 
     return render(request, 'login.html', {'next': next_url})
 
+def get_site_url(request=None):
+    """
+    Dynamically resolves current domain URL (http://127.0.0.1:8000 when local, https://teltam.in when production).
+    """
+    if request:
+        try:
+            return request.build_absolute_uri('/').rstrip('/')
+        except Exception:
+            pass
+    return getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
+
+
+def send_email_verification_otp(email, name, otp_code, request=None):
+    """
+    Sends HTML Email Verification OTP code to user during registration.
+    """
+    site_url = get_site_url(request)
+
+    def _send_otp_task():
+        try:
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Teltam AI <teltam2025@gmail.com>')
+            subject = "🔐 Verify Your Email Address - Teltam AI"
+
+            html_content = render_to_string('emails/email_verification_otp.html', {
+                'user_name': name,
+                'otp_code': otp_code,
+                'site_url': site_url
+            })
+            plain_content = strip_tags(html_content)
+
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=plain_content,
+                from_email=from_email,
+                to=[email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=True)
+            logger.info(f"Verification OTP email sent successfully to {email}.")
+        except Exception as e:
+            logger.exception(f"Failed to send verification OTP email to {email}: {e}")
+
+    import threading
+    t = threading.Thread(target=_send_otp_task, daemon=True)
+    t.start()
+
+
+def send_welcome_registration_email(email, name, request=None):
+    """
+    Sends HTML Welcome email after successful email verification & registration.
+    """
+    site_url = get_site_url(request)
+    dashboard_url = f"{site_url}{reverse('user_dashboard_home')}"
+
+    def _send_welcome_task():
+        try:
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Teltam AI <teltam2025@gmail.com>')
+            subject = f"🎉 Welcome to Teltam AI, {name}!"
+
+            html_content = render_to_string('emails/welcome_registration.html', {
+                'user_name': name,
+                'user_email': email,
+                'dashboard_url': dashboard_url,
+                'site_url': site_url
+            })
+            plain_content = strip_tags(html_content)
+
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=plain_content,
+                from_email=from_email,
+                to=[email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=True)
+            logger.info(f"Welcome email sent successfully to {email}.")
+        except Exception as e:
+            logger.exception(f"Failed to send welcome email to {email}: {e}")
+
+    import threading
+    t = threading.Thread(target=_send_welcome_task, daemon=True)
+    t.start()
+
+
 def register_view(request):
-    """Handles standard user registration form posts."""
+    """Handles 2-step email verification registration with OTP and Welcome Email."""
     if request.user.is_authenticated:
         return redirect('user_dashboard_home')
         
+    pending = request.session.get('pending_otp_verification')
+
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
+        action = request.POST.get('action', '')
+
+        # Action: Verify OTP Code
+        if action == 'verify_otp':
+            otp_input = request.POST.get('otp_code', '').strip()
+            if not pending:
+                messages.error(request, "Registration session expired. Please fill out the registration form again.")
+                return redirect('register')
+                
+            if time.time() > pending.get('expires_at', 0):
+                messages.error(request, "Verification code expired. Please click Resend OTP.")
+                return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': pending.get('email')})
+
+            if otp_input == pending.get('otp'):
+                try:
+                    name = pending['name']
+                    email = pending['email']
+                    password = pending['password']
+
+                    # Create user account
+                    user = User.objects.create_user(
+                        username=email, email=email, password=password, first_name=name
+                    )
+
+                    # Clear pending session
+                    request.session.pop('pending_otp_verification', None)
+
+                    # Send Welcome Email
+                    send_welcome_registration_email(email, name)
+
+                    # Log in user automatically
+                    login(request, user)
+                    messages.success(request, f"Welcome to Teltam AI, {name}! Your email has been verified and your account is active.")
+                    return redirect('user_dashboard_home')
+
+                except Exception as e:
+                    logger.exception("Failed to create user during OTP verification")
+                    messages.error(request, "Failed to create account. Please try again.")
+            else:
+                messages.error(request, "Invalid verification code. Please check your email and try again.")
+                return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': pending.get('email')})
+
+        # Action: Resend OTP Code
+        elif action == 'resend_otp':
+            if not pending:
+                messages.error(request, "Session expired. Please fill out the registration form again.")
+                return redirect('register')
+
+            otp_code = str(random.randint(100000, 999999))
+            pending['otp'] = otp_code
+            pending['expires_at'] = time.time() + 600
+            request.session['pending_otp_verification'] = pending
+            request.session.modified = True
+
+            send_email_verification_otp(pending['email'], pending['name'], otp_code)
+            messages.success(request, f"A new 6-digit verification code has been sent to {pending['email']}.")
+            return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': pending.get('email')})
+
+        # Action: Cancel / Change Email
+        elif action == 'change_email':
+            request.session.pop('pending_otp_verification', None)
+            messages.info(request, "Registration reset. Please enter your details.")
+            return redirect('register')
+
+        # Action: Initial Registration Form Submission
+        else:
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            password = request.POST.get('password', '')
+            confirm_password = request.POST.get('confirm_password', '')
+            agree_terms = request.POST.get('agree_terms')
+            
+            # Validations
+            if not name or len(name) < 2:
+                messages.error(request, "Full name must be at least 2 characters.")
+            elif not email or '@' not in email:
+                messages.error(request, "Please enter a valid email address.")
+            elif len(password) < 6:
+                messages.error(request, "Password must be at least 6 characters.")
+            elif password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+            elif not agree_terms:
+                messages.error(request, "You must agree to the Terms of Service.")
+            elif User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+                messages.error(request, "An account with this email address already exists.")
+            else:
+                try:
+                    otp_code = str(random.randint(100000, 999999))
+                    request.session['pending_otp_verification'] = {
+                        'name': name,
+                        'email': email,
+                        'password': password,
+                        'otp': otp_code,
+                        'expires_at': time.time() + 600
+                    }
+
+                    # Send OTP email
+                    send_email_verification_otp(email, name, otp_code)
+                    messages.info(request, f"Verification code sent to {email}. Please enter the 6-digit OTP to complete registration.")
+                    return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': email})
+
+                except Exception as e:
+                    logger.exception("Failed to send verification OTP")
+                    messages.error(request, "Failed to send verification code. Please try again.")
+
+    # GET request check
+    if pending and time.time() < pending.get('expires_at', 0):
+        return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': pending.get('email')})
+
+    return render(request, 'register.html')
+
+
+def forgot_password_view(request):
+    """Handles password reset email request."""
+    if request.user.is_authenticated:
+        return redirect('user_dashboard_home')
+
+    if request.method == 'POST':
         email = request.POST.get('email', '').strip()
+        if not email or '@' not in email:
+            messages.error(request, "Please enter a valid email address.")
+            return render(request, 'forgot_password.html')
+
+        user = User.objects.filter(email=email).first() or User.objects.filter(username=email).first()
+        if user:
+            try:
+                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+                site_url = get_site_url(request)
+                reset_path = reverse('reset_password_confirm', kwargs={'uidb64': uidb64, 'token': token})
+                reset_url = f"{site_url}{reset_path}"
+
+                def _send_reset_email():
+                    try:
+                        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Teltam AI <teltam2025@gmail.com>')
+                        subject = "🔑 Reset Your Password - Teltam AI"
+                        user_name = user.first_name or user.username
+
+                        html_content = render_to_string('emails/password_reset_email.html', {
+                            'user_name': user_name,
+                            'user_email': user.email,
+                            'reset_url': reset_url,
+                            'site_url': site_url
+                        })
+                        plain_content = strip_tags(html_content)
+
+                        msg = EmailMultiAlternatives(
+                            subject=subject,
+                            body=plain_content,
+                            from_email=from_email,
+                            to=[user.email]
+                        )
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send(fail_silently=True)
+                        logger.info(f"Password reset email sent to {user.email}.")
+                    except Exception as email_err:
+                        logger.exception(f"Failed to send password reset email: {email_err}")
+
+                import threading
+                t = threading.Thread(target=_send_reset_email, daemon=True)
+                t.start()
+
+            except Exception as e:
+                logger.exception("Error generating password reset token")
+
+        # Generic response to prevent email enumeration
+        messages.success(request, "If an account with that email exists, we have sent instructions to reset your password. Please check your inbox and spam folder.")
+        return redirect('login')
+
+    return render(request, 'forgot_password.html')
+
+
+def reset_password_confirm_view(request, uidb64, token):
+    """Handles new password entry & validation for token link."""
+    if request.user.is_authenticated:
+        return redirect('user_dashboard_home')
+
+    user = None
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    validlink = user is not None and default_token_generator.check_token(user, token)
+
+    if request.method == 'POST' and validlink:
         password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
-        agree_terms = request.POST.get('agree_terms')
-        
-        # Validations
-        if not name or len(name) < 2:
-            messages.error(request, "Full name must be at least 2 characters.")
-        elif not email or '@' not in email:
-            messages.error(request, "Please enter a valid email address.")
-        elif len(password) < 6:
+
+        if len(password) < 6:
             messages.error(request, "Password must be at least 6 characters.")
         elif password != confirm_password:
             messages.error(request, "Passwords do not match.")
-        elif not agree_terms:
-            messages.error(request, "You must agree to the Terms of Service.")
-        elif User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
-            messages.error(request, "An account with this email address already exists.")
         else:
             try:
-                # Use email as the username
-                user = User.objects.create_user(
-                    username=email, email=email, password=password, first_name=name
-                )
-                messages.success(request, "Registration successful! You can now log in.")
+                user.set_password(password)
+                user.save()
+                messages.success(request, "Your password has been reset successfully! You can now log in with your new password.")
                 return redirect('login')
             except Exception as e:
-                logger.exception("Failed to create user during registration")
-                messages.error(request, "Failed to create account. Please try again.")
-    return render(request, 'register.html')
+                logger.exception("Failed to reset user password")
+                messages.error(request, "Failed to update password. Please try again.")
+
+    return render(request, 'reset_password_confirm.html', {'validlink': validlink})
 
 def logout_view(request):
     """Logs the user out of their session."""
@@ -309,6 +578,81 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip 
+
+# =====================================================================
+# SUBSCRIPTION PLAN MATRIX FEATURE LIMITER (COMPARE FEATURES MATRIX)
+# =====================================================================
+PLAN_MATRIX_LIMITS = {
+    1: { # Basic Plan
+        'word_limit_monthly': 50000,
+        'doc_files_monthly': 5,          # 5 files/mo (Allowed for Basic users)
+        'tts_audio_plays_daily': 5,      # 5 plays/day
+        'multi_image_max_batch': 1,      # 1 image per batch
+        'voice_mins_daily': 2,           # 2 mins/day (120s)
+        'voice_mins_monthly': 60,
+        'camera_ar_allowed': False,      # Blocked
+        'camera_ar_max_mins_session': 0,
+        'api_keys_allowed': False,
+    },
+    2: { # Pro Plan
+        'word_limit_monthly': 500000,
+        'doc_files_monthly': 100,        # 100 files/mo
+        'tts_audio_plays_daily': 999999, # Unlimited MP3
+        'multi_image_max_batch': 10,     # Up to 10 images/batch
+        'voice_mins_daily': 999999,
+        'voice_mins_monthly': 60,        # 60 mins/mo (3600s)
+        'camera_ar_allowed': True,       # 15 mins / session
+        'camera_ar_max_mins_session': 15,
+        'api_keys_allowed': False,
+    },
+    3: { # Business Plan
+        'word_limit_monthly': 999999999,
+        'doc_files_monthly': 999999999,
+        'tts_audio_plays_daily': 999999,
+        'multi_image_max_batch': 999999,
+        'voice_mins_daily': 999999,
+        'voice_mins_monthly': 999999,
+        'camera_ar_allowed': True,
+        'camera_ar_max_mins_session': 999999,
+        'api_keys_allowed': True,
+    },
+    99: { # Admin / Staff
+        'word_limit_monthly': 999999999,
+        'doc_files_monthly': 999999999,
+        'tts_audio_plays_daily': 999999,
+        'multi_image_max_batch': 999999,
+        'voice_mins_daily': 999999,
+        'voice_mins_monthly': 999999,
+        'camera_ar_allowed': True,
+        'camera_ar_max_mins_session': 999999,
+        'api_keys_allowed': True,
+    }
+}
+
+def get_user_plan_info(user):
+    """
+    Resolves the user's plan tier info (tier_order, name, slug) and limits based on Compare Features Plan Matrix.
+    """
+    if not user or not user.is_authenticated:
+        return {'tier_order': 1, 'name': 'Basic Plan', 'slug': 'basic'}, PLAN_MATRIX_LIMITS[1]
+
+    if user.is_superuser or user.is_staff:
+        return {'tier_order': 99, 'name': 'Admin (Unlimited)', 'slug': 'business'}, PLAN_MATRIX_LIMITS[99]
+
+    active_sub = user.subscriptions.filter(status='active').select_related('plan').first()
+    if not active_sub or not active_sub.plan:
+        return {'tier_order': 1, 'name': 'Basic Plan', 'slug': 'basic'}, PLAN_MATRIX_LIMITS[1]
+
+    plan = active_sub.plan
+    plan_name = (plan.name or '').lower()
+    plan_slug = (getattr(plan, 'slug', '') or '').lower()
+
+    if 'business' in plan_name or 'business' in plan_slug or plan.plan_order >= 3:
+        return {'tier_order': 3, 'name': plan.name, 'slug': 'business'}, PLAN_MATRIX_LIMITS[3]
+    elif 'pro' in plan_name or 'pro' in plan_slug or plan.plan_order == 2:
+        return {'tier_order': 2, 'name': plan.name, 'slug': 'pro'}, PLAN_MATRIX_LIMITS[2]
+    else:
+        return {'tier_order': 1, 'name': plan.name, 'slug': 'basic'}, PLAN_MATRIX_LIMITS[1]
 
 
 def validate_language_codes(source_lang, target_lang, allow_source_auto=True):
@@ -373,6 +717,25 @@ def translate_api(request):
     is_valid, err_msg = validate_language_codes(source_lang, target_lang, allow_source_auto=True)
     if not is_valid:
         return JsonResponse({'error': err_msg}, status=400)
+
+    # 3b. Enforce Compare Features Plan Matrix Monthly Word Limit
+    plan_info, limits = get_user_plan_info(request.user)
+    if request.user.is_authenticated and limits['word_limit_monthly'] < 999999999:
+        from django.utils import timezone
+        now = timezone.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        recent_histories = UserTranslationHistory.objects.filter(
+            user=request.user,
+            created_date__gte=start_of_month
+        )
+        words_used = sum(len(h.source_text.split()) for h in recent_histories if h.source_text)
+        new_words = len(text.split())
+
+        if words_used + new_words > limits['word_limit_monthly']:
+            return JsonResponse({
+                'error': f"Monthly word limit reached ({words_used:,} / {limits['word_limit_monthly']:,} words on {plan_info['name']}). Please upgrade your plan for higher word allowances."
+            }, status=403)
         
     # 4. Check cache for repeated translations
     cache_input = f"{source_lang}:{target_lang}:{text}"
@@ -380,6 +743,17 @@ def translate_api(request):
     cached_response = cache.get(cache_key)
     
     if cached_response:
+        if not cached_response.get('transliteration'):
+            try:
+                from app.services.openai_text_service import generate_transliteration_with_openai
+                cached_response['transliteration'] = generate_transliteration_with_openai(
+                    cached_response.get('translated_text'), 
+                    target_lang=target_lang
+                )
+                cache.set(cache_key, cached_response, timeout=86400)
+            except Exception as translit_err:
+                logger.warning(f"Failed to generate transliteration for cached response: {str(translit_err)}")
+
         if request.user.is_authenticated:
             try:
                 UserTranslationHistory.objects.create(
@@ -387,6 +761,7 @@ def translate_api(request):
                     tool_type='text',
                     source_text=text,
                     translated_text=cached_response.get('translated_text'),
+                    transliterated_text=cached_response.get('transliteration'),
                     source_lang=source_lang,
                     target_lang=target_lang
                 )
@@ -419,8 +794,17 @@ def translate_api(request):
                 else:
                     raise Exception("OpenAI API key is not configured, and fallback Google Translation is unavailable (possibly blocked by Google on this server IP).")
         
+        # Generate OpenAI Transliteration (Phonetic pronunciation guide)
+        transliteration = ""
+        try:
+            from app.services.openai_text_service import generate_transliteration_with_openai
+            transliteration = generate_transliteration_with_openai(translated_text, target_lang=target_lang)
+        except Exception as translit_err:
+            logger.warning(f"Failed to generate transliteration: {str(translit_err)}")
+
         response_data = {
             'translated_text': translated_text,
+            'transliteration': transliteration,
             'source_lang': source_lang,
             'target_lang': target_lang
         }
@@ -436,6 +820,7 @@ def translate_api(request):
                     tool_type='text',
                     source_text=text,
                     translated_text=translated_text,
+                    transliterated_text=transliteration,
                     source_lang=source_lang,
                     target_lang=target_lang
                 )
@@ -487,6 +872,44 @@ def upload_document(request):
     uploaded_files = request.FILES.getlist('file') or request.FILES.getlist('files')
     if not uploaded_files:
         return JsonResponse({'error': 'No file uploaded'}, status=400)
+
+    # Resolve plan limits
+    plan_info, limits = get_user_plan_info(request.user)
+
+    # Determine if upload consists purely of image files (Image Translation / OCR)
+    image_extensions = ['.jpg', '.jpeg', '.png', '.webp', '.bmp']
+    image_files = [f for f in uploaded_files if os.path.splitext(f.name)[1].lower() in image_extensions]
+    is_image_upload = (len(image_files) == len(uploaded_files))
+
+    # Multi-Image Batch OCR limit check (Module 5)
+    if is_image_upload:
+        max_batch = limits['multi_image_max_batch']
+        if len(image_files) > max_batch:
+            return JsonResponse({
+                'error': f"Multi-Image batch translation is limited to {max_batch} image(s) per batch on {plan_info['name']}. Upgrade to Pro (10 images/batch) or Business (Unlimited)."
+            }, status=403)
+    else:
+        # Document limit check (PDF, DOCX, TXT)
+        doc_limit = limits['doc_files_monthly']
+        if doc_limit == 0:
+            return JsonResponse({
+                'error': f"Document Translation is not available on {plan_info['name']}. Please upgrade to Pro (100 files/mo) or Business (Unlimited)."
+            }, status=403)
+
+        if request.user.is_authenticated and doc_limit < 999999999:
+            from django.utils import timezone
+            now = timezone.now()
+            start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+            docs_used = DocumentTranslationHistory.objects.filter(
+                user=request.user,
+                created_at__gte=start_of_month
+            ).count()
+
+            if docs_used + len(uploaded_files) > doc_limit:
+                return JsonResponse({
+                    'error': f"Monthly document limit reached ({docs_used} / {doc_limit} files on {plan_info['name']}). Upgrade to Business Plan for unlimited document translation."
+                }, status=403)
 
     source_lang = request.POST.get('source_lang', 'auto').strip()
     target_lang = request.POST.get('target_lang', '').strip()
@@ -578,6 +1001,12 @@ def upload_document(request):
     # Background Thread Fallback if Celery is down/inactive
     task_id = str(uuid.uuid4())
     
+    # Store initial state in cache for task_status_api polling
+    cache.set(f"sync_task_{task_id}", {
+        'status': 'PROGRESS',
+        'progress': 'Analyzing and translating document...'
+    }, timeout=1800)
+
     def run_document_task_in_thread():
         try:
             from app.tasks import process_document_translation
@@ -625,6 +1054,35 @@ def upload_voice_api(request):
 
     uploaded_file = request.FILES['file']
     target_lang = request.POST.get('target_lang', 'es').strip()
+
+    # Enforce Compare Features Plan Matrix limits for Voice Translation (Module 7)
+    plan_info, limits = get_user_plan_info(request.user)
+    if request.user.is_authenticated and limits['voice_mins_monthly'] < 999999:
+        from django.utils import timezone
+        now = timezone.now()
+
+        if plan_info['tier_order'] == 1:
+            start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            voice_today_count = UserTranslationHistory.objects.filter(
+                user=request.user,
+                tool_type='voice',
+                created_date__gte=start_of_day
+            ).count()
+            if voice_today_count >= 2:
+                return JsonResponse({
+                    'error': f"Daily voice translation limit reached (2 mins/day on {plan_info['name']}). Upgrade to Pro (60 mins/mo) or Business (Unlimited)."
+                }, status=403)
+        elif plan_info['tier_order'] == 2:
+            start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            voice_month_count = UserTranslationHistory.objects.filter(
+                user=request.user,
+                tool_type='voice',
+                created_date__gte=start_of_month
+            ).count()
+            if voice_month_count >= 60:
+                return JsonResponse({
+                    'error': f"Monthly voice translation limit of 60 minutes reached on Pro Plan. Upgrade to Business Plan for unlimited voice translation."
+                }, status=403)
 
     # Validate language codes
     is_valid, err_msg = validate_language_codes('auto', target_lang, allow_source_auto=True)
@@ -702,6 +1160,11 @@ def upload_voice_api(request):
     # Background Thread Fallback if Celery is down/inactive
     task_id = str(uuid.uuid4())
 
+    cache.set(f"sync_task_{task_id}", {
+        'status': 'PROGRESS',
+        'progress': 'Processing voice audio translation...'
+    }, timeout=1800)
+
     def run_voice_task_in_thread():
         try:
             from app.tasks import process_voice_translation
@@ -724,19 +1187,25 @@ def upload_voice_api(request):
 @require_GET
 def task_status_api(request, task_id):
     """
-    GET API to check status of a translation task.
+    GET API to check status of a translation task. Supports both Celery and ThreadPool fallback.
     """
     task_id = task_id.strip()
     if not task_id:
         return JsonResponse({'error': 'Task ID is required'}, status=400)
 
-    # 1. First check Django cache for synchronous fallback task results
+    # 1. Check Django cache first (populated by background thread / Celery completion)
     sync_result = cache.get(f"sync_task_{task_id}")
     if sync_result is not None:
-        if sync_result.get('status') == 'SUCCESS':
+        status_val = sync_result.get('status')
+        if status_val == 'SUCCESS':
             return JsonResponse({
                 'status': 'SUCCESS',
                 'result': sync_result
+            })
+        elif status_val in ['PROGRESS', 'PENDING', 'QUEUED']:
+            return JsonResponse({
+                'status': 'PROGRESS',
+                'progress': sync_result.get('progress', 'Processing translation task...')
             })
         else:
             return JsonResponse({
@@ -744,8 +1213,34 @@ def task_status_api(request, task_id):
                 'error': sync_result.get('error', 'An error occurred during task execution.')
             })
 
-    # 2. Otherwise, check Celery AsyncResult
+    # 2. Check DocumentTranslationHistory table directly if history_id is provided
+    history_id = request.GET.get('history_id')
+    if history_id:
+        try:
+            from app.models import DocumentTranslationHistory
+            from django.urls import reverse
+            history = DocumentTranslationHistory.objects.filter(id=history_id).first()
+            if history:
+                if history.status == 'success':
+                    download_url = reverse('download_translated_file', kwargs={'id': history.id})
+                    res_data = {
+                        'status': 'SUCCESS',
+                        'extracted_text': history.extracted_text or '',
+                        'translated_text': history.translated_text or '',
+                        'download_url': download_url
+                    }
+                    cache.set(f"sync_task_{task_id}", res_data, timeout=1800)
+                    return JsonResponse({'status': 'SUCCESS', 'result': res_data})
+                elif history.status == 'failure':
+                    return JsonResponse({'status': 'FAILURE', 'error': history.error_message or 'Document translation failed.'})
+                elif history.status in ['processing', 'pending']:
+                    return JsonResponse({'status': 'PROGRESS', 'progress': 'Processing document translation...'})
+        except Exception as hist_err:
+            logger.warning(f"Error checking history status: {hist_err}")
+
+    # 3. Otherwise, check Celery AsyncResult (if Celery worker / Redis is online)
     try:
+        from celery.result import AsyncResult
         result = AsyncResult(task_id)
         if result.state == 'PENDING':
             return JsonResponse({
@@ -760,7 +1255,6 @@ def task_status_api(request, task_id):
                 'progress': status_msg
             })
         elif result.state == 'SUCCESS':
-            # Store in cache so subsequent checks are instantaneous
             cache.set(f"sync_task_{task_id}", result.result, timeout=600)
             return JsonResponse({
                 'status': 'SUCCESS',
@@ -779,22 +1273,20 @@ def task_status_api(request, task_id):
             })
     except Exception as e:
         logger.warning(f"Could not connect to Celery to fetch status: {str(e)}")
-        # Check cache one last time
+        # Check cache one last time before returning fallback progress
         sync_result = cache.get(f"sync_task_{task_id}")
         if sync_result:
             if sync_result.get('status') == 'SUCCESS':
-                return JsonResponse({
-                    'status': 'SUCCESS',
-                    'result': sync_result
-                })
+                return JsonResponse({'status': 'SUCCESS', 'result': sync_result})
+            elif sync_result.get('status') in ['PROGRESS', 'PENDING']:
+                return JsonResponse({'status': 'PROGRESS', 'progress': sync_result.get('progress', 'Processing translation task...')})
             else:
-                return JsonResponse({
-                    'status': 'FAILURE',
-                    'error': sync_result.get('error', 'An error occurred during task execution.')
-                })
+                return JsonResponse({'status': 'FAILURE', 'error': sync_result.get('error', 'Task execution failed.')})
+        
+        # When Celery is offline and task is still running in background thread, return PROGRESS so frontend polling continues!
         return JsonResponse({
-            'status': 'FAILURE',
-            'error': f"Failed to check task status: Celery broker is currently offline."
+            'status': 'PROGRESS',
+            'progress': 'Processing document in background thread...'
         })
 
 @csrf_exempt
@@ -819,7 +1311,13 @@ def api_translate_camera(request):
         target_lang = data.get('target_lang', '').strip()
         source_lang = data.get('source_lang', 'auto').strip()
 
-        # Support uploaded image file as fallback if image_data base64 is not passed
+        # Enforce Compare Features Plan Matrix limits for Live Camera AR (Module 8)
+        plan_info, limits = get_user_plan_info(request.user)
+        if not limits['camera_ar_allowed']:
+            return JsonResponse({
+                'error': f"Live Camera AR Translation is not available on {plan_info['name']}. Please upgrade to Pro (15 mins/session) or Business (Unlimited)."
+            }, status=403)
+
         if not image_data and 'file' in request.FILES:
             uploaded_file = request.FILES['file']
             base64_bytes = base64.b64encode(uploaded_file.read()).decode('utf-8')
@@ -853,21 +1351,26 @@ def api_translate_camera(request):
         if not openai_client:
             return JsonResponse({'error': 'OpenAI API client is not configured.'}, status=500)
 
-        # Call OpenAI Vision for fast OCR frame extraction
+        # Call OpenAI Vision for exhaustive high-detail OCR frame extraction
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional high-accuracy camera OCR model. Extract EVERY SINGLE piece of text visible in this camera image frame exactly as it appears. Include titles, body text, labels, signs, numbers, footers, and fine print. Do not summarize or translate. Output ONLY the extracted text. If no readable text is visible in the frame, output ONLY '[NO_TEXT]'."
+                },
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": "You are a professional high-speed camera OCR model. Extract all readable text visible in this camera image frame exactly as it appears. Preserve line breaks. Do not summarize and do not add any comments or explanations. Output ONLY the extracted text. If no readable text is visible in the frame, output ONLY '[NO_TEXT]'."
+                            "text": "Perform exhaustive OCR on this camera frame. Extract all visible text line by line."
                         },
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:{mime_type};base64,{base64_str}"
+                                "url": f"data:{mime_type};base64,{base64_str}",
+                                "detail": "high"
                             }
                         }
                     ]
@@ -895,6 +1398,14 @@ def api_translate_camera(request):
             source_lang=source_lang
         )
 
+        # Generate OpenAI Transliteration (Phonetic pronunciation guide)
+        transliteration = ""
+        try:
+            from app.services.openai_text_service import generate_transliteration_with_openai
+            transliteration = generate_transliteration_with_openai(translated_text, target_lang=target_lang)
+        except Exception as translit_err:
+            logger.warning(f"Failed to generate camera transliteration: {str(translit_err)}")
+
         # Save to UserTranslationHistory if logged in
         if request.user.is_authenticated:
             try:
@@ -903,6 +1414,7 @@ def api_translate_camera(request):
                     tool_type='camera',
                     source_text=extracted_text,
                     translated_text=translated_text,
+                    transliterated_text=transliteration,
                     source_lang=source_lang,
                     target_lang=target_lang
                 )
@@ -914,6 +1426,7 @@ def api_translate_camera(request):
             'has_text': True,
             'extracted_text': extracted_text,
             'translated_text': translated_text,
+            'transliteration': transliteration,
             'source_lang': source_lang,
             'target_lang': target_lang
         })
@@ -1071,6 +1584,11 @@ def dashboard_home(request):
         'latest_blogs': Blog.objects.order_by('-created_date')[:5],
         'latest_videos': YoutubeVideo.objects.order_by('-created_date')[:5],
         'latest_messages': Contact.objects.order_by('-created_date')[:5],
+
+        # AI Class Enquiries
+        'ai_class_enquiries': AIClassEnquiry.objects.order_by('-created_at')[:10],
+        'total_class_enquiries': AIClassEnquiry.objects.count(),
+        'pending_class_enquiries': AIClassEnquiry.objects.filter(status='pending').count(),
     }
     return render(request, 'dashboard/home.html', context)
 
@@ -1996,22 +2514,31 @@ def api_docs_view(request):
 def user_api_keys(request):
     """
     User Dashboard View: Manage Developer API Keys.
-    Only active subscribed users can generate and manage API keys.
+    Only Business Plan subscribers (or admins) can generate and manage API keys.
     """
     from app.models import DeveloperAPIKey, UserSubscription
 
     # Check user subscription status
-    active_sub = request.user.subscriptions.filter(status='active').first()
-    has_active_sub = active_sub is not None
+    active_sub = request.user.subscriptions.filter(status='active').select_related('plan').first()
+
+    # Check if user has active Business Plan (or superuser/staff for admin testing)
+    has_business_plan = False
+    if request.user.is_superuser or request.user.is_staff:
+        has_business_plan = True
+    elif active_sub and active_sub.plan:
+        plan_name = (active_sub.plan.name or '').lower()
+        plan_slug = getattr(active_sub.plan, 'slug', '') or ''
+        if 'business' in plan_name or 'business' in plan_slug.lower() or active_sub.plan.plan_order >= 3:
+            has_business_plan = True
 
     if request.method == 'POST':
+        if not has_business_plan:
+            messages.error(request, "Developer API access is an exclusive feature reserved for Business Plan subscribers. Please upgrade your subscription.")
+            return redirect('user_api_keys')
+
         action = request.POST.get('action')
         
         if action == 'create':
-            if not has_active_sub:
-                messages.error(request, "Developer API key generation requires an active paid subscription plan.")
-                return redirect('user_api_keys')
-                
             key_name = request.POST.get('name', '').strip() or 'Default Secret Key'
             new_key = DeveloperAPIKey.objects.create(
                 user=request.user,
@@ -2042,7 +2569,8 @@ def user_api_keys(request):
 
     context = {
         'active_sub': active_sub,
-        'has_active_sub': has_active_sub,
+        'has_business_plan': has_business_plan,
+        'has_active_sub': active_sub is not None,
         'api_keys': api_keys,
         'request_host': request.get_host()
     }
@@ -2455,18 +2983,203 @@ def api_v1_translate_camera(request):
             source_lang=source_lang
         )
 
+        # Generate OpenAI Transliteration (Phonetic pronunciation guide)
+        transliteration = ""
+        try:
+            from app.services.openai_text_service import generate_transliteration_with_openai
+            transliteration = generate_transliteration_with_openai(translated_text, target_lang=target_lang)
+        except Exception:
+            pass
+
         return JsonResponse({
             'status': 'success',
             'has_text': True,
             'source_lang': source_lang,
             'target_lang': target_lang,
             'extracted_text': extracted_text,
-            'translated_text': translated_text
+            'translated_text': translated_text,
+            'transliteration': transliteration
         })
 
     except Exception as e:
         logger.exception("Developer API camera frame translation failed")
         return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def api_tts_speech(request):
+    """
+    Module 4: Text-to-Speech MP3 Audio Playback API.
+    Converts translated text into MP3 audio playback.
+    Enforces Compare Features Plan Matrix limits:
+      - Basic: 5 plays/day
+      - Pro: Unlimited MP3 Playback
+      - Business: Unlimited MP3 + HD Download
+    """
+    plan_info, limits = get_user_plan_info(request.user)
+
+    # Check daily limit for Basic plan (5 plays/day)
+    if request.user.is_authenticated and limits['tts_audio_plays_daily'] < 999999:
+        from django.utils import timezone
+        today_str = timezone.now().strftime('%Y-%m-%d')
+        cache_key = f"tts_plays_{request.user.id}_{today_str}"
+        plays_today = cache.get(cache_key, 0)
+
+        if plays_today >= limits['tts_audio_plays_daily']:
+            return JsonResponse({
+                'error': f"Daily limit of 5 Text-to-Speech audio plays reached on {plan_info['name']}. Upgrade to Pro for unlimited audio playback."
+            }, status=403)
+
+        cache.set(cache_key, plays_today + 1, timeout=86400)
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8')) if request.body else {}
+        else:
+            data = request.POST
+
+        text = data.get('text', '').strip()
+        lang = data.get('lang', 'en').strip()
+
+        if not text:
+            return JsonResponse({'error': 'Parameter "text" is required for audio playback.'}, status=400)
+
+        # High-definition audio synthesis using OpenAI tts-1 API with gTTS fallback
+        audio_b64 = None
+        from app.services.openai_document_service import get_openai_client
+        openai_client = get_openai_client()
+        if openai_client:
+            try:
+                response = openai_client.audio.speech.create(
+                    model="tts-1",
+                    voice="nova", # Warm, studio-quality natural speaking voice
+                    input=text[:2000]
+                )
+                audio_b64 = base64.b64encode(response.content).decode('utf-8')
+            except Exception as openai_tts_err:
+                logger.warning(f"OpenAI HD TTS API failed, falling back to gTTS: {str(openai_tts_err)}")
+
+        if not audio_b64:
+            from gtts import gTTS
+            import io
+            clean_lang = lang.split('-')[0].split('_')[0].lower() if lang else 'en'
+            try:
+                tts = gTTS(text=text[:1500], lang=clean_lang, slow=False)
+            except Exception:
+                tts = gTTS(text=text[:1500], lang='en', slow=False)
+            fp = io.BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
+            audio_b64 = base64.b64encode(fp.read()).decode('utf-8')
+
+        return JsonResponse({
+            'status': 'success',
+            'audio_url': f"data:audio/mp3;base64,{audio_b64}",
+            'text': text,
+            'lang': lang,
+            'plan': plan_info['name']
+        })
+    except Exception as e:
+        logger.exception("Failed to generate TTS audio")
+        return JsonResponse({'error': 'Failed to convert text to audio playback.'}, status=500)
+
+
+@csrf_exempt
+def submit_ai_class_enquiry(request):
+    """
+    API endpoint for submitting AI Class Enquiries.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+    try:
+        from .models import AIClassEnquiry
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+        else:
+            data = request.POST
+
+        full_name = data.get('full_name', '').strip()
+        email = data.get('email', '').strip()
+        phone_number = data.get('phone_number', '').strip()
+        message = data.get('message', '').strip()
+
+        if not full_name or not email or not phone_number:
+            return JsonResponse({'error': 'Please fill in all required fields (Full Name, Email Address, Phone Number).'}, status=400)
+
+        enquiry = AIClassEnquiry.objects.create(
+            full_name=full_name,
+            email=email,
+            phone_number=phone_number,
+            message=message
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Thank you {full_name}! Your enquiry to Join AI Classes has been received. Our team will contact you shortly.',
+            'enquiry_id': enquiry.id
+        })
+
+    except Exception as e:
+        logger.error(f"AI Class Enquiry submission error: {str(e)}")
+        return JsonResponse({'error': f'Failed to submit enquiry: {str(e)}'}, status=500)
+
+
+@staff_member_required(login_url='dashboard_login')
+def dashboard_ai_class_enquiries(request):
+    """
+    Admin Dashboard view to manage AI Class Enquiries.
+    """
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+
+    enquiries = AIClassEnquiry.objects.all()
+
+    # Handle Status Update POST request
+    if request.method == 'POST':
+        enquiry_id = request.POST.get('enquiry_id')
+        new_status = request.POST.get('status')
+        if enquiry_id and new_status:
+            try:
+                enq = AIClassEnquiry.objects.get(id=enquiry_id)
+                enq.status = new_status
+                enq.save()
+                messages.success(request, f"Updated enquiry status for '{enq.full_name}' to '{enq.get_status_display()}'.")
+            except AIClassEnquiry.DoesNotExist:
+                messages.error(request, "Enquiry record not found.")
+        return redirect('dashboard_ai_class_enquiry_list')
+
+    # Search & Filter
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    if q:
+        enquiries = enquiries.filter(
+            Q(full_name__icontains=q) |
+            Q(email__icontains=q) |
+            Q(phone_number__icontains=q) |
+            Q(message__icontains=q)
+        )
+
+    if status_filter and status_filter != 'all':
+        enquiries = enquiries.filter(status=status_filter)
+
+    paginator = Paginator(enquiries, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'q': q,
+        'status_filter': status_filter,
+        'total_count': AIClassEnquiry.objects.count(),
+        'pending_count': AIClassEnquiry.objects.filter(status='pending').count(),
+        'contacted_count': AIClassEnquiry.objects.filter(status='contacted').count(),
+        'enrolled_count': AIClassEnquiry.objects.filter(status='enrolled').count(),
+        'cancelled_count': AIClassEnquiry.objects.filter(status='cancelled').count(),
+    }
+    return render(request, 'dashboard/ai_class_enquiry_list.html', context)
 
 
 

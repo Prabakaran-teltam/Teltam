@@ -47,16 +47,30 @@ def extract_text_from_image_with_openai(image_path):
         model="gpt-4o-mini",
         messages=[
             {
+                "role": "system",
+                "content": (
+                    "You are an ultra-high precision Optical Character Recognition (OCR) model.\n"
+                    "Your task is to extract EVERY SINGLE piece of text visible in the document image with 100% completeness and verbatim accuracy.\n\n"
+                    "STRICT OCR RULES:\n"
+                    "1. EXTRACT ALL VISIBLE TEXT: Include main body text, headers, subheadings, footers, page numbers, captions, table contents, cell text, bullet points, numbered lists, sidebars, logos/stamps with text, badge labels, and fine print.\n"
+                    "2. DO NOT SUMMARIZE, SKIP, OR OMIT: Transcribe every single word, letter, number, punctuation mark, and symbol. Never skip text just because it is small, rotated, repeated, or formatted in columns/tables.\n"
+                    "3. DO NOT TRANSLATE: Output the extracted text in its exact original language and script (e.g. Tamil, Hindi, English, Spanish, Chinese, Arabic, etc.).\n"
+                    "4. PRESERVE LAYOUT: Preserve paragraphs, table grid structures (using pipe | separators), line breaks, and indentation as much as possible.\n"
+                    "5. OUTPUT ONLY EXTRACTED TEXT: Do not add intro greetings, notes, explanations, markdown quotes, or metadata tags. Return strictly the transcribed text."
+                )
+            },
+            {
                 "role": "user",
                 "content": [
                     {
                         "type": "text", 
-                        "text": "You are a professional high-accuracy OCR model. Extract all text from this image exactly as it appears. Do not translate it. Preserve paragraphs, tables, indentations, and list structures as much as possible. Do not summarize and do not add any comments or explanations. Output only the extracted text."
+                        "text": "Perform exhaustive 100% full-text OCR on this image. Extract every single word, header, footer, table entry, number, and note with absolute precision."
                     },
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": f"data:{mime_type};base64,{base64_image}"
+                            "url": f"data:{mime_type};base64,{base64_image}",
+                            "detail": "high"
                         }
                     }
                 ]
@@ -136,8 +150,8 @@ def extract_text_from_pdf(pdf_path):
         if should_run_ocr:
             logger.info(f"Page {page_idx + 1} detected as image-based/scanned (text len: {len(text)}, images: {len(images)}, coverage: {image_coverage:.1%}). Invoking OpenAI Vision OCR...")
             try:
-                # Render page to PNG with high DPI for sharp text recognition
-                pix = page.get_pixmap(dpi=150)
+                # Render page to PNG with 300 DPI for ultra-sharp text recognition
+                pix = page.get_pixmap(dpi=300)
                 png_bytes = pix.tobytes("png")
                 base64_image = base64.b64encode(png_bytes).decode("utf-8")
                 
@@ -147,16 +161,30 @@ def extract_text_from_pdf(pdf_path):
                         model="gpt-4o-mini",
                         messages=[
                             {
+                                "role": "system",
+                                "content": (
+                                    "You are an ultra-high precision Optical Character Recognition (OCR) model.\n"
+                                    "Your task is to extract EVERY SINGLE piece of text visible on this document page image with 100% completeness and verbatim accuracy.\n\n"
+                                    "STRICT OCR RULES:\n"
+                                    "1. EXTRACT ALL VISIBLE TEXT: Include main body text, titles, headers, subheadings, footers, page numbers, questions, exercises, answers, table contents, cell text, bullet points, numbered lists, sidebars, logos/stamps with text, and fine print.\n"
+                                    "2. DO NOT SUMMARIZE, SKIP, OR OMIT: Transcribe every single word, letter, number, punctuation mark, and symbol. Never skip text just because it is small, rotated, repeated, or formatted in columns/tables.\n"
+                                    "3. DO NOT TRANSLATE: Output the extracted text in its exact original language and script.\n"
+                                    "4. PRESERVE LAYOUT: Preserve paragraphs, table grid structures (using pipe | separators), line breaks, and indentation as much as possible.\n"
+                                    "5. OUTPUT ONLY EXTRACTED TEXT: Return strictly the transcribed text with no introductory or concluding remarks."
+                                )
+                            },
+                            {
                                 "role": "user",
                                 "content": [
                                     {
                                         "type": "text", 
-                                        "text": "You are a professional high-accuracy OCR model. Extract ALL text visible on this document page image exactly as it appears (including headers, subheadings, titles, questions, answers, numbers, bullet points, and exercises). Do not translate it. Preserve paragraphs, line breaks, and structure. Output ONLY the extracted text with no introductory or concluding remarks."
+                                        "text": "Perform exhaustive 100% full-text OCR on this document page image. Extract every single word, header, footer, table entry, number, and note with absolute precision."
                                     },
                                     {
                                         "type": "image_url", 
                                         "image_url": {
-                                            "url": f"data:image/png;base64,{base64_image}"
+                                            "url": f"data:image/png;base64,{base64_image}",
+                                            "detail": "high"
                                         }
                                     }
                                 ]

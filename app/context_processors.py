@@ -1,4 +1,4 @@
-from .models import Contact
+from .models import Contact, AIClassEnquiry
 
 def dashboard_context(request):
     """
@@ -7,6 +7,7 @@ def dashboard_context(request):
     """
     if request.user.is_authenticated and request.user.is_staff:
         return {
-            'global_unread_messages_count': Contact.objects.filter(is_read=False).count()
+            'global_unread_messages_count': Contact.objects.filter(is_read=False).count(),
+            'global_pending_enquiries_count': AIClassEnquiry.objects.filter(status='pending').count()
         }
     return {}

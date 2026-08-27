@@ -12,6 +12,51 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Custom Style Sheet -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        /* Modern Segmented 6-Digit OTP Box Styling */
+        .otp-input-container {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .otp-digit-box {
+            width: 48px;
+            height: 56px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-align: center;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            background: #f8fafc;
+            color: #0f172a;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+        .otp-digit-box:focus {
+            border-color: #6366f1;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(99, 102, 241, 0.15);
+            transform: translateY(-2px);
+        }
+        .otp-digit-box.filled {
+            border-color: #4f46e5;
+            background: rgba(99, 102, 241, 0.06);
+            color: #4338ca;
+        }
+        @media (max-width: 420px) {
+            .otp-digit-box {
+                width: 40px;
+                height: 48px;
+                font-size: 1.25rem;
+                border-radius: 8px;
+            }
+            .otp-input-container {
+                gap: 6px;
+            }
+        }
+    </style>
 </head>
 <body class="bg-soft-gradient">
 
@@ -97,71 +142,211 @@
             <div class="col-12 col-lg-6 auth-form-side">
                 <div class="auth-form-container" style="max-width: 420px; width:100%;">
                     
-                    <div class="mb-4 text-center text-lg-start">
-                        <h2 class="fw-bold text-slate-900 mb-1">Create Account</h2>
-                        <p class="text-muted small">Start translating and learning for free</p>
-                    </div>
-
                     {% include 'sweetalert_messages.html' %}
 
-
-                    <!-- Register Form -->
-                    <form id="teltamRegisterForm" method="POST" action="{% url 'register' %}" novalidate>
-                        {% csrf_token %}
-                        <!-- Full Name Input with Icon -->
-                        <div class="mb-3">
-                            <label for="registerName" class="form-label fw-bold text-slate-700">Full Name</label>
-                            <div class="auth-input-group">
-                                <i class="fas fa-user"></i>
-                                <input type="text" id="registerName" name="name" class="form-control py-2.5 shadow-none" placeholder="John Doe">
+                    {% if step == 'otp_verify' %}
+                        <!-- STEP 2: OTP Verification UI -->
+                        <div class="mb-4 text-center text-lg-start">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-indigo-50 text-indigo-600 rounded-circle mb-2" style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1);">
+                                <i class="fas fa-user-shield fs-4"></i>
                             </div>
+                            <h2 class="fw-bold text-slate-900 mb-1">Verify Your Email</h2>
+                            <p class="text-muted small">We sent a 6-digit verification code to <strong class="text-indigo-600">{{ pending_email }}</strong></p>
                         </div>
 
-                        <!-- Email Input with Icon -->
-                        <div class="mb-3">
-                            <label for="registerEmail" class="form-label fw-bold text-slate-700">Email Address</label>
-                            <div class="auth-input-group">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" id="registerEmail" name="email" class="form-control py-2.5 shadow-none" placeholder="name@company.com">
+                        <form id="teltamOtpForm" method="POST" action="{% url 'register' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="verify_otp">
+                            <input type="hidden" id="combinedOtpCode" name="otp_code" value="" required>
+
+                            <!-- 6 Segmented Digit Inputs -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-slate-700 text-center d-block">Enter 6-Digit Verification Code</label>
+                                <div class="otp-input-container" id="otpDigitGroup">
+                                    <input type="text" class="otp-digit-box" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" required autofocus>
+                                    <input type="text" class="otp-digit-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                    <input type="text" class="otp-digit-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                    <input type="text" class="otp-digit-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                    <input type="text" class="otp-digit-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                    <input type="text" class="otp-digit-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                </div>
+                                <div class="text-center">
+                                    <small class="text-muted"><i class="far fa-clock text-warning me-1"></i> Code expires in <span id="otpCountdownTimer" class="fw-bold text-slate-800">10:00</span></small>
+                                </div>
                             </div>
+
+                            <button type="submit" id="submitOtpBtn" class="btn btn-primary-gradient w-100 py-2.5 fw-semibold mb-3 rounded-3 shadow-sm">
+                                <i class="fas fa-check-circle me-1.5"></i> Verify &amp; Create Account
+                            </button>
+                        </form>
+
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-2">
+                            <form method="POST" action="{% url 'register' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="resend_otp">
+                                <button type="submit" class="btn btn-link text-indigo-600 p-0 text-decoration-none small fw-semibold">
+                                    <i class="fas fa-redo me-1"></i> Resend OTP Code
+                                </button>
+                            </form>
+                            <form method="POST" action="{% url 'register' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_email">
+                                <button type="submit" class="btn btn-link text-muted p-0 text-decoration-none small">
+                                    Change Email
+                                </button>
+                            </form>
                         </div>
-                        
-                        <!-- Password Input with Icon -->
-                        <div class="mb-3">
-                            <label for="registerPassword" class="form-label fw-bold text-slate-700">Password</label>
-                            <div class="auth-input-group">
-                                <i class="fas fa-lock"></i>
-                                <input type="password" id="registerPassword" name="password" class="form-control py-2.5 shadow-none" placeholder="••••••••">
+
+                        <!-- JavaScript for 6-Digit OTP Auto-Focus, Paste Parsing & Countdown -->
+                        <script>
+                            document.addEventListener('DOMContentLoaded', () => {
+                                const boxes = document.querySelectorAll('#otpDigitGroup .otp-digit-box');
+                                const combinedInput = document.getElementById('combinedOtpCode');
+                                const otpForm = document.getElementById('teltamOtpForm');
+
+                                function updateCombinedCode() {
+                                    let code = '';
+                                    boxes.forEach(box => {
+                                        code += box.value.trim();
+                                        if (box.value.trim()) {
+                                            box.classList.add('filled');
+                                        } else {
+                                            box.classList.remove('filled');
+                                        }
+                                    });
+                                    combinedInput.value = code;
+                                }
+
+                                boxes.forEach((box, index) => {
+                                    box.addEventListener('input', (e) => {
+                                        const val = e.target.value;
+                                        if (val.length > 0) {
+                                            // Keep only last typed character if single digit
+                                            e.target.value = val.charAt(val.length - 1);
+                                            if (index < boxes.length - 1) {
+                                                boxes[index + 1].focus();
+                                            }
+                                        }
+                                        updateCombinedCode();
+                                    });
+
+                                    box.addEventListener('keydown', (e) => {
+                                        if (e.key === 'Backspace' && !box.value && index > 0) {
+                                            boxes[index - 1].focus();
+                                        }
+                                    });
+
+                                    box.addEventListener('paste', (e) => {
+                                        e.preventDefault();
+                                        const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+                                        if (/^\d{6}$/.test(pasteData)) {
+                                            pasteData.split('').forEach((char, i) => {
+                                                if (boxes[i]) {
+                                                    boxes[i].value = char;
+                                                    boxes[i].classList.add('filled');
+                                                }
+                                            });
+                                            boxes[boxes.length - 1].focus();
+                                            updateCombinedCode();
+                                        }
+                                    });
+                                });
+
+                                if (otpForm) {
+                                    otpForm.addEventListener('submit', (e) => {
+                                        updateCombinedCode();
+                                        if (combinedInput.value.length !== 6) {
+                                            e.preventDefault();
+                                            alert('Please enter all 6 digits of your verification code.');
+                                            boxes[0].focus();
+                                        }
+                                    });
+                                }
+
+                                // 10-Minute Countdown Timer
+                                let timeLeft = 600;
+                                const timerDisplay = document.getElementById('otpCountdownTimer');
+                                if (timerDisplay) {
+                                    const timerInterval = setInterval(() => {
+                                        if (timeLeft <= 0) {
+                                            clearInterval(timerInterval);
+                                            timerDisplay.innerText = "Expired";
+                                            timerDisplay.classList.add('text-danger');
+                                        } else {
+                                            timeLeft--;
+                                            const mins = Math.floor(timeLeft / 60);
+                                            const secs = timeLeft % 60;
+                                            timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                                        }
+                                    }, 1000);
+                                }
+                            });
+                        </script>
+
+                    {% else %}
+                        <!-- STEP 1: Standard Register Form -->
+                        <div class="mb-4 text-center text-lg-start">
+                            <h2 class="fw-bold text-slate-900 mb-1">Create Account</h2>
+                            <p class="text-muted small">Start translating and learning for free</p>
+                        </div>
+
+                        <form id="teltamRegisterForm" method="POST" action="{% url 'register' %}" novalidate>
+                            {% csrf_token %}
+                            <!-- Full Name Input with Icon -->
+                            <div class="mb-3">
+                                <label for="registerName" class="form-label fw-bold text-slate-700">Full Name</label>
+                                <div class="auth-input-group">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="registerName" name="name" class="form-control py-2.5 shadow-none" placeholder="John Doe">
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Confirm Password Input with Icon -->
-                        <div class="mb-3">
-                            <label for="registerConfirmPassword" class="form-label fw-bold text-slate-700">Confirm Password</label>
-                            <div class="auth-input-group">
-                                <i class="fas fa-shield-alt"></i>
-                                <input type="password" id="registerConfirmPassword" name="confirm_password" class="form-control py-2.5 shadow-none" placeholder="••••••••">
+                            <!-- Email Input with Icon -->
+                            <div class="mb-3">
+                                <label for="registerEmail" class="form-label fw-bold text-slate-700">Email Address</label>
+                                <div class="auth-input-group">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" id="registerEmail" name="email" class="form-control py-2.5 shadow-none" placeholder="name@company.com">
+                                </div>
                             </div>
+                            
+                            <!-- Password Input with Icon -->
+                            <div class="mb-3">
+                                <label for="registerPassword" class="form-label fw-bold text-slate-700">Password</label>
+                                <div class="auth-input-group">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" id="registerPassword" name="password" class="form-control py-2.5 shadow-none" placeholder="••••••••">
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password Input with Icon -->
+                            <div class="mb-3">
+                                <label for="registerConfirmPassword" class="form-label fw-bold text-slate-700">Confirm Password</label>
+                                <div class="auth-input-group">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <input type="password" id="registerConfirmPassword" name="confirm_password" class="form-control py-2.5 shadow-none" placeholder="••••••••">
+                                </div>
+                            </div>
+                            
+                            <!-- Terms & Conditions checkbox -->
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input shadow-none" id="registerTerms" name="agree_terms">
+                                <label class="form-check-label text-slate-700 small" for="registerTerms">
+                                    I agree to the <a href="{% url 'terms' %}" target="_blank" class="text-indigo-600 text-decoration-none fw-semibold">Terms of Service</a> &amp; <a href="{% url 'privacy' %}" target="_blank" class="text-indigo-600 text-decoration-none fw-semibold">Privacy Policy</a>
+                                </label>
+                            </div>
+
+                            <!-- Gradient Submit button -->
+                            <button type="submit" class="btn btn-primary-gradient w-100 py-2.5 fw-semibold mb-3 rounded-3">
+                                <i class="fas fa-paper-plane me-1.5"></i> Send Verification OTP
+                            </button>
+                        </form>
+
+                        <!-- Login Link -->
+                        <div class="text-center mt-4 pt-2">
+                            <p class="text-muted small mb-0">Already have an account? <a href="/login/" class="text-indigo-600 fw-semibold text-decoration-none">Sign In</a></p>
                         </div>
-                        
-                        <!-- Terms & Conditions checkbox -->
-                        <div class="mb-4 form-check">
-                            <input type="checkbox" class="form-check-input shadow-none" id="registerTerms" name="agree_terms">
-                            <label class="form-check-label text-slate-700 small" for="registerTerms">
-                                I agree to the <a href="#" class="text-indigo-600 text-decoration-none">Terms of Service</a> &amp; <a href="#" class="text-indigo-600 text-decoration-none">Privacy Policy</a>
-                            </label>
-                        </div>
-
-                        <!-- Gradient Submit button -->
-                        <button type="submit" class="btn btn-primary-gradient w-100 py-2.5 fw-semibold mb-3 rounded-3">Create Account</button>
-                    </form>
-
-
-
-                    <!-- Login Link -->
-                    <div class="text-center mt-4 pt-2">
-                        <p class="text-muted small mb-0">Already have an account? <a href="/login/" class="text-indigo-600 fw-semibold text-decoration-none">Sign In</a></p>
-                    </div>
+                    {% endif %}
 
                 </div>
             </div>

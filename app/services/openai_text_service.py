@@ -72,3 +72,46 @@ def translate_text_with_openai_semantic(text, target_lang, source_lang="auto"):
                 raise
             logger.warning(f"OpenAI API error in text translation: {str(e)}. Retrying in {backoff ** attempt}s...")
             time.sleep(backoff ** attempt)
+
+
+def generate_transliteration_with_openai(translated_text, target_lang="auto"):
+    """
+    Generates a phonetic transliteration (pronunciation reading in Latin/English script)
+    for the translated text using OpenAI gpt-4o-mini API.
+    """
+    client = get_openai_client()
+    if not client or not translated_text or not translated_text.strip():
+        return ""
+
+    target_name = get_language_name(target_lang)
+
+    system_prompt = (
+        "You are an expert linguistic transliterator.\n"
+        "Your task is to convert the given text into a phonetic transliteration (pronunciation guide in standard Latin/English alphabet).\n"
+        "Rules:\n"
+        "1. Write out the exact phonetic pronunciation using readable English/Latin letters.\n"
+        "2. If the text is already written in English or Latin script, return the text cleanly with phonetic reading accents if helpful, or return the text itself.\n"
+        "3. Return ONLY the transliterated phonetic text. Do not add quotes, notes, explanations, or language labels."
+    )
+
+    user_prompt = f"Target Language: {target_name}\nText:\n{translated_text}"
+
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.0,
+                timeout=10
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.warning(f"OpenAI transliteration failed: {str(e)}")
+            if attempt == max_retries - 1:
+                return ""
+            time.sleep(1)
+    return ""

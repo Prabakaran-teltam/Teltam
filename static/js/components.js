@@ -206,4 +206,225 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
+
+    // 4. Inject AI Class Enquiry Floater & Modal if not present on page
+    if (!document.getElementById("joinAiClassesFloater")) {
+        const container = document.createElement("div");
+        container.id = "aiClassEnquiryComponentContainer";
+        container.innerHTML = `
+<style>
+  @keyframes pulseBlinkGlow {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7), 0 8px 24px rgba(139, 92, 246, 0.4);
+    }
+    50% {
+      transform: scale(1.06);
+      box-shadow: 0 0 0 14px rgba(236, 72, 153, 0), 0 12px 28px rgba(139, 92, 246, 0.6);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(236, 72, 153, 0), 0 8px 24px rgba(139, 92, 246, 0.4);
+    }
+  }
+
+  .btn-join-ai-classes-floating {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1050;
+    background: linear-gradient(135deg, #ef4444 0%, #ec4899 50%, #8b5cf6 100%);
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 0.92rem;
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulseBlinkGlow 2s infinite ease-in-out;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    line-height: 1;
+    letter-spacing: 0.5px;
+  }
+  .btn-join-ai-classes-floating:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 14px 32px rgba(236, 72, 153, 0.6);
+    color: #ffffff !important;
+  }
+</style>
+
+<button type="button" class="btn-join-ai-classes-floating shadow-lg" data-bs-toggle="modal" data-bs-target="#aiClassEnquiryModal" id="joinAiClassesFloater">
+  <i class="fas fa-circle text-warning fa-pulse" style="font-size: 0.55rem;"></i>
+  <i class="fas fa-graduation-cap fs-6"></i>
+  <span>Live</span>
+</button>
+
+<div class="modal fade" id="aiClassEnquiryModal" tabindex="-1" aria-labelledby="aiClassEnquiryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1.5">
+            <span class="badge px-2.5 py-1 rounded-pill" style="background-color: rgba(239, 68, 68, 0.25); color: #fca5a5; font-size: 0.75rem; font-weight: 700;">
+              <i class="fas fa-sparkles text-warning me-1"></i> Interactive Masterclass
+            </span>
+          </div>
+          <h5 class="modal-title fw-bold text-white mb-0" id="aiClassEnquiryModalLabel" style="font-family: 'Outfit', sans-serif;">
+            Join Teltam AI Masterclass
+          </h5>
+          <p class="small mb-0 mt-1" style="color: #cbd5e1; font-size: 0.82rem;">Master LLM Prompt Engineering, AI Translation & Fine-Tuning.</p>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4 bg-white">
+        <form id="aiClassEnquiryForm" novalidate>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-slate-700">Full Name <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-slate-500"><i class="fas fa-user"></i></span>
+              <input type="text" class="form-control border-start-0 ps-0 shadow-none" id="enquiryFullName" required placeholder="Enter your full name">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-slate-700">Email Address <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-slate-500"><i class="fas fa-envelope"></i></span>
+              <input type="email" class="form-control border-start-0 ps-0 shadow-none" id="enquiryEmail" required placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-slate-700">Phone Number <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-slate-500"><i class="fas fa-phone"></i></span>
+              <input type="tel" class="form-control border-start-0 ps-0 shadow-none" id="enquiryPhone" required placeholder="+91 98765 43210">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-slate-700">Message / Learning Goals <span class="text-muted small">(Optional)</span></label>
+            <textarea class="form-control shadow-none" id="enquiryMessage" rows="3" placeholder="Tell us about your learning objectives or preferred batch timings..."></textarea>
+          </div>
+
+          <button type="submit" id="enquirySubmitBtn" class="btn btn-primary w-100 py-2.5 rounded-pill fw-bold text-white shadow-md border-0" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+            <i class="fas fa-paper-plane me-1.5"></i> Submit Class Enquiry
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+        `;
+        document.body.appendChild(container);
+
+        // Bind form submit listener
+        const enquiryForm = document.getElementById("aiClassEnquiryForm");
+        if (enquiryForm) {
+            enquiryForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const fullName = document.getElementById("enquiryFullName")?.value.trim();
+                const email = document.getElementById("enquiryEmail")?.value.trim();
+                const phone = document.getElementById("enquiryPhone")?.value.trim();
+                const message = document.getElementById("enquiryMessage")?.value.trim();
+                const submitBtn = document.getElementById("enquirySubmitBtn");
+
+                if (!fullName || !email || !phone) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Missing Fields',
+                            text: 'Please fill in all required fields (Full Name, Email Address, Phone Number).',
+                            confirmButtonColor: '#f59e0b'
+                        });
+                    } else {
+                        alert('Please fill in all required fields (Full Name, Email Address, Phone Number).');
+                    }
+                    return;
+                }
+
+                const origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Submitting...`;
+
+                const getCsrf = () => {
+                    const cookieVal = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1];
+                    const inputVal = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                    return cookieVal || inputVal || '';
+                };
+
+                fetch('/api/enquiry/ai-classes/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrf()
+                    },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        email: email,
+                        phone_number: phone,
+                        message: message
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origHtml;
+                    if (data.status === 'success') {
+                        const modalEl = document.getElementById('aiClassEnquiryModal');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            if (modalInstance) modalInstance.hide();
+                        }
+
+                        enquiryForm.reset();
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Enquiry Received!',
+                                text: data.message,
+                                confirmButtonColor: '#4f46e5',
+                                customClass: {
+                                    confirmButton: 'btn btn-primary rounded-pill px-4'
+                                }
+                            });
+                        } else {
+                            alert(data.message);
+                        }
+                    } else {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Submission Error',
+                                text: data.error || 'Failed to submit enquiry.',
+                                confirmButtonColor: '#ef4444'
+                            });
+                        } else {
+                            alert(data.error || 'Failed to submit enquiry.');
+                        }
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origHtml;
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Connection Error',
+                            text: 'Network issue: ' + err.message,
+                            confirmButtonColor: '#ef4444'
+                        });
+                    } else {
+                        alert('Network issue: ' + err.message);
+                    }
+                });
+            });
+        }
+    }
 });

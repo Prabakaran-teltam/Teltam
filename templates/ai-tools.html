@@ -694,7 +694,9 @@
                                             <h4 class="fw-bold mb-1 text-slate-900">AI Text Translator</h4>
                                             <p class="text-slate-600 small mb-0">Contextual language conversion using fine-tuned translation parameters.</p>
                                         </div>
-                                        <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(79, 70, 229, 0.06); color: #4f46e5; font-weight: 500;"><i class="fas fa-sparkles me-1"></i> Teltam LLM-v3</span>
+                                        <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1.5 shadow-sm" style="font-weight: 700; color: #4338ca !important; background-color: #e0e7ff !important; border: 1px solid #c7d2fe !important; font-size: 0.85rem;">
+                                            <i class="fas fa-sparkles" style="color: #4f46e5;"></i> Teltam LLM-v3
+                                        </span>
                                     </div>
                                     
                                     <!-- Hidden selects for main.js compatibility -->
@@ -787,7 +789,7 @@
                                                 </div>
 
 
-                                                <div class="textarea-footer">
+                                                 <div class="textarea-footer">
                                                     <div class="footer-left-info">
                                                         <span class="badge px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background-color: rgba(16, 185, 129, 0.08); color: #10b981; font-weight: 500; font-size: 0.75rem;"><i class="fas fa-circle-check"></i> AI Context Synced</span>
                                                     </div>
@@ -796,6 +798,28 @@
                                                         <button id="copyBtn" class="btn btn-light-custom btn-sm text-slate-700" title="Copy Translation"><i class="fas fa-copy me-1"></i> Copy</button>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Phonetic Transliteration Output Card -->
+                                    <div class="row mt-3 animate-fade-in" id="textTranslitCard">
+                                        <div class="col-12">
+                                            <div class="p-3 bg-white border rounded-3" style="border-color: #cbd5e1 !important; border-radius: 12px;">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.83rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                                        <i class="fas fa-language text-indigo-600"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)
+                                                    </label>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" id="translitSpeakBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                            <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
+                                                        </button>
+                                                        <button type="button" id="translitCopyBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                            <i class="fas fa-copy text-indigo-600"></i> <span>Copy</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <textarea id="outputTranslit" class="form-control bg-light-subtle border-0 shadow-none font-monospace p-2.5" rows="2" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.88rem; line-height: 1.5; color: #4338ca; resize: none;"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -930,35 +954,52 @@
                                         <p class="text-slate-700 max-w-600 mx-auto mb-4">Your document has been successfully parsed and translated using OpenAI. Review the extracted text and its translation below, or download the full localized document.</p>
                                         
                                         <!-- Extracted & Translated text side-by-side -->
-                                        <div class="row text-start my-4 g-3">
+                                        <div class="row text-start my-4 g-4">
                                             <div class="col-md-6">
-                                                <div class="d-flex justify-content-between align-items-center mb-1.5">
-                                                    <label class="small fw-bold text-slate-700 mb-0" style="font-size: 0.82rem;"><i class="fas fa-file-alt text-indigo-500 me-1.5"></i> EXTRACTED TEXT</label>
-                                                    <button type="button" id="docSpeakExtractedBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0.5" style="font-size: 0.75rem; border-color: #cbd5e1;">
-                                                        <i class="fas fa-volume-up me-1"></i> Speak
+                                                <div class="d-flex justify-content-between align-items-center mb-3 pb-1">
+                                                    <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                                        <i class="fas fa-file-alt text-indigo-500"></i> EXTRACTED SOURCE TEXT
+                                                    </label>
+                                                    <button type="button" id="docSpeakExtractedBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1.5 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff; transition: all 0.2s ease;">
+                                                        <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
                                                     </button>
                                                 </div>
-                                                <textarea id="docExtractedText" class="form-control bg-white border rounded-3 p-3 font-monospace shadow-none" rows="8" readonly style="font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; border-color: #cbd5e1 !important;"></textarea>
+                                                <textarea id="docExtractedText" class="form-control bg-white shadow-none mt-2 p-3 font-monospace" rows="8" readonly style="font-size: 0.9rem; line-height: 1.6; border-color: #cbd5e1 !important; border-radius: 12px; resize: none;"></textarea>
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="d-flex justify-content-between align-items-center mb-1.5">
-                                                    <label class="small fw-bold text-slate-700 mb-0" style="font-size: 0.82rem;"><i class="fas fa-language text-emerald-500 me-1.5"></i> TRANSLATED TEXT</label>
+                                                <div class="d-flex justify-content-between align-items-center mb-3 pb-1">
+                                                    <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                                        <i class="fas fa-language text-emerald-500"></i> TRANSLATED TEXT PREVIEW
+                                                    </label>
                                                     <div class="d-flex gap-2">
-                                                        <button type="button" id="docSummarizeAiBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-0.5" style="font-size: 0.75rem;">
-                                                            <i class="fas fa-brain me-1"></i> Summarize with AI
+                                                        <button type="button" id="docSummarizeAiBtn" class="btn btn-sm text-white rounded-pill px-3 py-1.5 shadow-sm border-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); transition: all 0.2s ease;">
+                                                            <i class="fas fa-sparkles text-amber-300"></i> <span>Summarize with AI</span>
                                                         </button>
-                                                        <button type="button" id="docSpeakTranslatedBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0.5" style="font-size: 0.75rem; border-color: #cbd5e1;">
-                                                            <i class="fas fa-volume-up me-1"></i> Speak
+                                                        <button type="button" id="docSpeakTranslatedBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1.5 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff; transition: all 0.2s ease;">
+                                                            <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <textarea id="docTranslatedText" class="form-control bg-white border rounded-3 p-3 font-monospace shadow-none" rows="8" readonly style="font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; border-color: #cbd5e1 !important;"></textarea>
+                                                <textarea id="docTranslatedText" class="form-control bg-white shadow-none mt-2 p-3 font-monospace" rows="8" readonly style="font-size: 0.9rem; line-height: 1.6; border-color: #cbd5e1 !important; border-radius: 12px; resize: none;"></textarea>
+                                            </div>
+
+                                            <!-- Phonetic Transliteration Preview -->
+                                            <div class="col-md-12 mt-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.83rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                                        <i class="fas fa-language text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)
+                                                    </label>
+                                                    <button type="button" id="docSpeakTranslitBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1.5 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                        <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
+                                                    </button>
+                                                </div>
+                                                <textarea id="docTransliteratedText" class="form-control bg-white shadow-none p-3 font-monospace" rows="3" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.9rem; line-height: 1.6; border-color: #cbd5e1 !important; border-radius: 12px; resize: none;"></textarea>
                                             </div>
                                         </div>
 
-                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
-                                            <a href="#" class="btn btn-success px-4 py-2.5" id="downloadTranslatedBtn"><i class="fas fa-download me-2"></i> Download Translated File</a>
-                                            <button type="button" class="btn btn-outline-custom px-4 py-2.5" id="translateAnotherDocBtn"><i class="fas fa-sync-alt me-2"></i> Translate Another</button>
+                                        <div class="d-flex justify-content-center gap-3 flex-wrap mt-4 pt-2">
+                                            <a href="#" class="btn text-white font-semibold px-4 py-2.5 rounded-pill shadow-md d-inline-flex align-items-center gap-2" id="downloadTranslatedBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-size: 0.92rem;"><i class="fas fa-download me-1"></i> Download Translated File</a>
+                                            <button type="button" class="btn text-slate-700 font-semibold px-4 py-2.5 rounded-pill shadow-sm d-inline-flex align-items-center gap-2" id="translateAnotherDocBtn" style="border: 1.5px solid #cbd5e1; background: #ffffff; font-size: 0.92rem;"><i class="fas fa-sync-alt me-1"></i> Translate Another</button>
                                         </div>
                                     </div>
 
@@ -1094,6 +1135,13 @@
                                                     </div>
                                                 </div>
                                                 
+                                                <div>
+                                                    <label class="small fw-bold text-indigo-700 mb-1.5" style="font-size: 0.8rem;"><i class="fas fa-language me-1.5 text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)</label>
+                                                    <div class="output-container p-3 border border-indigo-200 rounded-3 text-indigo-900 bg-light-subtle font-monospace" style="min-height: 60px; font-size: 0.9rem; line-height: 1.5; color: #4338ca;" id="voiceTransliterationOutput">
+                                                        Phonetic pronunciation guide will appear here...
+                                                    </div>
+                                                </div>
+
                                                 <div class="d-flex justify-content-end gap-2 mt-2">
                                                     <button type="button" id="voiceSpeakBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-volume-up me-1"></i> Speak</button>
                                                     <button type="button" id="voiceCopyBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-copy me-1"></i> Copy</button>
@@ -1194,16 +1242,19 @@
                                                         <div class="dropdown-options-grid"></div>
                                                     </div>
                                                 </div>
-                                            </div>
-
                                             <div class="mb-3">
                                                 <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">EXTRACTED OCR TEXT</label>
                                                 <textarea id="pubCamOcrText" class="form-control bg-light shadow-none" rows="3" readonly placeholder="Extracted frame text will appear here..."></textarea>
                                             </div>
 
-                                            <div>
+                                            <div class="mb-3">
                                                 <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">LIVE TRANSLATION</label>
                                                 <textarea id="pubCamTranslatedText" class="form-control bg-light shadow-none" rows="4" readonly placeholder="Live translation output will appear here..."></textarea>
+                                            </div>
+
+                                            <div class="mt-3">
+                                                <label class="small fw-bold text-indigo-700 mb-1" style="font-size: 0.8rem;"><i class="fas fa-language me-1 text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)</label>
+                                                <textarea id="pubCamTransliteratedText" class="form-control bg-light-subtle shadow-none font-monospace p-2.5" rows="2" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.88rem; color: #4338ca; border-color: #c7d2fe; resize: none;"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -1702,6 +1753,8 @@
                         }
                         if (pubCamOcrText) pubCamOcrText.value = data.extracted_text;
                         if (pubCamTranslatedText) pubCamTranslatedText.value = data.translated_text;
+                        const pubCamTransliteratedText = document.getElementById('pubCamTransliteratedText');
+                        if (pubCamTransliteratedText) pubCamTransliteratedText.value = data.transliteration || "";
                         if (pubLensStatusText) pubLensStatusText.innerText = "Live Lens Active";
                     } else {
                         if (pubLensStatusText) pubLensStatusText.innerText = "Searching for text...";
@@ -1752,9 +1805,7 @@
                 pubLensSpeakBtn.addEventListener('click', () => {
                     const txt = pubLensTranslatedDisplay ? pubLensTranslatedDisplay.innerText : '';
                     if (txt && txt.indexOf('Point camera') === -1) {
-                        const utterance = new SpeechSynthesisUtterance(txt);
-                        utterance.lang = pubCamTargetCode || 'en';
-                        window.speechSynthesis.speak(utterance);
+                        window.playTextToSpeech(txt, typeof pubCamTargetCode !== 'undefined' ? pubCamTargetCode : 'en', pubLensSpeakBtn);
                     }
                 });
             }
@@ -1957,6 +2008,10 @@
                             if (docTranslatedText && data.result.translated_text) {
                                 docTranslatedText.value = data.result.translated_text;
                             }
+                            const docTranslitEl = document.getElementById('docTransliteratedText');
+                            if (docTranslitEl) {
+                                docTranslitEl.value = data.result.transliterated_text || data.result.transliteration || "";
+                            }
                             
                             if (downloadTranslatedBtn && data.result.download_url) {
                                 downloadTranslatedBtn.href = data.result.download_url;
@@ -2075,18 +2130,15 @@
                         body: formData,
                         timeout: 180000
                     })
-                    .then(res => {
-                        return res.json().then(data => {
-                            if (!res.ok) {
-                                throw new Error(data.error || `Server returned error ${res.status}`);
-                            }
-                            return data;
-                        }).catch(jsonErr => {
-                            if (!res.ok) {
-                                throw new Error(`Server returned HTTP ${res.status}`);
-                            }
-                            throw jsonErr;
-                        });
+                    .then(async res => {
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                            const errorMsg = data.error || `Upload failed with status code ${res.status}`;
+                            const err = new Error(errorMsg);
+                            err.status = res.status;
+                            throw err;
+                        }
+                        return data;
                     })
                     .then(data => {
                         docProgressText.innerText = "Document queued for translation...";
@@ -2095,16 +2147,29 @@
                     .catch(err => {
                         console.error("Upload error:", err);
                         docProgressIndicator.classList.add('d-none');
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Translation Failed',
-                            text: 'Failed to translate document: ' + err.message,
-                            confirmButtonColor: '#ef4444',
-                            customClass: {
-                                confirmButton: 'btn btn-danger rounded-pill px-4'
-                            },
-                            buttonsStyling: false
-                        });
+
+                        if (err.status === 403) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Plan Limit Reached',
+                                text: err.message,
+                                showCancelButton: true,
+                                confirmButtonText: '<i class="fas fa-crown me-1"></i> Upgrade Plan',
+                                cancelButtonText: 'Close',
+                                confirmButtonColor: '#6366f1'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '/pricing/';
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Translation Failed',
+                                text: err.message || "Failed to translate document.",
+                                confirmButtonColor: '#ef4444'
+                            });
+                        }
                         docDropzone.classList.remove('d-none');
                         docTranslateOptions.classList.remove('d-none');
                     });
@@ -2128,89 +2193,6 @@
             const docSpeakTranslatedBtn = document.getElementById('docSpeakTranslatedBtn');
             const docSummarizeAiBtn = document.getElementById('docSummarizeAiBtn');
 
-            // Speak function using unified Google TTS + Web Speech Fallback
-            const speakPublicDocText = (text, langCode) => {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
-
-                const langMap = { 
-                    en: "en", 
-                    es: "es", 
-                    fr: "fr", 
-                    de: "de", 
-                    ta: "ta",
-                    hi: "hi",
-                    te: "te",
-                    zh: "zh",
-                    ar: "ar"
-                };
-                let tl = langMap[langCode] || langCode;
-                if (tl === 'auto') {
-                    tl = 'en';
-                }
-
-                try {
-                    const encodedText = encodeURIComponent(text);
-                    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${tl}&client=tw-ob&q=${encodedText}`;
-                    
-                    if (window.currentTtsAudio) {
-                        window.currentTtsAudio.pause();
-                    }
-                    
-                    const audio = new Audio(ttsUrl);
-                    window.currentTtsAudio = audio;
-                    audio.play().catch(err => {
-                        console.warn("Google TTS failed, falling back to Web Speech:", err);
-                        speakPublicDocWebSpeechFallback(text, tl);
-                    });
-                } catch (e) {
-                    speakPublicDocWebSpeechFallback(text, tl);
-                }
-            };
-
-            function speakPublicDocWebSpeechFallback(text, langCode) {
-                if (!('speechSynthesis' in window)) return;
-                const utterance = new SpeechSynthesisUtterance(text);
-                const localeMap = {
-                    en: "en-US",
-                    es: "es-ES",
-                    fr: "fr-FR",
-                    de: "de-DE",
-                    ta: "ta-IN",
-                    hi: "hi-IN",
-                    te: "te-IN"
-                };
-                const targetLocale = localeMap[langCode] || langCode;
-                utterance.lang = targetLocale;
-
-                const voices = window.speechSynthesis.getVoices();
-                let bestVoice = null;
-                if (voices && voices.length > 0) {
-                    const matchLocale = targetLocale.toLowerCase().replace('_', '-');
-                    const langPrefix = matchLocale.split('-')[0];
-                    const localeMatches = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
-                    if (localeMatches.length > 0) {
-                        bestVoice = localeMatches.find(v => 
-                            v.name.includes("Google") || 
-                            v.name.includes("Natural") || 
-                            v.name.includes("Premium") || 
-                            v.name.includes("Microsoft")
-                        );
-                        if (!bestVoice) {
-                            bestVoice = localeMatches.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(matchLocale));
-                        }
-                        if (!bestVoice) {
-                            bestVoice = localeMatches[0];
-                        }
-                    }
-                }
-                if (bestVoice) {
-                    utterance.voice = bestVoice;
-                }
-                window.speechSynthesis.speak(utterance);
-            }
-
             if (docSpeakExtractedBtn) {
                 docSpeakExtractedBtn.addEventListener('click', () => {
                     const text = docExtractedText.value.trim();
@@ -2223,7 +2205,7 @@
                         });
                         return;
                     }
-                    speakPublicDocText(text, typeof docSourceCode !== 'undefined' ? docSourceCode : 'auto');
+                    window.playTextToSpeech(text, typeof docSourceCode !== 'undefined' ? docSourceCode : 'auto', docSpeakExtractedBtn);
                 });
             }
 
@@ -2239,7 +2221,7 @@
                         });
                         return;
                     }
-                    speakPublicDocText(text, typeof docTargetCode !== 'undefined' ? docTargetCode : 'en');
+                    window.playTextToSpeech(text, typeof docTargetCode !== 'undefined' ? docTargetCode : 'en', docSpeakTranslatedBtn);
                 });
             }
 

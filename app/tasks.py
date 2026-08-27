@@ -128,7 +128,16 @@ def process_document_translation(self, history_id, temp_file_path, output_format
             source_lang=history.source_language
         )
 
+        # Generate OpenAI Transliteration (Phonetic pronunciation guide)
+        transliteration = ""
+        try:
+            from app.services.openai_text_service import generate_transliteration_with_openai
+            transliteration = generate_transliteration_with_openai(translated_text, target_lang=history.target_language)
+        except Exception as translit_err:
+            logger.warning(f"Failed to generate document transliteration: {str(translit_err)}")
+
         history.translated_text = translated_text
+        history.transliterated_text = transliteration
         history.save()
 
         # 3. Generate result file
@@ -166,6 +175,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
             'status': 'SUCCESS',
             'extracted_text': extracted_text,
             'translated_text': translated_text,
+            'transliteration': transliteration,
             'download_url': download_url
         }
 
@@ -194,7 +204,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
 def process_voice_translation(self, temp_file_path, target_lang, user_id=None):
     """
     Asynchronous task to transcribe audio files using OpenAI Whisper,
-    translate the transcribed text, and clean up.
+    translate the transcribed text, generate transliteration, and clean up.
     """
     if self.request.id:
         self.update_state(state='PROGRESS', meta={'status': 'Transcribing speech to text...'})
@@ -228,6 +238,14 @@ def process_voice_translation(self, temp_file_path, target_lang, user_id=None):
             self.update_state(state='PROGRESS', meta={'status': 'Translating transcribed voice...'})
         
         translated_text = translate_voice_text(transcription, target_lang)
+
+        # Generate OpenAI Transliteration (Phonetic pronunciation guide)
+        transliteration = ""
+        try:
+            from app.services.openai_text_service import generate_transliteration_with_openai
+            transliteration = generate_transliteration_with_openai(translated_text, target_lang=target_lang)
+        except Exception as translit_err:
+            logger.warning(f"Failed to generate voice transliteration: {str(translit_err)}")
         
         # Log to User Translation History
         if user_id:
@@ -238,8 +256,9 @@ def process_voice_translation(self, temp_file_path, target_lang, user_id=None):
                 UserTranslationHistory.objects.create(
                     user=user,
                     tool_type='voice',
-                    source_text="Recorded/Uploaded Voice Audio",
-                    translated_text=f"Transcription: {transcription}\nTranslation: {translated_text}",
+                    source_text=f"[Audio Transcript] {transcription}",
+                    translated_text=translated_text,
+                    transliterated_text=transliteration,
                     source_lang="auto",
                     target_lang=target_lang,
                     file_name=os.path.basename(temp_file_path)
@@ -250,7 +269,8 @@ def process_voice_translation(self, temp_file_path, target_lang, user_id=None):
         return {
             'status': 'SUCCESS',
             'transcription': transcription,
-            'translated_text': translated_text
+            'translated_text': translated_text,
+            'transliteration': transliteration
         }
         
     except Exception as e:
@@ -267,4 +287,113 @@ def process_voice_translation(self, temp_file_path, target_lang, user_id=None):
                     os.remove(path)
                 except Exception as clean_err:
                     logger.warning(f"Failed to delete temp file {path}: {str(clean_err)}")
+
+
+@shared_task(bind=True)
+def send_new_blog_notifications_task(self, blog_id):
+    """
+    Asynchronous mass email task that sends HTML notification to 100+ registered users
+    whenever a new blog is published by the admin.
+
+    Features for 100+ scale stability:
+    1. Retrieves active user email addresses without loading full User objects into memory.
+    2. Batches emails in chunks of 50 recipients using connection reuse (get_connection()).
+    3. Uses BCC mass mailing so recipient addresses are kept private.
+    4. Handles exceptions with fail_silently=True and updates blog.is_notification_sent=True.
+    """
+    from app.models import Blog
+    from django.contrib.auth.models import User
+    from django.core.mail import EmailMultiAlternatives, get_connection
+    from django.template.loader import render_to_string
+    from django.utils.html import strip_tags
+    from django.urls import reverse
+
+    try:
+        blog = Blog.objects.get(id=blog_id, is_published=True)
+    except Blog.DoesNotExist:
+        logger.warning(f"Blog with id {blog_id} not found or not published.")
+        return {'status': 'SKIPPED', 'message': 'Blog not found or not published'}
+
+    # If notification already sent, prevent duplicate sending
+    if blog.is_notification_sent:
+        logger.info(f"Notification already sent for blog ID {blog_id}. Skipping.")
+        return {'status': 'SKIPPED', 'message': 'Notification already sent'}
+
+    # Get active registered user emails
+    recipient_emails = list(
+        User.objects.filter(is_active=True)
+        .exclude(email='')
+        .exclude(email__isnull=True)
+        .values_list('email', flat=True)
+        .distinct()
+    )
+
+    if not recipient_emails:
+        logger.info("No registered users with valid email addresses found.")
+        blog.is_notification_sent = True
+        blog.save(update_fields=['is_notification_sent'])
+        return {'status': 'SUCCESS', 'sent_count': 0}
+
+    site_url = getattr(settings, 'SITE_URL', 'https://teltam.in').rstrip('/')
+    blog_path = reverse('blog_view', kwargs={'slug': blog.slug})
+    blog_url = f"{site_url}{blog_path}"
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Teltam AI <info@teltam.in>')
+
+    # Render HTML and plain text email content
+    html_content = render_to_string('emails/new_blog_notification.html', {
+        'blog': blog,
+        'blog_url': blog_url,
+        'site_url': site_url
+    })
+    plain_content = strip_tags(html_content)
+
+    subject = f"🔔 New Article: {blog.title} - Teltam AI"
+
+    # Batch recipients in groups of 50 to ensure high SMTP stability & rate-limit compliance
+    batch_size = 50
+    total_sent = 0
+
+    try:
+        connection = get_connection(fail_silently=True)
+        try:
+            connection.open()
+        except Exception as conn_err:
+            logger.warning(f"Could not open SMTP connection: {conn_err}")
+
+        for i in range(0, len(recipient_emails), batch_size):
+            batch = recipient_emails[i:i + batch_size]
+
+            # Build multi-alternative email message with BCC to preserve privacy
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=plain_content,
+                from_email=from_email,
+                to=[from_email],
+                bcc=batch,
+                connection=connection
+            )
+            msg.attach_alternative(html_content, "text/html")
+            
+            try:
+                sent = connection.send_messages([msg])
+                total_sent += len(batch)
+            except Exception as batch_err:
+                logger.exception(f"Error sending email batch {i // batch_size + 1}: {batch_err}")
+
+        try:
+            connection.close()
+        except Exception:
+            pass
+
+        # Mark notification as sent
+        blog.is_notification_sent = True
+        blog.save(update_fields=['is_notification_sent'])
+
+        logger.info(f"Successfully dispatched new blog notification emails to {total_sent} registered users for blog ID {blog_id}.")
+        return {'status': 'SUCCESS', 'sent_count': total_sent}
+
+    except Exception as e:
+        logger.exception(f"Failed mass email dispatch for blog ID {blog_id}: {str(e)}")
+        return {'status': 'FAILURE', 'error': str(e)}
+
 

@@ -170,29 +170,41 @@
                 </div>
 
                 <!-- Splitted View of Content -->
-                <div class="row g-4 mt-2">
+                <div class="row g-4 mt-1">
                     <div class="col-md-6 animate-fade-in">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label fw-semibold text-slate-700 mb-0">Extracted Source Text</label>
-                            <button id="speakExtractedBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" style="font-size: 0.78rem;">
-                                <i class="fas fa-volume-up me-1"></i> Speak
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-1">
+                            <label class="form-label fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                <i class="fas fa-file-alt text-indigo-500"></i> EXTRACTED SOURCE TEXT
+                            </label>
+                            <button id="speakExtractedBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1.5 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff; transition: all 0.2s ease;">
+                                <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
                             </button>
                         </div>
-                        <textarea id="extractedTextPreview" class="form-control bg-light shadow-none" rows="12" readonly style="font-size: 0.9rem; resize: none;"></textarea>
+                        <textarea id="extractedTextPreview" class="form-control bg-white shadow-none mt-2 p-3 font-monospace" rows="12" readonly style="font-size: 0.9rem; line-height: 1.6; border-color: #cbd5e1 !important; border-radius: 12px; resize: none;"></textarea>
                     </div>
                     <div class="col-md-6 animate-fade-in">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label fw-semibold text-slate-700 mb-0">Translated Text Preview</label>
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-1">
+                            <label class="form-label fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                <i class="fas fa-language text-emerald-500"></i> TRANSLATED TEXT PREVIEW
+                            </label>
                             <div class="d-flex gap-2">
-                                <button id="summarizeAiBtn" class="btn btn-sm btn-brand-primary rounded-pill px-3 py-1" style="font-size: 0.78rem; background: var(--brand-primary-gradient); border: none;">
-                                    <i class="fas fa-brain me-1"></i> Summarize with AI
+                                <button id="summarizeAiBtn" class="btn btn-sm text-white rounded-pill px-3 py-1.5 shadow-sm border-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); transition: all 0.2s ease;">
+                                    <i class="fas fa-sparkles text-amber-300"></i> <span>Summarize with AI</span>
                                 </button>
-                                <button id="speakTranslatedBtn" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" style="font-size: 0.78rem;">
-                                    <i class="fas fa-volume-up me-1"></i> Speak
+                                <button id="speakTranslatedBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1.5 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff; transition: all 0.2s ease;">
+                                    <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
                                 </button>
                             </div>
                         </div>
-                        <textarea id="translatedTextPreview" class="form-control bg-light shadow-none" rows="12" readonly style="font-size: 0.9rem; resize: none;"></textarea>
+                        <textarea id="translatedTextPreview" class="form-control bg-white shadow-none mt-2 p-3 font-monospace" rows="12" readonly style="font-size: 0.9rem; line-height: 1.6; border-color: #cbd5e1 !important; border-radius: 12px; resize: none;"></textarea>
+                    </div>
+
+                    <!-- Phonetic Transliteration Preview -->
+                    <div class="col-md-12 mt-4 animate-fade-in">
+                        <label class="form-label fw-bold text-slate-800 mb-2 d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                            <i class="fas fa-language text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)
+                        </label>
+                        <textarea id="transliteratedTextPreview" class="form-control bg-white shadow-none font-monospace p-3" rows="4" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.9rem; line-height: 1.6; border-color: #cbd5e1 !important; border-radius: 12px; resize: none;"></textarea>
                     </div>
                 </div>
             </div>
@@ -351,7 +363,7 @@
 
         const maxDocPollAttempts = 180; // 180 attempts = 3 minutes max
 
-        function pollDocStatus(taskId, pollAttempts = 0) {
+        function pollDocStatus(taskId, pollAttempts = 0, historyId = null) {
             if (pollAttempts >= maxDocPollAttempts) {
                 docProgressIndicator.classList.add('d-none');
                 Swal.fire({
@@ -365,7 +377,7 @@
                 return;
             }
 
-            const url = `/api/task-status/${taskId}/`;
+            const url = historyId ? `/api/task-status/${taskId}/?history_id=${historyId}` : `/api/task-status/${taskId}/`;
             fetchWithTimeout(url, { timeout: 10000 })
                 .then(res => {
                     if (!res.ok) {
@@ -376,7 +388,7 @@
                 .then(data => {
                     if (data.status === 'PENDING' || data.status === 'PROGRESS') {
                         docProgressText.innerText = data.progress || "Processing document text...";
-                        setTimeout(() => pollDocStatus(taskId, pollAttempts + 1), 1000);
+                        setTimeout(() => pollDocStatus(taskId, pollAttempts + 1, historyId), 1000);
                     } else if (data.status === 'SUCCESS') {
                         docProgressIndicator.classList.add('d-none');
                         docCompleteIndicator.classList.remove('d-none');
@@ -387,6 +399,8 @@
                         
                         extractedTextPreview.value = data.result.extracted_text || "";
                         translatedTextPreview.value = data.result.translated_text || "";
+                        const docTranslitPreview = document.getElementById('transliteratedTextPreview');
+                        if (docTranslitPreview) docTranslitPreview.value = data.result.transliteration || "";
                         
                         Swal.fire({
                             icon: 'success',
@@ -409,7 +423,7 @@
                 .catch(err => {
                     console.error("Polling error:", err);
                     if (pollAttempts < maxDocPollAttempts - 1) {
-                        setTimeout(() => pollDocStatus(taskId, pollAttempts + 1), 2000);
+                        setTimeout(() => pollDocStatus(taskId, pollAttempts + 1, historyId), 2000);
                     } else {
                         docProgressIndicator.classList.add('d-none');
                         Swal.fire({
@@ -485,27 +499,46 @@
                 body: formData,
                 timeout: 180000
             })
-            .then(res => {
-                return res.json().then(data => {
-                    if (!res.ok) {
-                        throw new Error(data.error || `Server returned error ${res.status}`);
-                    }
-                    return data;
-                });
+            .then(async res => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    const errorMsg = data.error || `Upload failed with status code ${res.status}`;
+                    const err = new Error(errorMsg);
+                    err.status = res.status;
+                    throw err;
+                }
+                return data;
             })
             .then(data => {
                 docProgressText.innerText = "Analyzing and translating document...";
-                pollDocStatus(data.task_id);
+                pollDocStatus(data.task_id, 0, data.history_id);
             })
             .catch(err => {
                 console.error("Upload error:", err);
                 docProgressIndicator.classList.add('d-none');
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Upload Failed',
-                    text: err.message,
-                    confirmButtonColor: '#ef4444'
-                });
+                
+                if (err.status === 403) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Plan Limit Reached',
+                        text: err.message,
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fas fa-crown me-1"></i> Upgrade Plan',
+                        cancelButtonText: 'Close',
+                        confirmButtonColor: '#6366f1'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/pricing/';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Upload Failed',
+                        text: err.message || "Failed to upload document.",
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
                 docDropzone.classList.remove('d-none');
                 docTranslateOptions.classList.remove('d-none');
             });
@@ -539,89 +572,6 @@
         const speakTranslatedBtn = document.getElementById('speakTranslatedBtn');
         const summarizeAiBtn = document.getElementById('summarizeAiBtn');
 
-        // Speak function using unified Google TTS + Web Speech Fallback
-        const speakDocText = (text, langCode) => {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-
-            const langMap = { 
-                en: "en", 
-                es: "es", 
-                fr: "fr", 
-                de: "de", 
-                ta: "ta",
-                hi: "hi",
-                te: "te",
-                zh: "zh",
-                ar: "ar"
-            };
-            let tl = langMap[langCode] || langCode;
-            if (tl === 'auto') {
-                tl = 'en'; // default fallback for speak extracted if auto
-            }
-
-            try {
-                const encodedText = encodeURIComponent(text);
-                const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${tl}&client=tw-ob&q=${encodedText}`;
-                
-                if (window.currentTtsAudio) {
-                    window.currentTtsAudio.pause();
-                }
-                
-                const audio = new Audio(ttsUrl);
-                window.currentTtsAudio = audio;
-                audio.play().catch(err => {
-                    console.warn("Google TTS failed, falling back to Web Speech:", err);
-                    speakDocWebSpeechFallback(text, tl);
-                });
-            } catch (e) {
-                speakDocWebSpeechFallback(text, tl);
-            }
-        };
-
-        function speakDocWebSpeechFallback(text, langCode) {
-            if (!('speechSynthesis' in window)) return;
-            const utterance = new SpeechSynthesisUtterance(text);
-            const localeMap = {
-                en: "en-US",
-                es: "es-ES",
-                fr: "fr-FR",
-                de: "de-DE",
-                ta: "ta-IN",
-                hi: "hi-IN",
-                te: "te-IN"
-            };
-            const targetLocale = localeMap[langCode] || langCode;
-            utterance.lang = targetLocale;
-
-            const voices = window.speechSynthesis.getVoices();
-            let bestVoice = null;
-            if (voices && voices.length > 0) {
-                const matchLocale = targetLocale.toLowerCase().replace('_', '-');
-                const langPrefix = matchLocale.split('-')[0];
-                const localeMatches = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
-                if (localeMatches.length > 0) {
-                    bestVoice = localeMatches.find(v => 
-                        v.name.includes("Google") || 
-                        v.name.includes("Natural") || 
-                        v.name.includes("Premium") || 
-                        v.name.includes("Microsoft")
-                    );
-                    if (!bestVoice) {
-                        bestVoice = localeMatches.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(matchLocale));
-                    }
-                    if (!bestVoice) {
-                        bestVoice = localeMatches[0];
-                    }
-                }
-            }
-            if (bestVoice) {
-                utterance.voice = bestVoice;
-            }
-            window.speechSynthesis.speak(utterance);
-        }
-
         if (speakExtractedBtn) {
             speakExtractedBtn.addEventListener('click', () => {
                 const text = extractedTextPreview.value.trim();
@@ -634,7 +584,7 @@
                     });
                     return;
                 }
-                speakDocText(text, docSourceLanguage.value);
+                window.playTextToSpeech(text, docSourceLanguage ? docSourceLanguage.value : 'en', speakExtractedBtn);
             });
         }
 
@@ -650,7 +600,7 @@
                     });
                     return;
                 }
-                speakDocText(text, docTargetLanguage.value);
+                window.playTextToSpeech(text, docTargetLanguage ? docTargetLanguage.value : 'en', speakTranslatedBtn);
             });
         }
 

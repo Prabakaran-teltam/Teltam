@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Blog Article - Teltam AI</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .email-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 30px 25px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .email-header p {
+            margin: 6px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .email-body {
+            padding: 30px 25px;
+        }
+        .badge-category {
+            display: inline-block;
+            background-color: #e0e7ff;
+            color: #4338ca;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .blog-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 12px 0;
+            line-height: 1.3;
+        }
+        .meta-info {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .featured-img-box {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .blog-description {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #334155;
+            margin-bottom: 25px;
+        }
+        .cta-btn-wrapper {
+            text-align: center;
+            margin: 30px 0 15px 0;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #ffffff !important;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
+        }
+        .email-footer {
+            background-color: #f8fafc;
+            padding: 20px 25px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .email-footer a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <h1>Teltam AI Insights</h1>
+            <p>New Blog Published</p>
+        </div>
+
+        <!-- Body -->
+        <div class="email-body">
+            <span class="badge-category">{{ blog.category }}</span>
+            <h2 class="blog-title">{{ blog.title }}</h2>
+            <div class="meta-info">
+                By <strong>{{ blog.author }}</strong> &bull; Published on {{ blog.created_date|date:"F d, Y" }}
+            </div>
+
+            {% if blog.featured_image %}
+            <img src="{{ site_url }}{{ blog.featured_image.url }}" alt="{{ blog.title }}" class="featured-img-box">
+            {% endif %}
+
+            <div class="blog-description">
+                {{ blog.short_description }}
+            </div>
+
+            <div class="cta-btn-wrapper">
+                <a href="{{ blog_url }}" target="_blank" class="cta-btn">Read Full Article &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p style="margin: 0 0 6px 0;">You are receiving this email because you are a registered user of <a href="{{ site_url }}">Teltam.in</a>.</p>
+            <p style="margin: 0;">343-B, Krishna Illam, Thalaivasal, Salem, Tamil Nadu - 636112 &bull; Contact: +91 99438 76570</p>
+        </div>
+    </div>
+
+</body>
+</html>

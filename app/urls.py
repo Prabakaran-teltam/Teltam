@@ -27,6 +27,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
+    path('forgot-password/', views.forgot_password_view, name='forgot_password'),
+    path('reset-password/<uidb64>/<token>/', views.reset_password_confirm_view, name='reset_password_confirm'),
     
     # Translators API Playground endpoints
     path('api/translate/', views.translate_api, name='translate_api'),
@@ -36,6 +38,7 @@ urlpatterns = [
     path('api/summarize-document/', views.summarize_document_api, name='summarize_document_api'),
     path('api/upload-voice/', views.upload_voice_api, name='upload_voice_api'),
     path('api/translate/camera/', views.api_translate_camera, name='api_translate_camera'),
+    path('api/tts/', views.api_tts_speech, name='api_tts_speech'),
     path('api/task-status/<str:task_id>/', views.task_status_api, name='task_status_api'),
 
     # =====================================================================
@@ -67,6 +70,7 @@ urlpatterns = [
     path('dashboard/users/', views.dashboard_user_list, name='dashboard_user_list'),
     path('dashboard/payments/', views.dashboard_payment_list, name='dashboard_payment_list'),
     path('dashboard/subscriptions/', views.dashboard_subscription_list, name='dashboard_subscription_list'),
+    path('dashboard/ai-class-enquiries/', views.dashboard_ai_class_enquiries, name='dashboard_ai_class_enquiry_list'),
 
     # =====================================================================
     # PHONEPE V2 PAYMENT INTEGRATION PATHS
@@ -93,6 +97,11 @@ urlpatterns = [
     path('user/history/', views.user_history_list, name='user_history_list'),
     path('user/api-keys/', views.user_api_keys, name='user_api_keys'),
     path('user/logout/', views.user_logout, name='user_logout'),
+
+    # =====================================================================
+    # AI CLASS ENQUIRY ENDPOINT
+    # =====================================================================
+    path('api/enquiry/ai-classes/', views.submit_ai_class_enquiry, name='submit_ai_class_enquiry'),
 
     # =====================================================================
     # DEVELOPER REST API V1 ENDPOINTS (RESTRICTED TO SUBSCRIBED DEVELOPERS)

@@ -68,9 +68,9 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-nowrap">
-                                    <span class="badge bg-light text-dark border font-monospace">{{ log.source_lang|upper }}</span>
-                                    <i class="fas fa-arrow-right text-muted mx-1" style="font-size: 0.75rem;"></i>
-                                    <span class="badge bg-brand-primary text-white font-monospace" style="background: var(--brand-gradient);">{{ log.target_lang|upper }}</span>
+                                    <span class="badge px-2.5 py-1 rounded-pill font-monospace" style="color: #dc2626 !important; background-color: #fee2e2 !important; border: 1px solid #fca5a5 !important; font-weight: 700; font-size: 0.78rem;">{{ log.source_lang|upper }}</span>
+                                    <i class="fas fa-arrow-right text-danger mx-1" style="font-size: 0.75rem;"></i>
+                                    <span class="badge px-2.5 py-1 rounded-pill font-monospace" style="color: #dc2626 !important; background-color: #fee2e2 !important; border: 1px solid #fca5a5 !important; font-weight: 700; font-size: 0.78rem;">{{ log.target_lang|upper }}</span>
                                 </td>
                                 <td>
                                     {% if log.tool_type == 'file' %}

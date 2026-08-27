@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory
+from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory, AIClassEnquiry
+
+@admin.register(AIClassEnquiry)
+class AIClassEnquiryAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'email', 'phone_number', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('full_name', 'email', 'phone_number', 'message')
+    list_editable = ('status',)
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):

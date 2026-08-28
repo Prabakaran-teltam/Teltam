@@ -9,7 +9,7 @@ class BlogForm(forms.ModelForm):
         fields = [
             'title', 'category', 'short_description', 'full_content', 
             'featured_image', 'author', 'tags', 'meta_title', 'meta_description', 
-            'is_published'
+            'is_published', 'send_email_notification'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter blog title'}),
@@ -21,7 +21,8 @@ class BlogForm(forms.ModelForm):
             'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Comma-separated tags, e.g. AI, Translation, Tech'}),
             'meta_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'SEO Meta Title (defaults to title)'}),
             'meta_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'SEO Meta Description'}),
-            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
+            'send_email_notification': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
         }
 
 class YoutubeVideoForm(forms.ModelForm):
@@ -39,7 +40,7 @@ class YoutubeVideoForm(forms.ModelForm):
             'thumbnail_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Product Setup'}),
             'short_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Enter short teaser description'}),
-            'full_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'placeholder': 'Enter detailed description...'}),
+            'full_description': CKEditorUploadingWidget(config_name='default', attrs={'class': 'form-control'}),
             'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Comma-separated tags, e.g. Setup, Tutorial'}),
             'meta_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'SEO Meta Title (defaults to title)'}),
             'meta_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'SEO Meta Description'}),

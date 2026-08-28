@@ -41,15 +41,14 @@
 
                     <!-- Video Details Title -->
                     <div class="glass-card p-4 mb-4 bg-white">
-                        <div class="d-flex gap-2 mb-2">
-                            <span class="badge bg-danger-subtle text-danger">{{ video.category }}</span>
-                            <span class="text-muted small">Released {{ video.created_date|date:"M d, Y" }}</span>
+                        <div class="mb-2">
+                            <span class="text-muted small"><i class="far fa-clock me-1"></i> Released {{ video.created_date|date:"M d, Y" }}</span>
                         </div>
                         <h2 class="fw-bold mb-3 text-slate-900">{{ video.title }}</h2>
                         
-                        <p class="text-slate-700 mb-4" style="line-height: 1.6;">
-                            {{ video.full_description|linebreaks }}
-                        </p>
+                        <div class="text-slate-700 mb-4" style="line-height: 1.6;">
+                            {{ video.full_description|safe }}
+                        </div>
 
                         <!-- Transcript Accordion -->
                         <div class="accordion-item-custom border-top pt-3">

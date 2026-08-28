@@ -269,14 +269,14 @@ def login_view(request):
 
 def get_site_url(request=None):
     """
-    Dynamically resolves current domain URL (http://127.0.0.1:8000 when local, https://teltam.in when production).
+    Dynamically resolves current domain URL (https://teltam.in).
     """
     if request:
         try:
             return request.build_absolute_uri('/').rstrip('/')
         except Exception:
             pass
-    return getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
+    return getattr(settings, 'SITE_URL', 'https://teltam.in').rstrip('/')
 
 
 def send_email_verification_otp(email, name, otp_code, request=None):
@@ -590,8 +590,8 @@ PLAN_MATRIX_LIMITS = {
         'multi_image_max_batch': 1,      # 1 image per batch
         'voice_mins_daily': 2,           # 2 mins/day (120s)
         'voice_mins_monthly': 60,
-        'camera_ar_allowed': False,      # Blocked
-        'camera_ar_max_mins_session': 0,
+        'camera_ar_allowed': True,       # Enabled for live camera translation
+        'camera_ar_max_mins_session': 5,
         'api_keys_allowed': False,
     },
     2: { # Pro Plan

@@ -233,25 +233,6 @@
                         <div class="lens-scan-line"></div>
                     </div>
 
-                    <!-- Live Google Lens AR Floating Translation Overlay -->
-                    <div id="cameraHudOverlay" class="camera-hud-overlay d-none">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <span class="badge bg-indigo-500 text-white rounded-pill px-2.5 py-1" style="font-size: 0.7rem; font-weight: 600;">
-                                <i class="fas fa-sparkles me-1"></i> GOOGLE LENS LIVE
-                            </span>
-                            <span id="hudTimestamp" class="small text-slate-400" style="font-size: 0.72rem;">Scanning Every 1.5s</span>
-                        </div>
-                        <div id="hudTranslatedText" class="lens-translated-text-display">
-                            Point camera at text (street signs, documents, books)...
-                        </div>
-                        <div id="hudOriginalTextSubtitle" class="lens-original-text-subtitle">
-                            Original: Detect Language
-                        </div>
-                        <div class="d-flex align-items-center justify-content-end gap-2 mt-2 pt-2 border-top border-secondary opacity-75">
-                            <button type="button" id="userLensSpeakBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1"></i> Speak</button>
-                            <button type="button" id="userLensCopyBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-copy me-1"></i> Copy</button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Camera Control Toolbar -->
@@ -584,16 +565,6 @@
                         cameraTranslatedText.value = data.translated_text;
                         const camTranslitEl = document.getElementById('cameraTransliteratedText');
                         if (camTranslitEl) camTranslitEl.value = data.transliteration || "";
-
-                        if (hudTranslatedText) {
-                            hudTranslatedText.innerText = data.translated_text;
-                            hudTranslatedText.style.color = '#fef08a';
-                        }
-                        const hudSub = document.getElementById('hudOriginalTextSubtitle');
-                        if (hudSub) {
-                            hudSub.innerText = `Original: ${data.extracted_text.length > 70 ? data.extracted_text.substring(0, 70) + '...' : data.extracted_text}`;
-                        }
-                        hudTimestamp.innerText = `Updated at ${timeStr}`;
 
                         addSessionHistory(data.extracted_text, data.translated_text, timeStr);
                     }

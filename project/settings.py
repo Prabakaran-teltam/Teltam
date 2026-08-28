@@ -90,12 +90,20 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': os.environ.get('POSTGRES_DB', 'UAT_TELTAM'), 
+        # 'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        # 'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'root'),
+        # 'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        # 'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'teltam_uat_db'), 
         'USER': os.environ.get('POSTGRES_USER', 'teltam_uat_user'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'teltamuat'),
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+
     }
 }
 
@@ -198,8 +206,8 @@ PHONEPE_CLIENT_ID = os.environ.get('PHONEPE_CLIENT_ID', 'PGTESTPAYUAT')
 PHONEPE_CLIENT_SECRET = os.environ.get('PHONEPE_CLIENT_SECRET', '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399')
 PHONEPE_CLIENT_VERSION = int(os.environ.get('PHONEPE_CLIENT_VERSION', 1))
 PHONEPE_ENV = os.environ.get('PHONEPE_ENV', 'SANDBOX')
-PHONEPE_REDIRECT_URL = os.environ.get('PHONEPE_REDIRECT_URL', 'http://127.0.0.1:8000/payment/phonepe/status/')
-PHONEPE_CALLBACK_URL = os.environ.get('PHONEPE_CALLBACK_URL', 'http://127.0.0.1:8000/payment/phonepe/callback/')
+PHONEPE_REDIRECT_URL = os.environ.get('PHONEPE_REDIRECT_URL', 'https://teltam.in/payment/phonepe/status/')
+PHONEPE_CALLBACK_URL = os.environ.get('PHONEPE_CALLBACK_URL', 'https://teltam.in/payment/phonepe/callback/')
 PHONEPE_MERCHANT_ID = os.environ.get('PHONEPE_MERCHANT_ID', 'PGTESTPAYUAT')
 
 # Upgrade / Downgrade subscription flow settings
@@ -224,7 +232,7 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1',
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'teltam2025@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'gvns fnbn hrwd gzgx')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Teltam AI <teltam2025@gmail.com>')
-SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
+SITE_URL = os.environ.get('SITE_URL', 'https://teltam.in')
 
 
 

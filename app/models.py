@@ -34,6 +34,7 @@ class Blog(models.Model):
     meta_title = models.CharField(max_length=255, blank=True)
     meta_description = models.TextField(blank=True)
     is_published = models.BooleanField(default=False)
+    send_email_notification = models.BooleanField(default=True, help_text="Designates whether email notification should be sent to registered users upon publishing.")
     is_notification_sent = models.BooleanField(default=False, help_text="Designates whether email notification has been sent to registered users.")
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
@@ -288,10 +289,11 @@ from django.dispatch import receiver
 @receiver(post_save, sender=Blog)
 def on_blog_post_saved(sender, instance, created, **kwargs):
     """
-    Signal handler that triggers asynchronous mass email dispatch to 100+ registered users
-    when a Blog post is published (is_published=True) and notifications haven't been sent yet.
+    Signal handler that triggers asynchronous mass email dispatch to registered users
+    when a Blog post is published (is_published=True), send_email_notification is enabled,
+    and notifications haven't been sent yet.
     """
-    if instance.is_published and not instance.is_notification_sent:
+    if instance.is_published and instance.send_email_notification and not instance.is_notification_sent:
         try:
             from app.tasks import send_new_blog_notifications_task
             

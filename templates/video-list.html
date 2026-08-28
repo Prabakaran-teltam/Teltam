@@ -28,24 +28,15 @@
         </div>
     </section>
 
-    <!-- Category Filters and Video Search -->
+    <!-- Video Search -->
     <section class="py-4 bg-light border-bottom">
         <div class="container">
-            <div class="row align-items-center g-3">
-                <div class="col-md-6 d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
-                    <a href="{% url 'video_list' %}" class="btn {% if not selected_category %}btn-primary-gradient{% else %}btn-outline-custom border bg-white{% endif %} rounded-pill px-3 py-1">All Videos</a>
-                    {% for cat in categories %}
-                        <a href="{% url 'video_list' %}?category={{ cat }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if selected_category == cat %}btn-primary-gradient{% else %}btn-outline-custom border bg-white{% endif %} rounded-pill px-3 py-1">{{ cat }}</a>
-                    {% endfor %}
-                </div>
-                <div class="col-md-6">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
                     <form class="d-flex" method="GET" action="{% url 'video_list' %}">
-                        {% if selected_category %}
-                            <input type="hidden" name="category" value="{{ selected_category }}">
-                        {% endif %}
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                            <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 py-2 shadow-none" placeholder="Search video tutorials..." style="outline: none;">
+                        <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                            <span class="input-group-text bg-white border-end-0 text-muted ps-3"><i class="fas fa-search"></i></span>
+                            <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 py-2.5 shadow-none" placeholder="Search video tutorials..." style="outline: none;">
                         </div>
                     </form>
                 </div>
@@ -82,7 +73,6 @@
                                             data-bs-target="#videoPreviewModal"
                                             data-video-id="{{ video.youtube_video_id }}"
                                             data-video-title="{{ video.title }}"
-                                            data-video-category="{{ video.category }}"
                                             data-video-detail-url="{% url 'video_view' video.slug %}"
                                             title="Click to preview video">
                                         <i class="fas fa-play" style="margin-left: 3px; font-size: 1.2rem;"></i>
@@ -96,7 +86,7 @@
 
                             <div class="p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1 rounded-pill"><i class="fab fa-youtube me-1"></i> {{ video.category }}</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1 rounded-pill"><i class="fab fa-youtube me-1"></i> Video Guide</span>
                                     <small class="text-muted"><i class="far fa-clock me-1"></i> {{ video.created_date|date:"M d, Y" }}</small>
                                 </div>
                                 <h5 class="fw-bold mb-2">
@@ -192,8 +182,7 @@
                         <iframe id="videoPreviewIframe" src="" title="YouTube Video Preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border:0;"></iframe>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-3 d-flex justify-content-between align-items-center" style="background: #0f172a;">
-                    <span class="badge bg-danger px-3 py-1.5 rounded-pill" id="videoPreviewCategory">Tutorial</span>
+                <div class="modal-footer border-0 p-3 d-flex justify-content-end align-items-center" style="background: #0f172a;">
                     <a href="#" id="videoDetailBtn" class="btn btn-sm btn-primary-gradient rounded-pill px-4 fw-semibold">View Full Details &rarr;</a>
                 </div>
             </div>

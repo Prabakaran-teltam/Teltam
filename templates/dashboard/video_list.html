@@ -32,7 +32,6 @@
                 <tr>
                     <th>Video Details</th>
                     <th>Category</th>
-                    <th>YouTube Video ID</th>
                     <th>Status</th>
                     <th>Created On</th>
                     <th class="text-end">Actions</th>
@@ -59,7 +58,6 @@
                         </div>
                     </td>
                     <td><span class="badge text-white" style="background-color: #dc3545 !important; font-weight: 500; font-size: 0.8rem;">{{ video.category }}</span></td>
-                    <td><code class="text-dark bg-light px-2 py-1 rounded small">{{ video.youtube_video_id|default:"N/A" }}</code></td>
                     <td>
                         {% if video.is_published %}
                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Live</span>

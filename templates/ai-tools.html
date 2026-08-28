@@ -808,7 +808,7 @@
                                             <div class="p-3 bg-white border rounded-3" style="border-color: #cbd5e1 !important; border-radius: 12px;">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.83rem; letter-spacing: 0.3px; text-transform: uppercase;">
-                                                        <i class="fas fa-language text-indigo-600"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)
+                                                        <i class="fas fa-language text-indigo-600 me-2" style="margin-right: 8px !important;"></i> PRONUNCIATION GUIDE
                                                     </label>
                                                     <div class="d-flex gap-2">
                                                         <button type="button" id="translitSpeakBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
@@ -987,7 +987,7 @@
                                             <div class="col-md-12 mt-3">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.83rem; letter-spacing: 0.3px; text-transform: uppercase;">
-                                                        <i class="fas fa-language text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)
+                                                        <i class="fas fa-language text-indigo-500 me-2" style="margin-right: 8px !important;"></i> PRONUNCIATION GUIDE
                                                     </label>
                                                     <button type="button" id="docSpeakTranslitBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1.5 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
                                                         <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
@@ -1080,72 +1080,95 @@
 
                                     <!-- Voice layout panel -->
                                     <div class="row g-4 mt-2">
-                                        <div class="col-lg-6 col-12 text-center border-end border-slate-100 pr-lg-4">
-                                            <h5 class="fw-bold text-slate-800 mb-2">Audio Input Capture</h5>
-                                            <p class="text-muted small mb-0">Record voice snippets using your device microphone</p>
-                                            
-                                            <div class="mic-btn-container">
-                                                <button type="button" class="mic-btn-custom" id="micRecordBtn">
-                                                    <i class="fas fa-microphone"></i>
-                                                </button>
-                                                <div class="mic-pulse-ring"></div>
-                                            </div>
-                                            
-                                            <div class="recording-status-text mt-1 fw-semibold text-slate-600" id="voiceStatusText">Click microphone to start recording</div>
-                                            <div class="recording-timer mt-1 font-monospace text-indigo-600 fw-bold d-none" id="voiceTimer" style="font-size: 1.1rem;">00:00</div>
-                                            
-                                            <div class="d-flex justify-content-center gap-2 mt-4">
-                                                <button type="button" class="btn btn-outline-custom py-2 px-4 d-none" id="stopRecordBtn"><i class="fas fa-stop me-2"></i> Stop Recording</button>
-                                            </div>
+                                        <!-- Audio Input Row: Mic Capture on Left, Upload Audio File on Right -->
+                                        <div class="col-12">
+                                            <div class="p-3 bg-light-subtle border border-slate-200 rounded-3">
+                                                <div class="row align-items-center g-4">
+                                                    <!-- Left: Audio Input Capture -->
+                                                    <div class="col-md-6 border-end border-slate-200 text-center pr-md-4">
+                                                        <h6 class="fw-bold text-slate-800 mb-1"><i class="fas fa-microphone text-indigo-600 me-1.5"></i> Audio Input Capture</h6>
+                                                        <p class="text-muted small mb-2" style="font-size: 0.78rem;">Record voice snippets using your device microphone</p>
+                                                        
+                                                        <div class="mic-btn-container my-2">
+                                                            <button type="button" class="mic-btn-custom" id="micRecordBtn">
+                                                                <i class="fas fa-microphone"></i>
+                                                            </button>
+                                                            <div class="mic-pulse-ring"></div>
+                                                        </div>
+                                                        
+                                                        <div class="recording-status-text mt-1 fw-semibold text-slate-600 small" id="voiceStatusText">Click microphone to start recording</div>
+                                                        <div class="recording-timer mt-1 font-monospace text-indigo-600 fw-bold d-none" id="voiceTimer" style="font-size: 1rem;">00:00</div>
+                                                        
+                                                        <div class="d-flex justify-content-center gap-2 mt-2">
+                                                            <button type="button" class="btn btn-outline-custom btn-sm py-1.5 px-3 d-none" id="stopRecordBtn"><i class="fas fa-stop me-1"></i> Stop Recording</button>
+                                                        </div>
+                                                    </div>
 
-                                            <!-- Audio File Upload Option -->
-                                            <div class="mt-4 border-top pt-3 text-center">
-                                                <p class="text-muted small mb-2">- OR -</p>
-                                                <label class="btn btn-outline-custom btn-sm px-4" style="cursor: pointer;">
-                                                    <i class="fas fa-file-audio me-2"></i> Upload Audio File
-                                                    <input type="file" id="voiceFileInput" accept=".wav,.mp3,.m4a,.webm,.ogg,.caf" style="display: none;">
-                                                </label>
-                                                <div id="voiceSelectedFileDisplay" class="small text-success mt-2 d-none" style="font-weight: 500;"></div>
+                                                    <!-- Right: Upload Audio File & Preview -->
+                                                    <div class="col-md-6 text-center pl-md-4">
+                                                        <h6 class="fw-bold text-slate-800 mb-1"><i class="fas fa-file-audio text-indigo-600 me-1.5"></i> Upload Audio File</h6>
+                                                        <p class="text-muted small mb-3" style="font-size: 0.78rem;">Upload pre-recorded audio file (.wav, .mp3, .m4a)</p>
+
+                                                        <label class="btn btn-outline-indigo btn-sm px-4 rounded-pill shadow-2xs fw-semibold" style="cursor: pointer; border-color: #6366f1; color: #4f46e5;">
+                                                            <i class="fas fa-upload me-1.5"></i> Upload Audio File
+                                                            <input type="file" id="voiceFileInput" accept=".wav,.mp3,.m4a,.webm,.ogg,.caf" style="display: none;">
+                                                        </label>
+                                                        <div id="voiceSelectedFileDisplay" class="small text-success mt-2 d-none" style="font-weight: 500;"></div>
+                                                        
+                                                        <!-- Audio Preview Player -->
+                                                        <div class="audio-player-wrapper mt-3 d-none" id="voiceAudioWrapper">
+                                                            <label class="small fw-bold text-slate-600 mb-1 d-block" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1 text-success"></i> Recorded Audio Preview</label>
+                                                            <audio id="recordedAudioPlayer" controls class="w-100" style="max-width: 300px; margin: 0 auto; outline: none; height: 36px;"></audio>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            
-                                            <!-- Audio element -->
-                                            <div class="audio-player-wrapper mt-4 d-none" id="voiceAudioWrapper">
-                                                <label class="small fw-bold text-slate-600 mb-2 d-block"><i class="fas fa-volume-up me-1"></i> Recorded Audio Preview</label>
-                                                <audio id="recordedAudioPlayer" controls class="w-100" style="max-width: 320px; margin: 0 auto; outline: none;"></audio>
+                                        </div>
+
+                                        <!-- Voice Outputs Row: Column 1 Transcript, Column 2 Translation -->
+                                        <div class="col-lg-6 col-12">
+                                            <div>
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-closed-captioning me-1.5 text-indigo-500"></i> VOICE TRANSCRIPT</label>
+                                                <div class="output-container p-3 bg-light border border-slate-200 rounded-3 text-slate-700" style="min-height: 110px; font-size: 0.95rem; line-height: 1.6;" id="voiceTranscriptText">
+                                                    Spoken transcript will appear here...
+                                                </div>
                                             </div>
                                         </div>
                                         
-                                        <div class="col-lg-6 col-12 pl-lg-4">
-                                            <div class="d-flex flex-column gap-3">
-                                                <div>
-                                                    <label class="small fw-bold text-slate-600 mb-1.5"><i class="fas fa-closed-captioning me-1.5 text-indigo-500"></i> VOICE TRANSCRIPT</label>
-                                                    <div class="output-container p-3 bg-light border border-slate-100 rounded-3 text-slate-700" style="min-height: 84px; font-size: 0.95rem; line-height: 1.6;" id="voiceTranscriptText">
-                                                        Spoken transcript will appear here...
+                                        <div class="col-lg-6 col-12">
+                                            <div>
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-sparkles me-1.5 text-indigo-500"></i> AI CONTEXT TRANSLATION</label>
+                                                <div class="output-container p-3 border border-slate-200 rounded-3 text-slate-900 bg-white" style="min-height: 110px; position: relative; font-size: 0.95rem; line-height: 1.6;">
+                                                    <div id="voiceTranslationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="background: rgba(255,255,255,0.95); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: 8px;">
+                                                        <div class="spinner-border text-indigo-600 spinner-border-sm" role="status"></div>
+                                                        <span class="small text-indigo-600 fw-semibold ms-2" style="font-size:0.8rem;">Processing speech context...</span>
                                                     </div>
+                                                    <div id="voiceTranslationOutput">Translation will appear here...</div>
                                                 </div>
-                                                
-                                                <div>
-                                                    <label class="small fw-bold text-slate-600 mb-1.5"><i class="fas fa-sparkles me-1.5 text-indigo-500"></i> AI CONTEXT TRANSLATION</label>
-                                                    <div class="output-container p-3 border border-slate-200 rounded-3 text-slate-900 bg-white" style="min-height: 84px; position: relative; font-size: 0.95rem; line-height: 1.6;">
-                                                        <div id="voiceTranslationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="background: #ffffff; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 10;">
-                                                            <div class="spinner-border text-indigo-600 spinner-border-sm" role="status"></div>
-                                                            <span class="small text-indigo-600 fw-semibold ms-2" style="font-size:0.8rem;">Processing speech context...</span>
-                                                        </div>
-                                                        <div id="voiceTranslationOutput">Translation will appear here...</div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div>
-                                                    <label class="small fw-bold text-indigo-700 mb-1.5" style="font-size: 0.8rem;"><i class="fas fa-language me-1.5 text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)</label>
-                                                    <div class="output-container p-3 border border-indigo-200 rounded-3 text-indigo-900 bg-light-subtle font-monospace" style="min-height: 60px; font-size: 0.9rem; line-height: 1.5; color: #4338ca;" id="voiceTransliterationOutput">
-                                                        Phonetic pronunciation guide will appear here...
-                                                    </div>
-                                                </div>
-
                                                 <div class="d-flex justify-content-end gap-2 mt-2">
                                                     <button type="button" id="voiceSpeakBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-volume-up me-1"></i> Speak</button>
                                                     <button type="button" id="voiceCopyBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-copy me-1"></i> Copy</button>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Phonetic Transliteration Output Card (Full-Width Bottom) -->
+                                        <div class="col-12 mt-3 animate-fade-in" id="voiceTranslitCard">
+                                            <div class="p-3 bg-white border rounded-3" style="border-color: #cbd5e1 !important; border-radius: 12px;">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.83rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                                        <i class="fas fa-language text-indigo-600 me-2" style="margin-right: 8px !important;"></i> PRONUNCIATION GUIDE
+                                                    </label>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" id="voiceTranslitSpeakBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                            <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
+                                                        </button>
+                                                        <button type="button" id="voiceTranslitCopyBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                            <i class="fas fa-copy text-indigo-600"></i> <span>Copy</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <textarea id="voiceTransliterationOutput" class="form-control bg-light-subtle border-0 shadow-none font-monospace p-2.5" rows="2" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.88rem; line-height: 1.5; color: #4338ca; resize: none;"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -1167,62 +1190,10 @@
                                     </div>
                                     
                                     <div class="row g-4">
-                                        <div class="col-lg-6">
-                                            <!-- Google Lens Camera Viewport -->
-                                            <div class="lens-camera-viewport text-white position-relative text-center overflow-hidden" id="pubCamContainer">
-                                                <!-- Placeholder when camera is stopped -->
-                                                <div id="pubCamPlaceholder" class="p-4">
-                                                    <div class="rounded-circle bg-slate-800 d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
-                                                        <i class="fas fa-video-slash text-slate-400 fs-3"></i>
-                                                    </div>
-                                                    <h6 class="fw-bold text-white mb-1">Camera Stream Inactive</h6>
-                                                    <p class="text-slate-400 small mb-3">Open live camera mode to translate text overlay live in Google Lens style.</p>
-                                                    <button type="button" id="pubStartCamBtn" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none;">
-                                                        <i class="fas fa-video me-1"></i> Open Google Lens Camera
-                                                    </button>
-                                                </div>
-
-                                                <!-- Live Video Stream -->
-                                                <video id="pubCamVideo" class="lens-video-stream d-none" autoplay playsinline muted></video>
-                                                <canvas id="pubCamCanvas" class="d-none"></canvas>
-
-                                                <!-- Google Lens Corner Brackets Scanner Box -->
-                                                <div id="pubLensScannerBox" class="lens-scanner-box d-none">
-                                                    <div class="lens-corner lens-corner-tl"></div>
-                                                    <div class="lens-corner lens-corner-tr"></div>
-                                                    <div class="lens-corner lens-corner-bl"></div>
-                                                    <div class="lens-corner lens-corner-br"></div>
-                                                    <div class="lens-scan-line"></div>
-                                                </div>
-
-                                                <!-- Google Lens AR Live Overlay (ON TOP OF CAMERA FRAME) -->
-                                                <div id="pubLensAROverlay" class="lens-ar-live-overlay d-none">
-                                                    <div class="lens-ar-header">
-                                                        <span class="lens-live-badge"><i class="fas fa-sparkles me-1"></i> GOOGLE LENS LIVE</span>
-                                                        <span id="pubLensStatusText" class="small text-slate-400" style="font-size: 0.72rem;">Scanning Every 1.5s</span>
-                                                    </div>
-                                                    <div id="pubLensTranslatedDisplay" class="lens-translated-text-display">
-                                                        Point camera at text (street signs, documents, books)...
-                                                    </div>
-                                                    <div id="pubLensOriginalSubtitle" class="lens-original-text-subtitle">
-                                                        Original: Detect Language
-                                                    </div>
-                                                    <div class="d-flex align-items-center justify-content-end gap-2 mt-2 pt-2 border-top border-secondary opacity-75">
-                                                        <button type="button" id="pubLensSpeakBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1"></i> Speak</button>
-                                                        <button type="button" id="pubLensCopyBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-copy me-1"></i> Copy</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="d-flex gap-2 mt-3">
-                                                <button type="button" id="pubToggleCamBtn" class="btn btn-outline-primary btn-sm rounded-pill w-50 fw-bold py-2"><i class="fas fa-video me-1"></i> Start Camera</button>
-                                                <button type="button" id="pubPauseCamBtn" class="btn btn-outline-danger btn-sm rounded-pill w-50 fw-bold py-2" disabled><i class="fas fa-pause me-1"></i> Freeze Frame</button>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-6">
+                                        <!-- Left Column: Target Language Selector + Camera Viewport & Controls -->
+                                        <div class="col-lg-6 col-12">
                                             <div class="mb-3">
-                                                <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">TARGET LANGUAGE</label>
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-globe text-indigo-500 me-1.5"></i> TARGET LANGUAGE</label>
                                                 <div class="custom-dropdown-container dropdown" id="pubCamTargetDropdownContainer">
                                                     <button class="btn premium-dropdown-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                                         <div class="d-flex align-items-center gap-2">
@@ -1242,19 +1213,91 @@
                                                         <div class="dropdown-options-grid"></div>
                                                     </div>
                                                 </div>
+                                            </div>
+
+                                            <!-- Google Lens Camera Viewport (Mobile Responsive 16:9 Aspect Ratio) -->
+                                            <div class="lens-camera-viewport text-white position-relative text-center overflow-hidden rounded-4 shadow-sm bg-dark" id="pubCamContainer" style="min-height: 260px; max-height: 360px;">
+                                                <!-- Placeholder when camera is stopped -->
+                                                <div id="pubCamPlaceholder" class="p-4 d-flex flex-column align-items-center justify-content-center h-100" style="min-height: 260px;">
+                                                    <div class="rounded-circle bg-slate-800 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                                        <i class="fas fa-video-slash text-slate-400 fs-3"></i>
+                                                    </div>
+                                                    <h6 class="fw-bold text-white mb-1">Camera Stream Inactive</h6>
+                                                    <p class="text-slate-400 small mb-3" style="max-width: 320px; font-size: 0.8rem;">Open live camera mode to translate text overlay live in Google Lens style.</p>
+                                                    <button type="button" id="pubStartCamBtn" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none;">
+                                                        <i class="fas fa-video me-1.5"></i> Open Google Lens Camera
+                                                    </button>
+                                                </div>
+
+                                                <!-- Live Video Stream -->
+                                                <video id="pubCamVideo" class="lens-video-stream d-none w-100 h-100" style="object-fit: cover;" autoplay playsinline muted></video>
+                                                <canvas id="pubCamCanvas" class="d-none"></canvas>
+
+                                                <!-- Google Lens Corner Brackets Scanner Box -->
+                                                <div id="pubLensScannerBox" class="lens-scanner-box d-none">
+                                                    <div class="lens-corner lens-corner-tl"></div>
+                                                    <div class="lens-corner lens-corner-tr"></div>
+                                                    <div class="lens-corner lens-corner-bl"></div>
+                                                    <div class="lens-corner lens-corner-br"></div>
+                                                    <div class="lens-scan-line"></div>
+                                                </div>
+
+                                                <!-- Google Lens AR Live Overlay -->
+                                                <div id="pubLensAROverlay" class="lens-ar-live-overlay d-none">
+                                                    <div class="lens-ar-header">
+                                                        <span class="lens-live-badge"><i class="fas fa-sparkles me-1"></i> GOOGLE LENS LIVE</span>
+                                                        <span id="pubLensStatusText" class="small text-slate-400" style="font-size: 0.72rem;">Scanning Every 1.5s</span>
+                                                    </div>
+                                                    <div id="pubLensTranslatedDisplay" class="lens-translated-text-display">
+                                                        Point camera at text (street signs, documents, books)...
+                                                    </div>
+                                                    <div id="pubLensOriginalSubtitle" class="lens-original-text-subtitle">
+                                                        Original: Detect Language
+                                                    </div>
+                                                    <div class="d-flex align-items-center justify-content-end gap-2 mt-2 pt-2 border-top border-secondary opacity-75">
+                                                        <button type="button" id="pubLensSpeakBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1"></i> Speak</button>
+                                                        <button type="button" id="pubLensCopyBtn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-0.5" style="font-size: 0.75rem;"><i class="fas fa-copy me-1"></i> Copy</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Camera Control Buttons -->
+                                            <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
+                                                <button type="button" id="pubToggleCamBtn" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold py-2 shadow-2xs"><i class="fas fa-video me-1.5"></i> Start Camera</button>
+                                                <button type="button" id="pubPauseCamBtn" class="btn btn-outline-danger btn-sm rounded-pill w-100 fw-bold py-2 shadow-2xs" disabled><i class="fas fa-pause me-1.5"></i> Freeze Frame</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column: Extracted OCR Text & Live Translation Output -->
+                                        <div class="col-lg-6 col-12">
                                             <div class="mb-3">
-                                                <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">EXTRACTED OCR TEXT</label>
-                                                <textarea id="pubCamOcrText" class="form-control bg-light shadow-none" rows="3" readonly placeholder="Extracted frame text will appear here..."></textarea>
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-eye me-1.5 text-indigo-500"></i> EXTRACTED OCR TEXT</label>
+                                                <textarea id="pubCamOcrText" class="form-control bg-light border-slate-200 shadow-none p-3" rows="4" readonly placeholder="Extracted frame text will appear here..." style="font-size: 0.9rem; min-height: 110px; resize: none;"></textarea>
                                             </div>
 
                                             <div class="mb-3">
-                                                <label class="small fw-bold text-slate-700 mb-1" style="font-size: 0.8rem;">LIVE TRANSLATION</label>
-                                                <textarea id="pubCamTranslatedText" class="form-control bg-light shadow-none" rows="4" readonly placeholder="Live translation output will appear here..."></textarea>
+                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-sparkles me-1.5 text-indigo-500"></i> LIVE TRANSLATION OUTPUT</label>
+                                                <textarea id="pubCamTranslatedText" class="form-control bg-white border-slate-200 shadow-none p-3" rows="4" readonly placeholder="Live translation output will appear here..." style="font-size: 0.9rem; min-height: 110px; resize: none;"></textarea>
                                             </div>
+                                        </div>
 
-                                            <div class="mt-3">
-                                                <label class="small fw-bold text-indigo-700 mb-1" style="font-size: 0.8rem;"><i class="fas fa-language me-1 text-indigo-500"></i> PHONETIC TRANSLITERATION (PRONUNCIATION GUIDE)</label>
-                                                <textarea id="pubCamTransliteratedText" class="form-control bg-light-subtle shadow-none font-monospace p-2.5" rows="2" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.88rem; color: #4338ca; border-color: #c7d2fe; resize: none;"></textarea>
+                                        <!-- Full-Width Bottom Row: Phonetic Transliteration (Pronunciation Guide) -->
+                                        <div class="col-12 mt-2 animate-fade-in" id="pubCamTranslitCard">
+                                            <div class="p-3 bg-white border rounded-3" style="border-color: #cbd5e1 !important; border-radius: 12px;">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="small fw-bold text-slate-800 mb-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.83rem; letter-spacing: 0.3px; text-transform: uppercase;">
+                                                        <i class="fas fa-language text-indigo-600 me-2" style="margin-right: 8px !important;"></i> PRONUNCIATION GUIDE
+                                                    </label>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" id="pubCamTranslitSpeakBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                            <i class="fas fa-volume-high text-indigo-600"></i> <span>Speak</span>
+                                                        </button>
+                                                        <button type="button" id="pubCamTranslitCopyBtn" class="btn btn-sm btn-light text-slate-700 rounded-pill px-3 py-1 border shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; font-weight: 600; border-color: #cbd5e1 !important; background-color: #ffffff;">
+                                                            <i class="fas fa-copy text-indigo-600"></i> <span>Copy</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <textarea id="pubCamTransliteratedText" class="form-control bg-light-subtle border-0 shadow-none font-monospace p-2.5" rows="2" readonly placeholder="Phonetic pronunciation guide will appear here..." style="font-size: 0.88rem; line-height: 1.5; color: #4338ca; resize: none;"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -2475,8 +2518,18 @@
                             voiceTranslationSpinner.classList.add('d-none');
                             voiceStatusText.innerText = "Click microphone to start recording";
                             
-                            voiceTranscriptText.innerText = data.result.transcription;
-                            voiceTranslationOutput.innerText = data.result.translated_text;
+                            voiceTranscriptText.innerText = data.result.transcription || "";
+                            voiceTranslationOutput.innerText = data.result.translated_text || "";
+                            
+                            const translitVal = data.result.transliteration || data.result.transliterated_text || "";
+                            const voiceTranslitEl = document.getElementById("voiceTransliterationOutput");
+                            if (voiceTranslitEl) {
+                                if (voiceTranslitEl.tagName === 'TEXTAREA' || voiceTranslitEl.tagName === 'INPUT') {
+                                    voiceTranslitEl.value = translitVal;
+                                } else {
+                                    voiceTranslitEl.innerText = translitVal || "Phonetic pronunciation guide will appear here...";
+                                }
+                            }
                             
                             voiceSpeakBtn.disabled = false;
                             voiceCopyBtn.disabled = false;
@@ -2677,6 +2730,62 @@
                             const origHTML = voiceCopyBtn.innerHTML;
                             voiceCopyBtn.innerHTML = `<i class="fas fa-check text-success"></i> Copied`;
                             setTimeout(() => { voiceCopyBtn.innerHTML = origHTML; }, 1500);
+                        });
+                    }
+                });
+            }
+
+            // Speak voice transliteration
+            const voiceTranslitSpeakBtn = document.getElementById('voiceTranslitSpeakBtn');
+            if (voiceTranslitSpeakBtn) {
+                voiceTranslitSpeakBtn.addEventListener('click', () => {
+                    const voiceTranslitEl = document.getElementById("voiceTransliterationOutput");
+                    const text = voiceTranslitEl ? (voiceTranslitEl.value || voiceTranslitEl.innerText) : "";
+                    if (text && text !== "Phonetic pronunciation guide will appear here...") {
+                        window.playTextToSpeech(text, 'en', voiceTranslitSpeakBtn);
+                    }
+                });
+            }
+
+            // Copy voice transliteration
+            const voiceTranslitCopyBtn = document.getElementById('voiceTranslitCopyBtn');
+            if (voiceTranslitCopyBtn) {
+                voiceTranslitCopyBtn.addEventListener('click', () => {
+                    const voiceTranslitEl = document.getElementById("voiceTransliterationOutput");
+                    const text = voiceTranslitEl ? (voiceTranslitEl.value || voiceTranslitEl.innerText) : "";
+                    if (text && text !== "Phonetic pronunciation guide will appear here...") {
+                        navigator.clipboard.writeText(text).then(() => {
+                            const origHTML = voiceTranslitCopyBtn.innerHTML;
+                            voiceTranslitCopyBtn.innerHTML = `<i class="fas fa-check text-success me-1"></i> Copied`;
+                            setTimeout(() => { voiceTranslitCopyBtn.innerHTML = origHTML; }, 1500);
+                        });
+                    }
+                });
+            }
+
+            // Speak camera transliteration
+            const pubCamTranslitSpeakBtn = document.getElementById('pubCamTranslitSpeakBtn');
+            if (pubCamTranslitSpeakBtn) {
+                pubCamTranslitSpeakBtn.addEventListener('click', () => {
+                    const el = document.getElementById("pubCamTransliteratedText");
+                    const text = el ? (el.value || el.innerText) : "";
+                    if (text && text !== "Phonetic pronunciation guide will appear here...") {
+                        window.playTextToSpeech(text, 'en', pubCamTranslitSpeakBtn);
+                    }
+                });
+            }
+
+            // Copy camera transliteration
+            const pubCamTranslitCopyBtn = document.getElementById('pubCamTranslitCopyBtn');
+            if (pubCamTranslitCopyBtn) {
+                pubCamTranslitCopyBtn.addEventListener('click', () => {
+                    const el = document.getElementById("pubCamTransliteratedText");
+                    const text = el ? (el.value || el.innerText) : "";
+                    if (text && text !== "Phonetic pronunciation guide will appear here...") {
+                        navigator.clipboard.writeText(text).then(() => {
+                            const origHTML = pubCamTranslitCopyBtn.innerHTML;
+                            pubCamTranslitCopyBtn.innerHTML = `<i class="fas fa-check text-success me-1"></i> Copied`;
+                            setTimeout(() => { pubCamTranslitCopyBtn.innerHTML = origHTML; }, 1500);
                         });
                     }
                 });

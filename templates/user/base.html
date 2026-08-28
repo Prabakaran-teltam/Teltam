@@ -2,6 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}User Dashboard{% endblock %} - Teltam.ai</title>
@@ -510,9 +514,7 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-brand d-flex align-items-center justify-content-between">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'user_dashboard_home' %}">
-                <span class="d-flex align-items-center justify-content-center rounded-3 text-white shadow-sm" style="width: 36px; height: 36px; background: var(--brand-gradient);">
-                    <i class="fas fa-language" style="font-size: 1.25rem;"></i>
-                </span>
+                <img src="{% static 'images/favicon.png' %}" alt="Teltam AI Logo" class="rounded-2" style="width: 36px; height: 36px; object-fit: contain;">
                 <span class="fs-4 fw-bold text-white" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Teltam<span style="color: #a855f7;">.ai</span></span>
             </a>
             <button class="btn text-slate-400 d-lg-none border-0 p-1 shadow-none" id="sidebarCloseBtn" aria-label="Close Mobile Sidebar">

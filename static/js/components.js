@@ -30,9 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <nav class="navbar navbar-expand-lg glass-navbar fixed-top py-3">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                    <span class="d-flex align-items-center justify-content-center bg-indigo-600 rounded-3 text-white" style="width: 38px; height: 38px; background: var(--brand-primary-gradient); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
-                        <i class="fas fa-language" style="font-size: 1.3rem;"></i>
-                    </span>
+                    <img src="/static/images/favicon.png" alt="Teltam AI Logo" class="rounded-2" style="width: 38px; height: 38px; object-fit: contain;">
                     <span class="fs-4 fw-bold" style="font-family: var(--font-headings); letter-spacing: -0.5px; color: var(--color-slate-900);">Teltam<span class="text-indigo-600" style="color: #7c3aed;">.ai</span></span>
                 </a>
                 

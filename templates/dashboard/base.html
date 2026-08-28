@@ -2,6 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dashboard{% endblock %} - Teltam Admin Console</title>
@@ -303,7 +307,7 @@
     <div class="sidebar" id="sidebar">
         <div>
             <div class="sidebar-brand d-flex align-items-center gap-2">
-                <i class="fas fa-brain fs-4 text-primary" style="background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                <img src="{% static 'images/favicon.png' %}" alt="Teltam AI Logo" class="rounded-2" style="width: 36px; height: 36px; object-fit: contain;">
                 <span class="fw-bold fs-4 text-white">Teltam Console</span>
             </div>
             <ul class="sidebar-menu">

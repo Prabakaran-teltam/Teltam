@@ -117,5 +117,12 @@ def seed_youtube_videos():
 
     print(f"\nImport Completed Successfully! Total Created: {created_count}, Total Updated: {updated_count}")
 
+    # Reset PostgreSQL primary key sequence generator to prevent IntegrityError on new video creation
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT setval(pg_get_serial_sequence('app_youtubevideo', 'id'), COALESCE(MAX(id), 1)) FROM app_youtubevideo;")
+        max_id = cursor.fetchone()[0]
+        print(f"[SEQUENCE RESET] app_youtubevideo_id_seq updated to {max_id}")
+
 if __name__ == '__main__':
     seed_youtube_videos()

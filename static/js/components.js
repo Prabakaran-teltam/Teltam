@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm rounded-3 mt-2 p-2" aria-labelledby="resourcesDropdown">
                                 <li><a class="dropdown-item rounded-2 py-2" href="/blog/"><i class="fas fa-blog me-2 text-primary"></i>Blog Articles</a></li>
-                                <li><a class="dropdown-item rounded-2 py-2" href="/videos/"><i class="fab fa-youtube me-2 text-danger"></i>Video Tutorials</a></li>
+                                <li><a class="dropdown-item rounded-2 py-2" href="/videos/"><i class="fab fa-youtube me-2 text-danger"></i>Teltam Tube</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item rounded-2 py-2 fw-semibold text-indigo-600" href="/api-docs/"><i class="fas fa-code me-2 text-indigo-600"></i>Developer API Docs</a></li>
                             </ul>

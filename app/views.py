@@ -269,14 +269,14 @@ def login_view(request):
 
 def get_site_url(request=None):
     """
-    Dynamically resolves current domain URL (https://uat.teltam.in).
+    Dynamically resolves current domain URL (https://teltam.in).
     """
     if request:
         try:
             return request.build_absolute_uri('/').rstrip('/')
         except Exception:
             pass
-    return getattr(settings, 'SITE_URL', 'https://uat.teltam.in').rstrip('/')
+    return getattr(settings, 'SITE_URL', 'https://teltam.in').rstrip('/')
 
 
 def send_email_verification_otp(email, name, otp_code, request=None):

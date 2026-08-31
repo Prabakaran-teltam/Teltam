@@ -29,6 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Automatically hide floating action buttons when any AI Chatbot Offcanvas is opened, and unhide when closed
+    const fabWrapper = document.querySelector('.ai-floating-buttons-wrapper');
+    const aiOffcanvases = document.querySelectorAll('.ai-offcanvas');
+
+    aiOffcanvases.forEach(offcanvasEl => {
+        offcanvasEl.addEventListener('show.bs.offcanvas', () => {
+            if (fabWrapper) {
+                fabWrapper.classList.add('hide-fab');
+            }
+        });
+        offcanvasEl.addEventListener('hidden.bs.offcanvas', () => {
+            const anyOpen = Array.from(aiOffcanvases).some(el => el.classList.contains('show'));
+            if (!anyOpen && fabWrapper) {
+                fabWrapper.classList.remove('hide-fab');
+            }
+        });
+    });
+
     // =========================================================================
     // 1. AI CAREER CHATBOT LOGIC
     // =========================================================================

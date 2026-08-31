@@ -1,7 +1,7 @@
 {% extends 'dashboard/base.html' %}
 
-{% block title %}{{ action }} Video Guide{% endblock %}
-{% block header_title %}{{ action }} Video Guide{% endblock %}
+{% block title %}{{ action }} Teltam Tube Video{% endblock %}
+{% block header_title %}{{ action }} Teltam Tube Video{% endblock %}
 {% block nav_videos %}active{% endblock %}
 
 {% block extra_css %}
@@ -12,7 +12,7 @@
 <div class="row">
     <div class="col-12">
         <a href="{% url 'dashboard_video_list' %}" class="btn btn-link text-slate-600 text-decoration-none ps-0 mb-4">
-            <i class="fas fa-arrow-left me-1"></i> Back to Video List
+            <i class="fas fa-arrow-left me-1"></i> Back to Teltam Tube List
         </a>
     </div>
 </div>
@@ -23,7 +23,7 @@
         <!-- Main Form Elements (Left Column) -->
         <div class="col-lg-8">
             <div class="dashboard-card p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-slate-800">Video Guide Information</h5>
+                <h5 class="fw-bold mb-3 text-slate-800">Teltam Tube Video Information</h5>
                 
                 <div class="mb-3">
                     <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">Video Title <span class="text-danger">*</span></label>

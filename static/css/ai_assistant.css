@@ -12,6 +12,14 @@
     flex-direction: column;
     gap: 14px;
     align-items: flex-end;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.ai-floating-buttons-wrapper.hide-fab {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(20px) scale(0.9) !important;
 }
 
 /* Individual Floating Action Button */

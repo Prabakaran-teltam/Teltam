@@ -334,10 +334,10 @@ def send_new_blog_notifications_task(self, blog_id):
         blog.save(update_fields=['is_notification_sent'])
         return {'status': 'SUCCESS', 'sent_count': 0}
 
-    site_url = getattr(settings, 'SITE_URL', 'https://uat.teltam.in').rstrip('/')
+    site_url = getattr(settings, 'SITE_URL', 'https://teltam.in').rstrip('/')
     blog_path = reverse('blog_view', kwargs={'slug': blog.slug})
     blog_url = f"{site_url}{blog_path}"
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Teltam AI <info@uat.teltam.in>')
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Teltam AI <info@teltam.in>')
 
     # Render HTML and plain text email content
     html_content = render_to_string('emails/new_blog_notification.html', {

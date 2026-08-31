@@ -1379,104 +1379,120 @@
         </div>
     </section>
 
-    <!-- Blog & Video Preview Section -->
+    <!-- Section 1: Latest Articles Section -->
     <section class="py-5 bg-white">
         <div class="container py-4">
-            <div class="row align-items-center mb-5">
+            <div class="row align-items-center mb-4 mb-md-5">
                 <div class="col-md-8 text-center text-md-start">
-                    <span class="text-indigo-600 fw-bold text-uppercase">Learning Center</span>
-                    <h2 class="display-5 fw-bold mt-2">Latest Articles & Video Guides</h2>
+                    <span class="text-indigo-600 fw-bold text-uppercase" style="letter-spacing: 0.05em;">Articles &amp; Insights</span>
+                    <h2 class="display-5 fw-bold mt-2 mb-1">Latest Articles</h2>
+                    <p class="text-slate-600 mb-0">Explore insightful blogs, tutorials, and announcements about AI translation.</p>
                 </div>
                 <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
-                    <a href="/blog/" class="btn btn-outline-custom me-2">Read Blog</a>
-                    <a href="/videos/" class="btn btn-outline-custom">Watch Tutorials</a>
+                    <a href="/blog/" class="btn btn-outline-custom">View All Articles <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
 
-            <div class="row g-4">
-                <!-- Blog Preview Column -->
-                <div class="col-md-6">
-                    <h5 class="fw-bold mb-3 text-slate-800"><i class="fas fa-blog me-2" style="color: #4f46e5;"></i> Recent Article</h5>
-                    {% if latest_blogs %}
-                        <div class="d-flex flex-column gap-3">
-                            {% for blog in latest_blogs %}
-                            <div class="glass-card overflow-hidden h-100 p-4 bg-white border">
-                                <!-- Blog Image Container -->
-                                <a href="{% url 'blog_view' slug=blog.slug %}" class="d-block overflow-hidden rounded-3 mb-3 position-relative" style="height: 190px;">
-                                    {% if blog.featured_image %}
-                                        <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
-                                            <i class="fas fa-newspaper fa-3x mb-2 opacity-75"></i>
-                                            <span class="fw-semibold small px-3 text-center text-truncate w-100">{{ blog.title }}</span>
-                                        </div>
-                                    {% endif %}
-                                </a>
+            {% if latest_blogs %}
+                <div class="row g-4">
+                    {% for blog in latest_blogs %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="glass-card overflow-hidden h-100 p-4 bg-white border d-flex flex-column">
+                            <!-- Blog Image Container -->
+                            <a href="{% url 'blog_view' slug=blog.slug %}" class="d-block overflow-hidden rounded-3 mb-3 position-relative" style="height: 190px;">
+                                {% if blog.featured_image %}
+                                    <img src="{{ blog.featured_image.url }}" alt="{{ blog.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                                        <i class="fas fa-newspaper fa-3x mb-2 opacity-75"></i>
+                                        <span class="fw-semibold small px-3 text-center text-truncate w-100">{{ blog.title }}</span>
+                                    </div>
+                                {% endif %}
+                            </a>
 
-                                <div class="d-flex gap-2 align-items-center mb-2">
-                                    <span class="badge text-white" style="background-color: #4f46e5; font-size: 0.78rem;">{{ blog.category }}</span>
-                                    <span class="text-muted small"><i class="far fa-calendar-alt me-1"></i> {{ blog.created_date|date:"M d, Y" }}</span>
-                                </div>
-                                <h5 class="fw-bold mb-2">
-                                    <a href="{% url 'blog_view' slug=blog.slug %}" class="text-decoration-none text-slate-900 text-indigo-hover">{{ blog.title }}</a>
-                                </h5>
-                                <p class="text-slate-600 small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ blog.short_description }}</p>
+                            <div class="d-flex gap-2 align-items-center mb-2">
+                                <span class="badge text-white" style="background-color: #4f46e5; font-size: 0.78rem;">{{ blog.category }}</span>
+                                <span class="text-muted small"><i class="far fa-calendar-alt me-1"></i> {{ blog.created_date|date:"M d, Y" }}</span>
+                            </div>
+                            <h5 class="fw-bold mb-2">
+                                <a href="{% url 'blog_view' slug=blog.slug %}" class="text-decoration-none text-slate-900 text-indigo-hover">{{ blog.title }}</a>
+                            </h5>
+                            <p class="text-slate-600 small mb-4 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ blog.short_description }}</p>
+                            <div>
                                 <a href="{% url 'blog_view' slug=blog.slug %}" class="text-indigo-600 fw-semibold text-decoration-none small d-inline-flex align-items-center">Read Full Article <i class="fas fa-arrow-right ms-1.5"></i></a>
                             </div>
-                            {% endfor %}
                         </div>
-                    {% else %}
-                        <div class="glass-card p-4 text-center text-muted bg-white">
-                            <i class="fas fa-newspaper fa-2x mb-2 text-indigo-300"></i>
-                            <p class="mb-0">No published blog articles yet.</p>
-                        </div>
-                    {% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
-                
-                <!-- Video Preview Column -->
-                <div class="col-md-6">
-                    <h5 class="fw-bold mb-3 text-slate-800"><i class="fab fa-youtube text-danger me-2"></i> Featured Video Guide</h5>
-                    {% if latest_videos %}
-                        <div class="d-flex flex-column gap-3">
-                            {% for video in latest_videos %}
-                            <div class="glass-card overflow-hidden h-100 p-4 bg-white border">
-                                <!-- Video Thumbnail Container with Play Overlay -->
-                                <a href="{% url 'video_view' slug=video.slug %}" class="d-block overflow-hidden rounded-3 mb-3 position-relative" style="height: 190px;">
-                                    {% if video.thumbnail_image %}
-                                        <img src="{{ video.thumbnail_image.url }}" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% elif video.youtube_video_id %}
-                                        <img src="https://img.youtube.com/vi/{{ video.youtube_video_id }}/hqdefault.jpg" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
-                                            <i class="fab fa-youtube fa-3x mb-2 opacity-75"></i>
-                                        </div>
-                                    {% endif %}
-                                    <!-- Play Icon Overlay -->
-                                    <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow" style="width: 48px; height: 48px;">
-                                        <i class="fas fa-play" style="margin-left: 3px;"></i>
-                                    </div>
-                                </a>
+            {% else %}
+                <div class="glass-card p-5 text-center text-muted bg-white border">
+                    <i class="fas fa-newspaper fa-3x mb-3 text-indigo-300"></i>
+                    <h5>No published articles yet</h5>
+                    <p class="mb-0 text-slate-500">Check back soon for new blog posts and updates.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
 
-                                <div class="d-flex gap-2 align-items-center mb-2">
-                                    <span class="badge text-white" style="background-color: #dc3545; font-size: 0.78rem;"><i class="fab fa-youtube me-1"></i> {{ video.category }}</span>
-                                    <span class="text-muted small"><i class="far fa-clock me-1"></i> {{ video.created_date|date:"M d, Y" }}</span>
-                                </div>
-                                <h5 class="fw-bold mb-2">
-                                    <a href="{% url 'video_view' slug=video.slug %}" class="text-decoration-none text-slate-900 text-indigo-hover">{{ video.title }}</a>
-                                </h5>
-                                <p class="text-slate-600 small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ video.short_description }}</p>
-                                <a href="{% url 'video_view' slug=video.slug %}" class="text-danger fw-semibold text-decoration-none small d-inline-flex align-items-center"><i class="fas fa-play me-1.5"></i> Watch Tutorial</a>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="glass-card p-4 text-center text-muted bg-white">
-                            <i class="fab fa-youtube fa-2x mb-2 text-danger opacity-50"></i>
-                            <p class="mb-0">No published video guides yet.</p>
-                        </div>
-                    {% endif %}
+    <!-- Section 2: Teltam Tube Section -->
+    <section class="py-5 bg-light-soft border-top border-bottom">
+        <div class="container py-4">
+            <div class="row align-items-center mb-4 mb-md-5">
+                <div class="col-md-8 text-center text-md-start">
+                    <span class="text-danger fw-bold text-uppercase" style="letter-spacing: 0.05em;"><i class="fab fa-youtube me-1"></i> Video Tutorials</span>
+                    <h2 class="display-5 fw-bold mt-2 mb-1">Teltam Tube</h2>
+                    <p class="text-slate-600 mb-0">Watch step-by-step video guides, product walkthroughs, and visual demos.</p>
+                </div>
+                <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                    <a href="/videos/" class="btn btn-outline-danger border-danger-subtle text-danger rounded-pill px-4 shadow-sm"><i class="fab fa-youtube me-1.5"></i> Explore Teltam Tube</a>
                 </div>
             </div>
+
+            {% if latest_videos %}
+                <div class="row g-4">
+                    {% for video in latest_videos %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="glass-card overflow-hidden h-100 p-4 bg-white border d-flex flex-column">
+                            <!-- Video Thumbnail Container with Play Overlay -->
+                            <a href="{% url 'video_view' slug=video.slug %}" class="d-block overflow-hidden rounded-3 mb-3 position-relative" style="height: 190px;">
+                                {% if video.thumbnail_image %}
+                                    <img src="{{ video.thumbnail_image.url }}" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% elif video.youtube_video_id %}
+                                    <img src="https://img.youtube.com/vi/{{ video.youtube_video_id }}/hqdefault.jpg" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                                        <i class="fab fa-youtube fa-3x mb-2 opacity-75"></i>
+                                    </div>
+                                {% endif %}
+                                <!-- Play Icon Overlay -->
+                                <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow" style="width: 48px; height: 48px; transition: transform 0.2s ease;">
+                                    <i class="fas fa-play" style="margin-left: 3px;"></i>
+                                </div>
+                            </a>
+
+                            <div class="d-flex gap-2 align-items-center mb-2">
+                                <span class="badge text-white" style="background-color: #dc3545; font-size: 0.78rem;"><i class="fab fa-youtube me-1"></i> {{ video.category }}</span>
+                                <span class="text-muted small"><i class="far fa-clock me-1"></i> {{ video.created_date|date:"M d, Y" }}</span>
+                            </div>
+                            <h5 class="fw-bold mb-2">
+                                <a href="{% url 'video_view' slug=video.slug %}" class="text-decoration-none text-slate-900 text-indigo-hover">{{ video.title }}</a>
+                            </h5>
+                            <p class="text-slate-600 small mb-4 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ video.short_description }}</p>
+                            <div>
+                                <a href="{% url 'video_view' slug=video.slug %}" class="text-danger fw-semibold text-decoration-none small d-inline-flex align-items-center"><i class="fas fa-play me-1.5"></i> Watch Tutorial</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="glass-card p-5 text-center text-muted bg-white border">
+                    <i class="fab fa-youtube fa-3x mb-3 text-danger opacity-50"></i>
+                    <h5>No Teltam Tube videos yet</h5>
+                    <p class="mb-0 text-slate-500">Video tutorials and product guides will appear here soon.</p>
+                </div>
+            {% endif %}
         </div>
     </section>
 

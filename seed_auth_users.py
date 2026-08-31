@@ -129,5 +129,12 @@ def seed_users():
 
     print(f"\nImport Completed Successfully! Total Created: {created_count}, Total Updated: {updated_count}")
 
+    # Reset PostgreSQL primary key sequence generator to prevent IntegrityError on new registrations
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT setval(pg_get_serial_sequence('auth_user', 'id'), COALESCE(MAX(id), 1)) FROM auth_user;")
+        max_id = cursor.fetchone()[0]
+        print(f"[SEQUENCE RESET] auth_user_id_seq updated to {max_id}")
+
 if __name__ == '__main__':
     seed_users()

@@ -3040,49 +3040,35 @@ def api_tts_speech(request):
             data = request.POST
 
         text = data.get('text', '').strip()
-        lang = data.get('lang', 'en').strip()
+        lang = data.get('language') or data.get('lang') or 'en'
+        lang = str(lang).strip()
 
         if not text:
-            return JsonResponse({'error': 'Parameter "text" is required for audio playback.'}, status=400)
+            return JsonResponse({'success': False, 'error': 'Parameter "text" is required for text-to-speech audio.'}, status=400)
 
-        # High-definition audio synthesis using OpenAI tts-1 API with gTTS fallback
-        audio_b64 = None
-        from app.services.openai_document_service import get_openai_client
-        openai_client = get_openai_client()
-        if openai_client:
-            try:
-                response = openai_client.audio.speech.create(
-                    model="tts-1",
-                    voice="nova", # Warm, studio-quality natural speaking voice
-                    input=text[:2000]
-                )
-                audio_b64 = base64.b64encode(response.content).decode('utf-8')
-            except Exception as openai_tts_err:
-                logger.warning(f"OpenAI HD TTS API failed, falling back to gTTS: {str(openai_tts_err)}")
+        # Call Production-Grade Azure Neural TTS Service (with fallback and SHA-256 disk caching)
+        from app.services.azure_tts_service import generate_neural_tts_audio
+        result = generate_neural_tts_audio(text=text, language_code=lang)
 
-        if not audio_b64:
-            from gtts import gTTS
-            import io
-            clean_lang = lang.split('-')[0].split('_')[0].lower() if lang else 'en'
-            try:
-                tts = gTTS(text=text[:1500], lang=clean_lang, slow=False)
-            except Exception:
-                tts = gTTS(text=text[:1500], lang='en', slow=False)
-            fp = io.BytesIO()
-            tts.write_to_fp(fp)
-            fp.seek(0)
-            audio_b64 = base64.b64encode(fp.read()).decode('utf-8')
-
-        return JsonResponse({
-            'status': 'success',
-            'audio_url': f"data:audio/mp3;base64,{audio_b64}",
-            'text': text,
-            'lang': lang,
-            'plan': plan_info['name']
-        })
+        if result.get('success'):
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'audio_url': result['audio_url'],
+                'language': result['language'],
+                'voice': result.get('voice', ''),
+                'cached': result.get('cached', False),
+                'plan': plan_info['name']
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'status': 'error',
+                'error': result.get('error', 'Failed to generate audio playback.')
+            }, status=500)
     except Exception as e:
         logger.exception("Failed to generate TTS audio")
-        return JsonResponse({'error': 'Failed to convert text to audio playback.'}, status=500)
+        return JsonResponse({'success': False, 'error': 'Failed to convert text to speech playback.'}, status=500)
 
 
 @csrf_exempt

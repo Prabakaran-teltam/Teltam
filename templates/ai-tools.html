@@ -1121,7 +1121,10 @@
                                                         
                                                         <!-- Audio Preview Player -->
                                                         <div class="audio-player-wrapper mt-3 d-none" id="voiceAudioWrapper">
-                                                            <label class="small fw-bold text-slate-600 mb-1 d-block" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1 text-success"></i> Recorded Audio Preview</label>
+                                                            <div class="d-flex justify-content-between align-items-center mb-1" style="max-width: 300px; margin: 0 auto;">
+                                                                <label class="small fw-bold text-slate-600 mb-0" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1 text-success"></i> Recorded Audio Preview</label>
+                                                                <span id="voiceAudioDurationBadge" class="badge bg-indigo-50 text-indigo-700 font-monospace border border-indigo-200" style="font-size: 0.75rem;">0:00</span>
+                                                            </div>
                                                             <audio id="recordedAudioPlayer" controls class="w-100" style="max-width: 300px; margin: 0 auto; outline: none; height: 36px;"></audio>
                                                         </div>
                                                     </div>
@@ -2612,7 +2615,32 @@
 
                             const audioBlob = new Blob(audioChunks, { type: actualMimeType });
                             const audioUrl = URL.createObjectURL(audioBlob);
+                            
+                            // Workaround for WebM/MediaRecorder live blob duration header in Chrome
                             recordedAudioPlayer.src = audioUrl;
+                            recordedAudioPlayer.onloadedmetadata = function() {
+                                if (recordedAudioPlayer.duration === Infinity || isNaN(recordedAudioPlayer.duration)) {
+                                    recordedAudioPlayer.currentTime = 1e101;
+                                    recordedAudioPlayer.ontimeupdate = function() {
+                                        this.ontimeupdate = null;
+                                        this.currentTime = 0;
+                                        const badge = document.getElementById('voiceAudioDurationBadge');
+                                        if (badge && !isNaN(recordedAudioPlayer.duration) && recordedAudioPlayer.duration !== Infinity) {
+                                            const m = Math.floor(recordedAudioPlayer.duration / 60);
+                                            const s = Math.floor(recordedAudioPlayer.duration % 60).toString().padStart(2, '0');
+                                            badge.innerText = `${m}:${s}`;
+                                        }
+                                    };
+                                }
+                            };
+
+                            const badgeEl = document.getElementById('voiceAudioDurationBadge');
+                            if (badgeEl && recordingSecs > 0) {
+                                const m = Math.floor(recordingSecs / 60);
+                                const s = (recordingSecs % 60).toString().padStart(2, '0');
+                                badgeEl.innerText = `${m}:${s}`;
+                            }
+
                             voiceAudioWrapper.classList.remove('d-none');
                             
                             const audioFile = new File([audioBlob], `recorded_audio.${ext}`, { type: actualMimeType });
@@ -2683,16 +2711,23 @@
                 stopRecordBtn.addEventListener('click', stopVoiceRecording);
             }
 
-            // Speak translation
+            // Speak AI CONTEXT TRANSLATION output
             if (voiceSpeakBtn) {
                 voiceSpeakBtn.addEventListener('click', () => {
-                    const text = voiceTranslationOutput.innerText;
-                    if ('speechSynthesis' in window && text) {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        const langMap = { es: "es-ES", fr: "fr-FR", de: "de-DE", ta: "ta-IN" };
-                        utterance.lang = langMap[voiceTargetCode] || "en-US";
-                        window.speechSynthesis.speak(utterance);
+                    const text = voiceTranslationOutput ? (voiceTranslationOutput.innerText || voiceTranslationOutput.textContent || '').trim() : '';
+                    if (!text || text.includes("Translation will appear here")) {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'No Text Found',
+                                text: 'There is no AI Voice Context translation output to speak.',
+                                confirmButtonColor: '#fbbf24'
+                            });
+                        }
+                        return;
                     }
+                    const targetLang = typeof voiceTargetCode !== 'undefined' ? voiceTargetCode : (document.getElementById('voiceTargetLanguage')?.value || 'en');
+                    window.playTextToSpeech(text, targetLang, voiceSpeakBtn);
                 });
             }
 

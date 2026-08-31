@@ -246,43 +246,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // High-Definition Text-to-Speech Player with automatic backend API & tuned WebSpeech fallback
+    // Global Production Audio Controller (HTML5 Audio + Azure Neural Backend Endpoint with WebSpeech Fallback)
+    window.currentGlobalAudio = null;
+    window.currentGlobalAudioBtn = null;
+    window.globalAudioOrigHTML = null;
+
     window.playTextToSpeech = function(text, langCode, triggerBtn = null) {
         if (!text || !text.trim() || text.includes("Translating")) return;
 
-        // Stop any existing playing audio or speech synthesis
-        if (window.currentTtsAudio) {
-            try { window.currentTtsAudio.pause(); } catch(e) {}
-            window.currentTtsAudio = null;
-        }
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-        }
+        // Clean text for speech: remove HTML tags and markdown symbols
+        let cleanText = text.replace(/<[^>]+>/g, ' ')
+                            .replace(/[\*\#\_\[\]\(\)\`\~]+/g, ' ')
+                            .replace(/\s+/g, ' ').trim();
+        if (!cleanText) cleanText = text.trim();
 
-        let origBtnHTML = null;
-        if (triggerBtn) {
-            origBtnHTML = triggerBtn.innerHTML;
-            triggerBtn.innerHTML = `<i class="fas fa-volume-high fa-beat me-1 text-indigo-600"></i> Speaking...`;
-            triggerBtn.disabled = true;
-        }
-
-        const restoreBtn = () => {
-            if (triggerBtn && origBtnHTML) {
-                triggerBtn.innerHTML = origBtnHTML;
-                triggerBtn.disabled = false;
-            }
-        };
-
-        // Helper for tuned local Web Speech API as fallback
-        const speakLocalTuned = (txt, targetLang) => {
+        // Helper for local Web Speech API fallback (guarantees audio output even if server fails)
+        const speakWebSpeechFallback = (txt, targetLang) => {
             if (!('speechSynthesis' in window)) {
-                restoreBtn();
+                if (triggerBtn && origBtnHTML) {
+                    triggerBtn.innerHTML = origBtnHTML;
+                    triggerBtn.disabled = false;
+                }
                 return;
             }
-            
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(txt);
-            // Calibrate speaking rate to 0.88 for maximum clarity (articulate, natural speed)
-            utterance.rate = 0.88;
+            utterance.rate = 0.90;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
 
@@ -292,45 +281,120 @@ document.addEventListener("DOMContentLoaded", () => {
                 ml: "ml-IN", mr: "mr-IN", bn: "bn-IN", gu: "gu-IN",
                 zh: "zh-CN", ja: "ja-JP", ko: "ko-KR", ar: "ar-SA"
             };
-            const targetLocale = langMap[targetLang] || targetLang;
+            const targetLocale = langMap[targetLang] || targetLang || 'en-US';
             utterance.lang = targetLocale;
 
-            // Ensure voices are loaded
-            let voices = window.speechSynthesis.getVoices();
+            const voices = window.speechSynthesis.getVoices();
             if (voices && voices.length > 0) {
                 const langPrefix = targetLocale.split('-')[0].toLowerCase();
                 const matching = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
                 if (matching.length > 0) {
                     let best = matching.find(v => 
-                        v.name.includes("Google") || 
-                        v.name.includes("Natural") || 
-                        v.name.includes("Neural") || 
-                        v.name.includes("Online") || 
-                        v.name.includes("Microsoft") || 
-                        v.name.includes("Apple")
+                        v.name.includes("Natural") || v.name.includes("Neural") || 
+                        v.name.includes("Google") || v.name.includes("Microsoft") || v.name.includes("Apple")
                     ) || matching[0];
                     utterance.voice = best;
                 }
             }
 
-            utterance.onend = restoreBtn;
-            utterance.onerror = restoreBtn;
+            if (triggerBtn) {
+                triggerBtn.innerHTML = `<i class="fas fa-volume-high fa-beat me-1.5 text-primary"></i> Speaking...`;
+                triggerBtn.disabled = false;
+            }
+
+            utterance.onend = () => {
+                if (triggerBtn && origBtnHTML) {
+                    triggerBtn.innerHTML = origBtnHTML;
+                    triggerBtn.disabled = false;
+                }
+            };
+            utterance.onerror = () => {
+                if (triggerBtn && origBtnHTML) {
+                    triggerBtn.innerHTML = origBtnHTML;
+                    triggerBtn.disabled = false;
+                }
+            };
+
             window.speechSynthesis.speak(utterance);
         };
 
-        // 1. Primary: Call backend /api/tts/ for OpenAI HD / server-side crisp MP3 audio
+        // Toggle Play / Pause if user clicks on the SAME button while audio is active
+        if (window.currentGlobalAudioBtn === triggerBtn && (window.currentGlobalAudio || window.speechSynthesis?.speaking)) {
+            if (window.currentGlobalAudio) {
+                if (!window.currentGlobalAudio.paused) {
+                    window.currentGlobalAudio.pause();
+                    if (triggerBtn) {
+                        triggerBtn.innerHTML = `<i class="fas fa-play me-1.5 text-indigo-600"></i> Play`;
+                    }
+                    return;
+                } else {
+                    window.currentGlobalAudio.play().then(() => {
+                        if (triggerBtn) {
+                            triggerBtn.innerHTML = `<i class="fas fa-pause me-1.5 text-indigo-600"></i> Pause`;
+                        }
+                    }).catch(err => {
+                        speakWebSpeechFallback(cleanText, langCode);
+                    });
+                    return;
+                }
+            }
+            if (window.speechSynthesis?.speaking) {
+                window.speechSynthesis.cancel();
+                if (triggerBtn && window.globalAudioOrigHTML) {
+                    triggerBtn.innerHTML = window.globalAudioOrigHTML;
+                    triggerBtn.disabled = false;
+                }
+                window.currentGlobalAudioBtn = null;
+                return;
+            }
+        }
+
+        // Stop any active ongoing audio from previous playback
+        if (window.currentGlobalAudio) {
+            try { window.currentGlobalAudio.pause(); } catch(e) {}
+            window.currentGlobalAudio = null;
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        if (window.currentGlobalAudioBtn && window.globalAudioOrigHTML) {
+            window.currentGlobalAudioBtn.innerHTML = window.globalAudioOrigHTML;
+            window.currentGlobalAudioBtn.disabled = false;
+        }
+
+        let origBtnHTML = null;
+        if (triggerBtn) {
+            origBtnHTML = triggerBtn.innerHTML;
+            window.globalAudioOrigHTML = origBtnHTML;
+            triggerBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-1.5 text-indigo-600"></i> Generating audio...`;
+            triggerBtn.disabled = true;
+            window.currentGlobalAudioBtn = triggerBtn;
+        }
+
+        const restoreBtn = () => {
+            if (triggerBtn && origBtnHTML) {
+                triggerBtn.innerHTML = origBtnHTML;
+                triggerBtn.disabled = false;
+            }
+            if (window.currentGlobalAudioBtn === triggerBtn) {
+                window.currentGlobalAudioBtn = null;
+                window.globalAudioOrigHTML = null;
+            }
+        };
+
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                           (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 
-        fetch('/api/tts/', {
+        // Call Production Backend TTS Endpoint (/api/text-to-speech/)
+        fetch('/api/text-to-speech/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({
-                text: text,
-                lang: langCode || 'en'
+                text: cleanText,
+                language: langCode || 'en'
             })
         })
         .then(res => {
@@ -338,22 +402,37 @@ document.addEventListener("DOMContentLoaded", () => {
             return res.json();
         })
         .then(data => {
-            if (data.status === 'success' && data.audio_url) {
+            if (data.success && data.audio_url) {
                 const audio = new Audio(data.audio_url);
-                window.currentTtsAudio = audio;
-                audio.onended = restoreBtn;
-                audio.onerror = () => speakLocalTuned(text, langCode);
-                audio.play().catch(err => {
-                    console.warn("Autoplay blocked/failed, using tuned local TTS fallback:", err);
-                    speakLocalTuned(text, langCode);
+                window.currentGlobalAudio = audio;
+
+                audio.onended = () => {
+                    restoreBtn();
+                };
+
+                audio.onerror = (e) => {
+                    console.warn("HTML5 Audio error, using Web Speech API fallback:", e);
+                    speakWebSpeechFallback(cleanText, langCode);
+                };
+
+                // Play Audio
+                audio.play().then(() => {
+                    if (triggerBtn) {
+                        triggerBtn.innerHTML = `<i class="fas fa-pause me-1.5 text-indigo-600"></i> Pause`;
+                        triggerBtn.disabled = false;
+                    }
+                }).catch(err => {
+                    console.warn("Autoplay restriction / Play failure, using Web Speech API fallback:", err);
+                    speakWebSpeechFallback(cleanText, langCode);
                 });
             } else {
-                speakLocalTuned(text, langCode);
+                console.warn("Backend TTS audio generation warning, using Web Speech API fallback:", data.error);
+                speakWebSpeechFallback(cleanText, langCode);
             }
         })
         .catch(err => {
-            console.warn("Backend TTS endpoint error, using tuned local TTS fallback:", err);
-            speakLocalTuned(text, langCode);
+            console.warn("TTS API Connection error, using Web Speech API fallback:", err);
+            speakWebSpeechFallback(cleanText, langCode);
         });
     };
 

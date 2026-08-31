@@ -90,19 +90,19 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
-        # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': os.environ.get('POSTGRES_DB', 'UAT_TELTAM'),
-        # 'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        # 'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'root'),
-        # 'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-        # 'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'teltam_uat_db'), 
-        'USER': os.environ.get('POSTGRES_USER', 'teltam_uat_user'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'teltamuat'),
+        'NAME': os.environ.get('POSTGRES_DB', 'UAT_TELTAM'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'root'),
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': os.environ.get('POSTGRES_DB', 'teltam_uat_db'), 
+        # 'USER': os.environ.get('POSTGRES_USER', 'teltam_uat_user'),
+        # 'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'teltamuat'),
+        # 'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        # 'PORT': os.environ.get('POSTGRES_PORT', '5432'),
 
     }
 }
@@ -215,9 +215,10 @@ ALLOW_DOWNGRADE = False
 
 # OpenAI API Settings
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENAI_TTS_MODEL = os.environ.get('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts')
 
 # Startup Log
-print(f"[Startup Log] Environment file loaded. OpenAI API Key configured: {bool(OPENAI_API_KEY)}")
+print(f"[Startup Log] Environment file loaded. OpenAI API Key configured: {bool(OPENAI_API_KEY)} (Model: {OPENAI_TTS_MODEL})")
 
 # Document Translation settings
 ALLOW_ANONYMOUS_TRANSLATION = True
@@ -234,6 +235,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'gvns fnbn hrwd gzgx
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Teltam AI <teltam2025@gmail.com>')
 SITE_URL = os.environ.get('SITE_URL', 'https://teltam.in')
 
-
-
+# Azure Neural Text-to-Speech Settings
+AZURE_SPEECH_KEY = os.environ.get('AZURE_SPEECH_KEY', '')
+AZURE_SPEECH_REGION = os.environ.get('AZURE_SPEECH_REGION', 'eastus')
 

@@ -32,6 +32,7 @@ urlpatterns = [
     
     # Translators API Playground endpoints
     path('api/translate/', views.translate_api, name='translate_api'),
+    path('api/translate/camera/', views.api_translate_camera, name='api_translate_camera'),
     path('api/upload-document/', views.upload_document, name='upload_document'),
     path('api/document-status/<str:task_id>/', views.document_task_status, name='document_task_status'),
     path('download/document/<int:id>/', views.download_translated_file, name='download_translated_file'),

@@ -373,30 +373,59 @@ def register_view(request):
                 return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': pending.get('email')})
 
             if otp_input == pending.get('otp'):
-                try:
-                    name = pending['name']
-                    email = pending['email']
-                    password = pending['password']
+                name = pending.get('name', '')
+                email = pending.get('email', '')
+                password = pending.get('password', '')
 
-                    # Create user account
+                # 1. Safeguard: Check if user account was already created
+                existing_user = User.objects.filter(username=email).first()
+                if not existing_user:
+                    existing_user = User.objects.filter(email=email).first()
+
+                if existing_user:
+                    request.session.pop('pending_otp_verification', None)
+                    login(request, existing_user)
+                    messages.success(request, f"Welcome back to Teltam AI, {name or existing_user.first_name}! Your email has been verified.")
+                    return redirect('user_dashboard_home')
+
+                # 2. Create User with automatic PostgreSQL primary key sequence auto-resync
+                user = None
+                try:
                     user = User.objects.create_user(
                         username=email, email=email, password=password, first_name=name
                     )
+                except Exception as create_err:
+                    logger.warning(f"Initial create_user failed ({create_err}), running PostgreSQL sequence resync...")
+                    try:
+                        from django.db import connection
+                        cursor = connection.cursor()
+                        cursor.execute("SELECT setval(pg_get_serial_sequence('auth_user', 'id'), COALESCE(MAX(id), 1)) FROM auth_user;")
+                    except Exception as seq_err:
+                        logger.error(f"Sequence resync error: {seq_err}")
+                    
+                    # Retry creation after sequence sync
+                    try:
+                        user = User.objects.create_user(
+                            username=email, email=email, password=password, first_name=name
+                        )
+                    except Exception as retry_err:
+                        logger.exception("Failed to create user during OTP verification after sequence resync")
+                        messages.error(request, "Failed to create account. Please try again.")
+                        return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': email})
 
-                    # Clear pending session
+                if user:
                     request.session.pop('pending_otp_verification', None)
-
-                    # Send Welcome Email
-                    send_welcome_registration_email(email, name)
+                    
+                    # Send Welcome Email safely in background
+                    try:
+                        send_welcome_registration_email(email, name)
+                    except Exception as mail_err:
+                        logger.warning(f"Welcome email background trigger warning: {mail_err}")
 
                     # Log in user automatically
                     login(request, user)
                     messages.success(request, f"Welcome to Teltam AI, {name}! Your email has been verified and your account is active.")
                     return redirect('user_dashboard_home')
-
-                except Exception as e:
-                    logger.exception("Failed to create user during OTP verification")
-                    messages.error(request, "Failed to create account. Please try again.")
             else:
                 messages.error(request, "Invalid verification code. Please check your email and try again.")
                 return render(request, 'register.html', {'step': 'otp_verify', 'pending_email': pending.get('email')})

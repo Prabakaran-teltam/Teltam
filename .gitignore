@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 media/
 staticfiles/
+prject/settings.py

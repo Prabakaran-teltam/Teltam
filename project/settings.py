@@ -90,19 +90,19 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'UAT_TELTAM'),
-        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'root'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-
         # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': os.environ.get('POSTGRES_DB', 'teltam_uat_db'), 
-        # 'USER': os.environ.get('POSTGRES_USER', 'teltam_uat_user'),
-        # 'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'teltamuat'),
+        # 'NAME': os.environ.get('POSTGRES_DB', 'UAT_TELTAM'),
+        # 'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        # 'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'root'),
         # 'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         # 'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'teltam_uat_db'), 
+        'USER': os.environ.get('POSTGRES_USER', 'teltam_uat_user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'teltamuat'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
 
     }
      
@@ -203,14 +203,13 @@ CKEDITOR_CONFIGS = {
 # =====================================================================
 # PhonePe V2 Standard Checkout Gateway Settings
 # =====================================================================
-PHONEPE_CLIENT_ID = os.environ.get('PHONEPE_CLIENT_ID', 'PGTESTPAYUAT')
-PHONEPE_CLIENT_SECRET = os.environ.get('PHONEPE_CLIENT_SECRET', '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399')
-PHONEPE_CLIENT_VERSION = int(os.environ.get('PHONEPE_CLIENT_VERSION', 1))
-PHONEPE_ENV = os.environ.get('PHONEPE_ENV', 'SANDBOX')
-PHONEPE_REDIRECT_URL = os.environ.get('PHONEPE_REDIRECT_URL', 'https://teltam.in/payment/phonepe/status/')
-PHONEPE_CALLBACK_URL = os.environ.get('PHONEPE_CALLBACK_URL', 'https://teltam.in/payment/phonepe/callback/')
-PHONEPE_MERCHANT_ID = os.environ.get('PHONEPE_MERCHANT_ID', 'PGTESTPAYUAT')
-
+PHONEPE_CLIENT_ID="M23GWPBU6FENJ_2512061206"
+PHONEPE_CLIENT_SECRET="MjYyZWUxZDEtNTA3ZC00MmM2LTkwYmMtMWE2NDYyNDg1ZmM3"
+PHONEPE_CLIENT_VERSION=1
+PHONEPE_ENV="PRODUCTION"
+PHONEPE_REDIRECT_URL="https://teltam.in/payment/phonepe/status/"
+PHONEPE_CALLBACK_URL="https://teltam.in/payment/phonepe/callback/"
+PHONEPE_MERCHANT_ID="M23GWPBU6FENJ_2512061206"
 # Upgrade / Downgrade subscription flow settings
 ALLOW_DOWNGRADE = False
 

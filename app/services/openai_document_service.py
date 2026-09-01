@@ -15,11 +15,14 @@ client = None
 
 def get_openai_client():
     global client
-    if not client:
-        api_key = getattr(settings, 'OPENAI_API_KEY', None)
-        if api_key:
+    api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY', '')
+    if isinstance(api_key, str):
+        api_key = api_key.strip().strip('"').strip("'")
+    if api_key:
+        if not client:
             client = OpenAI(api_key=api_key)
-    return client
+        return client
+    return None
 
 def extract_text_from_image_with_openai(image_path):
     """

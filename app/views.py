@@ -882,8 +882,9 @@ def upload_document(request):
     Returns Celery task ID and history ID immediately.
     """
     # Ensure OpenAI API key is configured
-    if not getattr(settings, 'OPENAI_API_KEY', None):
-        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY.'}, status=500)
+    openai_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY')
+    if not openai_key:
+        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY in your .env file on the server.'}, status=500)
 
     # Check authentication settings
     if not request.user.is_authenticated:
@@ -1067,8 +1068,9 @@ def upload_voice_api(request):
     Returns Celery task ID.
     """
     # Ensure OpenAI API key is configured
-    if not getattr(settings, 'OPENAI_API_KEY', None):
-        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY.'}, status=500)
+    openai_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY')
+    if not openai_key:
+        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY in your .env file on the server.'}, status=500)
 
     # Rate limiting
     ip = get_client_ip(request)
@@ -2478,8 +2480,9 @@ def summarize_document_api(request):
     if not has_active_sub:
         return JsonResponse({'error': 'Subscription Required: You must have an active subscription plan to use the AI Summarizer.'}, status=403)
 
-    if not getattr(settings, 'OPENAI_API_KEY', None):
-        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY.'}, status=500)
+    openai_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY')
+    if not openai_key:
+        return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY in your .env file on the server.'}, status=500)
 
     try:
         data = json.loads(request.body)

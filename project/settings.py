@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file immediately
 env_file = BASE_DIR / '.env'
 if env_file.exists():
-    load_dotenv(env_file)
+    load_dotenv(env_file, override=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -105,6 +105,7 @@ DATABASES = {
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
 
     }
+     
 }
 
 
@@ -214,7 +215,8 @@ PHONEPE_MERCHANT_ID = os.environ.get('PHONEPE_MERCHANT_ID', 'PGTESTPAYUAT')
 ALLOW_DOWNGRADE = False
 
 # OpenAI API Settings
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+raw_openai_key = os.environ.get('OPENAI_API_KEY', '')
+OPENAI_API_KEY = raw_openai_key.strip().strip('"').strip("'") if raw_openai_key else None
 OPENAI_TTS_MODEL = os.environ.get('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts')
 
 # Startup Log

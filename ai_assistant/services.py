@@ -19,13 +19,14 @@ def get_openai_client():
     Returns configured OpenAI client instance using settings.OPENAI_API_KEY.
     """
     global _openai_client
-    if not _openai_client:
-        api_key = getattr(settings, 'OPENAI_API_KEY', None)
-        if not api_key:
-            api_key = os.environ.get('OPENAI_API_KEY', None)
-        if api_key:
+    api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY', '')
+    if isinstance(api_key, str):
+        api_key = api_key.strip().strip('"').strip("'")
+    if api_key:
+        if not _openai_client:
             _openai_client = OpenAI(api_key=api_key)
-    return _openai_client
+        return _openai_client
+    return None
 
 
 def generate_career_response(messages_history):

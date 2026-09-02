@@ -2463,18 +2463,15 @@
                     body: formData,
                     timeout: 60000
                 })
-                .then(res => {
-                    return res.json().then(data => {
-                        if (!res.ok) {
-                            throw new Error(data.error || `Server returned error ${res.status}`);
-                        }
-                        return data;
-                    }).catch(jsonErr => {
-                        if (!res.ok) {
-                            throw new Error(`Server returned HTTP ${res.status}`);
-                        }
-                        throw jsonErr;
-                    });
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        const errorMsg = data.error || `Voice translation failed with status code ${res.status}`;
+                        const err = new Error(errorMsg);
+                        err.status = res.status;
+                        throw err;
+                    }
+                    return data;
                 })
                 .then(data => {
                     voiceStatusText.innerText = "Voice processing queued...";
@@ -2484,16 +2481,33 @@
                     console.error("Audio upload error:", err);
                     voiceTranslationSpinner.classList.add('d-none');
                     voiceStatusText.innerText = "Failed to translate audio: " + err.message;
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Translation Failed',
-                        text: 'Voice translation failed: ' + err.message,
-                        confirmButtonColor: '#ef4444',
-                        customClass: {
-                            confirmButton: 'btn btn-danger rounded-pill px-4'
-                        },
-                        buttonsStyling: false
-                    });
+                    
+                    if (err.status === 403) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Plan Limit Reached',
+                            text: err.message,
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fas fa-crown me-1"></i> Upgrade Plan',
+                            cancelButtonText: 'Close',
+                            confirmButtonColor: '#6366f1'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/pricing/';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Translation Failed',
+                            text: 'Voice translation failed: ' + err.message,
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                confirmButton: 'btn btn-danger rounded-pill px-4'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
                 });
             }
 

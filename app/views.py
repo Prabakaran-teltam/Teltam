@@ -1073,11 +1073,12 @@ def upload_document(request):
         'status': 'QUEUED'
     })
 
+@csrf_exempt
 @require_POST
 def upload_voice_api(request):
     """
     POST API to upload or record voice audio for translation.
-    Rate limits to 10 uploads per minute.
+    Rate limits to 20 uploads per minute.
     Returns Celery task ID.
     """
     # Ensure OpenAI API key is configured
@@ -1085,12 +1086,12 @@ def upload_voice_api(request):
     if not openai_key:
         return JsonResponse({'error': 'OpenAI API client is not configured. Please set OPENAI_API_KEY in your .env file on the server.'}, status=500)
 
-    # Rate limiting
+    # Rate limiting (20 voice uploads per minute)
     ip = get_client_ip(request)
     limit_key = f"rate_limit_upload_voice_{ip}"
     count = cache.get(limit_key, 0)
-    if count >= 10:
-        return JsonResponse({'error': 'Too many voice uploads. Please wait a minute.'}, status=429)
+    if count >= 20:
+        return JsonResponse({'error': 'Too many voice uploads. Please wait a minute before translating more audio.'}, status=429)
     cache.set(limit_key, count + 1, timeout=60)
 
     if 'file' not in request.FILES:
@@ -1112,9 +1113,9 @@ def upload_voice_api(request):
                 tool_type='voice',
                 created_date__gte=start_of_day
             ).count()
-            if voice_today_count >= 2:
+            if voice_today_count >= 15:
                 return JsonResponse({
-                    'error': f"Daily voice translation limit reached (2 mins/day on {plan_info['name']}). Upgrade to Pro (60 mins/mo) or Business (Unlimited)."
+                    'error': f"Daily voice translation limit reached (15 voice recordings/day on {plan_info['name']}). Upgrade to Pro (60 mins/mo) or Business (Unlimited)."
                 }, status=403)
         elif plan_info['tier_order'] == 2:
             start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)

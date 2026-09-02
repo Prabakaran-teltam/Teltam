@@ -619,11 +619,11 @@ def get_client_ip(request):
 PLAN_MATRIX_LIMITS = {
     1: { # Basic Plan
         'word_limit_monthly': 50000,
-        'doc_files_monthly': 5,          # 5 files/mo (Allowed for Basic users)
-        'tts_audio_plays_daily': 5,      # 5 plays/day
-        'multi_image_max_batch': 1,      # 1 image per batch
-        'voice_mins_daily': 2,           # 2 mins/day (120s)
-        'voice_mins_monthly': 60,
+        'doc_files_monthly': 30,         # 30 files/mo (Generous limit for Basic users)
+        'tts_audio_plays_daily': 20,     # 20 plays/day
+        'multi_image_max_batch': 5,      # Up to 5 images per batch
+        'voice_mins_daily': 10,          # 10 mins/day
+        'voice_mins_monthly': 120,
         'camera_ar_allowed': True,       # Enabled for live camera translation
         'camera_ar_max_mins_session': 5,
         'api_keys_allowed': False,
@@ -898,12 +898,12 @@ def upload_document(request):
         if not getattr(settings, 'ALLOW_ANONYMOUS_TRANSLATION', False):
             return JsonResponse({'error': 'You must be logged in to translate documents.'}, status=401)
 
-    # Rate limiting
+    # Rate limiting (20 document uploads per minute)
     ip = get_client_ip(request)
     limit_key = f"rate_limit_upload_doc_{ip}"
     count = cache.get(limit_key, 0)
-    if count >= 5:
-        return JsonResponse({'error': 'Too many document uploads. Please wait a minute.'}, status=429)
+    if count >= 20:
+        return JsonResponse({'error': 'Too many document uploads. Please wait a minute before uploading more documents.'}, status=429)
     cache.set(limit_key, count + 1, timeout=60)
 
     uploaded_files = request.FILES.getlist('file') or request.FILES.getlist('files')

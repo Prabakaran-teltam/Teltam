@@ -212,6 +212,59 @@
             cursor: pointer;
         }
 
+        /* Desktop Sidebar Left Arrow Collapse Button & Animations */
+        .btn-sidebar-arrow-collapse {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8 !important;
+            padding: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        .btn-sidebar-arrow-collapse:hover {
+            background-color: #6366f1 !important;
+            border-color: #818cf8 !important;
+            color: #ffffff !important;
+            transform: scale(1.08);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+        }
+        .btn-sidebar-arrow-collapse i {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Desktop Collapsed Sidebar State (Slides left like sticky/skidy) */
+        @media (min-width: 992px) {
+            .sidebar-toggle {
+                display: block !important;
+            }
+            body.user-sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
+            }
+            body.user-sidebar-collapsed .content-wrapper {
+                margin-left: 0 !important;
+            }
+            body.user-sidebar-collapsed #desktopSidebarCollapseBtn {
+                position: fixed;
+                top: 17px;
+                left: 18px;
+                z-index: 1050;
+                background-color: #6366f1 !important;
+                border-color: #818cf8 !important;
+                color: #ffffff !important;
+                box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5) !important;
+                width: 36px;
+                height: 36px;
+            }
+            body.user-sidebar-collapsed #desktopSidebarCollapseBtn #sidebarArrowIcon {
+                transform: rotate(180deg);
+            }
+        }
+
         /* Main Workspace Content */
         .main-content {
             padding: 2.25rem;
@@ -532,14 +585,20 @@
 
     <!-- Sidebar Menu -->
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-brand d-flex align-items-center justify-content-between">
+        <div class="sidebar-brand d-flex align-items-center justify-content-between position-relative">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'user_dashboard_home' %}">
                 <img src="{% static 'images/favicon.png' %}" alt="Teltam AI Logo" class="rounded-2" style="width: 36px; height: 36px; object-fit: contain;">
                 <span class="fs-4 fw-bold text-white" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Teltam<span style="color: #a855f7;">.ai</span></span>
             </a>
-            <button class="btn text-slate-400 d-lg-none border-0 p-1 shadow-none" id="sidebarCloseBtn" aria-label="Close Mobile Sidebar">
-                <i class="fas fa-xmark fs-4"></i>
-            </button>
+            <div class="d-flex align-items-center gap-1">
+                <!-- Desktop Sidebar Left Arrow Collapse Button -->
+                <button class="btn btn-sidebar-arrow-collapse d-none d-lg-flex align-items-center justify-content-center" id="desktopSidebarCollapseBtn" title="Collapse Sidebar (Slide Left)" aria-label="Collapse Sidebar">
+                    <i class="fas fa-chevron-left" id="sidebarArrowIcon" style="font-size: 0.82rem;"></i>
+                </button>
+                <button class="btn text-slate-400 d-lg-none border-0 p-1 shadow-none" id="sidebarCloseBtn" aria-label="Close Mobile Sidebar">
+                    <i class="fas fa-xmark fs-4"></i>
+                </button>
+            </div>
         </div>
 
         <div class="sidebar-content-body">
@@ -732,7 +791,23 @@
             const toggle = document.getElementById('sidebar-toggle');
             const backdrop = document.getElementById('sidebarBackdrop');
             const closeBtn = document.getElementById('sidebarCloseBtn');
+            const desktopCollapseBtn = document.getElementById('desktopSidebarCollapseBtn');
             
+            // Restore desktop collapsed preference from localStorage
+            const isCollapsed = localStorage.getItem('user_sidebar_collapsed') === 'true';
+            if (isCollapsed && window.innerWidth >= 992) {
+                document.body.classList.add('user-sidebar-collapsed');
+            }
+
+            function toggleDesktopSidebar() {
+                const collapsed = document.body.classList.toggle('user-sidebar-collapsed');
+                localStorage.setItem('user_sidebar_collapsed', collapsed ? 'true' : 'false');
+            }
+
+            if (desktopCollapseBtn) {
+                desktopCollapseBtn.addEventListener('click', toggleDesktopSidebar);
+            }
+
             function openSidebar() {
                 if (sidebar) sidebar.classList.add('show');
                 if (backdrop) backdrop.classList.add('show');
@@ -747,10 +822,14 @@
 
             if (toggle) {
                 toggle.addEventListener('click', () => {
-                    if (sidebar && sidebar.classList.contains('show')) {
-                        closeSidebar();
+                    if (window.innerWidth >= 992) {
+                        toggleDesktopSidebar();
                     } else {
-                        openSidebar();
+                        if (sidebar && sidebar.classList.contains('show')) {
+                            closeSidebar();
+                        } else {
+                            openSidebar();
+                        }
                     }
                 });
             }

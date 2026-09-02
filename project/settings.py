@@ -219,8 +219,7 @@ PHONEPE_TEST_SIMULATOR = os.environ.get("PHONEPE_TEST_SIMULATOR", "False").lower
 ALLOW_DOWNGRADE = False
 
 # OpenAI API Settings
-raw_openai_key = os.environ.get('OPENAI_API_KEY', '')
-OPENAI_API_KEY = raw_openai_key.strip().strip('"').strip("'") if raw_openai_key else None
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 OPENAI_TTS_MODEL = os.environ.get('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts')
 
 # Startup Log

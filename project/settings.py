@@ -12,7 +12,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import warnings
 from dotenv import load_dotenv
+
+# Suppress benign PhonePe SDK dataclasses_json RuntimeWarning
+warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*refresh_token.*")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -203,13 +207,14 @@ CKEDITOR_CONFIGS = {
 # =====================================================================
 # PhonePe V2 Standard Checkout Gateway Settings
 # =====================================================================
-PHONEPE_CLIENT_ID="M23GWPBU6FENJ_2512061206"
-PHONEPE_CLIENT_SECRET="MjYyZWUxZDEtNTA3ZC00MmM2LTkwYmMtMWE2NDYyNDg1ZmM3"
-PHONEPE_CLIENT_VERSION=1
-PHONEPE_ENV="PRODUCTION"
-PHONEPE_REDIRECT_URL="https://teltam.in/payment/phonepe/status/"
-PHONEPE_CALLBACK_URL="https://teltam.in/payment/phonepe/callback/"
-PHONEPE_MERCHANT_ID="M23GWPBU6FENJ_2512061206"
+PHONEPE_CLIENT_ID = os.environ.get("PHONEPE_CLIENT_ID", "M23GWPBU6FENJ_2512061206")
+PHONEPE_CLIENT_SECRET = os.environ.get("PHONEPE_CLIENT_SECRET", "MjYyZWUxZDEtNTA3ZC00MmM2LTkwYmMtMWE2NDYyNDg1ZmM3")
+PHONEPE_CLIENT_VERSION = int(os.environ.get("PHONEPE_CLIENT_VERSION", 1))
+PHONEPE_ENV = os.environ.get("PHONEPE_ENV", "SANDBOX").upper()
+PHONEPE_REDIRECT_URL = os.environ.get("PHONEPE_REDIRECT_URL", "https://teltam.in/payment/phonepe/status/")
+PHONEPE_CALLBACK_URL = os.environ.get("PHONEPE_CALLBACK_URL", "https://teltam.in/payment/phonepe/callback/")
+PHONEPE_MERCHANT_ID = os.environ.get("PHONEPE_MERCHANT_ID", "M23GWPBU6FENJ_2512061206")
+PHONEPE_TEST_SIMULATOR = os.environ.get("PHONEPE_TEST_SIMULATOR", "False").lower() in ("true", "1", "t")
 # Upgrade / Downgrade subscription flow settings
 ALLOW_DOWNGRADE = False
 

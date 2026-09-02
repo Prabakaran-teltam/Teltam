@@ -2154,12 +2154,25 @@ def payment_initiate(request, plan_slug):
         status='pending'
     )
     
+    # If local/staging payment simulator mode is enabled
+    if getattr(settings, 'PHONEPE_TEST_SIMULATOR', False):
+        process_successful_payment(
+            merchant_order_id=merchant_order_id,
+            phonepe_order_id=f"SIM_{uuid.uuid4().hex[:10]}",
+            phonepe_transaction_id=f"TXN_SIM_{uuid.uuid4().hex[:10]}",
+            raw_response={"simulated": True, "plan": plan.name}
+        )
+        messages.success(request, f"Simulated Payment Successful! Your {plan.name} subscription is now active.")
+        return redirect('payment_success')
+
     try:
         service = PhonePeService()
+        user_mobile = getattr(request.user, 'profile', None) and getattr(request.user.profile, 'phone_number', None)
         # Call PhonePe pay request builder
         response = service.initiate_payment(
             merchant_order_id=merchant_order_id,
-            amount_in_rupees=plan.price
+            amount_in_rupees=plan.price,
+            user_mobile=user_mobile
         )
         
         # Save payload details in DB

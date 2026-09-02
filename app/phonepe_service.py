@@ -1,5 +1,10 @@
 import logging
+import warnings
 from django.conf import settings
+
+# Suppress benign PhonePe SDK dataclasses_json refresh_token RuntimeWarning
+warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*refresh_token.*")
+
 from phonepe.sdk.pg.payments.v2.standard_checkout_client import StandardCheckoutClient
 from phonepe.sdk.pg.env import Env
 from phonepe.sdk.pg.payments.v2.models.request.standard_checkout_pay_request import StandardCheckoutPayRequest
@@ -27,7 +32,7 @@ class PhonePeService:
             )
         return cls._instance
 
-    def initiate_payment(self, merchant_order_id, amount_in_rupees, redirect_url=None):
+    def initiate_payment(self, merchant_order_id, amount_in_rupees, redirect_url=None, user_mobile=None):
         """
         Initiates checkout payment by converting amount to paisa and invoking pay() on standard checkout client.
         """
@@ -40,11 +45,19 @@ class PhonePeService:
         logger.info(f"Building pay request: Order ID={merchant_order_id}, Amount={amount_paisa} paisa, Redirect={redirect_url}")
         
         try:
-            pay_request = StandardCheckoutPayRequest.build_request(
-                merchant_order_id=merchant_order_id,
-                amount=amount_paisa,
-                redirect_url=redirect_url
-            )
+            kwargs = {
+                "merchant_order_id": merchant_order_id,
+                "amount": amount_paisa,
+                "redirect_url": redirect_url
+            }
+            if user_mobile:
+                try:
+                    from phonepe.sdk.pg.payments.v2.models.request.prefill_user_login_details import PrefillUserLoginDetails
+                    kwargs["prefill_user_login_details"] = PrefillUserLoginDetails(phone_number=str(user_mobile))
+                except Exception as pe:
+                    logger.warning(f"Could not build prefill user details: {pe}")
+
+            pay_request = StandardCheckoutPayRequest.build_request(**kwargs)
             response = client.pay(pay_request)
             return response
         except Exception as e:

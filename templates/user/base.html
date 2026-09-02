@@ -462,7 +462,7 @@
             color: #ffffff !important;
         }
 
-        /* Responsive Mobile Breakpoints */
+        /* Responsive Mobile Breakpoints for Tool Navigation Bar */
         @media (max-width: 991.98px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -482,7 +482,26 @@
                 height: 64px;
             }
             .main-content {
-                padding: 1.25rem 1rem;
+                padding: 1.25rem 0.75rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-tool-nav-wrapper {
+                display: flex !important;
+                justify-content: flex-start !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 30px !important;
+                padding: 5px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                scroll-snap-type: x mandatory;
+            }
+            .tool-nav-pill {
+                padding: 8px 14px !important;
+                font-size: 0.82rem !important;
+                scroll-snap-align: center;
             }
         }
 
@@ -491,15 +510,16 @@
                 padding: 0 0.75rem;
             }
             .main-content {
-                padding: 1rem 0.75rem;
+                padding: 0.85rem 0.5rem;
             }
             .mobile-tool-nav-wrapper {
-                border-radius: 16px;
-                padding: 4px;
+                border-radius: 20px !important;
+                padding: 4px !important;
             }
             .tool-nav-pill {
-                padding: 7px 13px;
-                font-size: 0.82rem;
+                padding: 7px 12px !important;
+                font-size: 0.78rem !important;
+                gap: 5px !important;
             }
         }
     </style>
@@ -677,9 +697,9 @@
                 </div>
             {% endif %}
 
-            <!-- Mobile-Friendly Quick Tool Navigation Switcher Capsule Bar -->
-            <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="mobile-tool-nav-wrapper w-100 w-lg-auto">
+            <!-- Centered Quick Tool Navigation Switcher Capsule Bar -->
+            <div class="mb-4 d-flex align-items-center justify-content-center w-100">
+                <div class="mobile-tool-nav-wrapper text-center mx-auto" style="display: inline-flex; justify-content: center;">
                     <a href="{% url 'user_dashboard_home' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_dashboard_home' %}active-overview{% endif %}">
                         <i class="fas fa-chart-pie"></i> Overview
                     </a>
@@ -695,11 +715,6 @@
                     <a href="{% url 'user_tool_camera' %}" class="tool-nav-pill {% if request.resolver_match.url_name == 'user_tool_camera' %}active-camera{% endif %}">
                         <i class="fas fa-camera text-rose-500"></i> Camera AR
                     </a>
-                </div>
-                <div class="d-none d-lg-flex align-items-center gap-2 me-2">
-                    <span class="badge bg-emerald-light text-emerald rounded-pill px-3 py-1.5 fw-semibold" style="font-size: 0.78rem;">
-                        <i class="fas fa-shield-check me-1"></i> AI Services Live
-                    </span>
                 </div>
             </div>
 
@@ -750,14 +765,30 @@
                 }
             });
 
+            // Mobile auto-scroll active nav pill into center view
+            try {
+                const activePill = document.querySelector('.tool-nav-pill.active-overview, .tool-nav-pill.active-text, .tool-nav-pill.active-file, .tool-nav-pill.active-voice, .tool-nav-pill.active-camera');
+                if (activePill && window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    }, 100);
+                }
+            } catch(err) {
+                console.log("Nav scroll error:", err);
+            }
+
             // Automatically move all modals to document.body
             document.querySelectorAll('.modal').forEach(modal => {
                 document.body.appendChild(modal);
             });
         });
     </script>
-    <!-- AI Class Enquiry Modal & Floating Button Component -->
-    {% include 'ai_class_enquiry_modal.html' %}
+    <!-- Teltam AI Main JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    <!-- AI Class Enquiry Modal & Floating Button Component (Index / Homepage Only) -->
+    {% if request.path == '/' or request.resolver_match.url_name == 'index' %}
+        {% include 'ai_class_enquiry_modal.html' %}
+    {% endif %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

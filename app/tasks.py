@@ -44,9 +44,9 @@ def translate_chunks(text, source_lang, target_lang):
     return '\n'.join(translated_parts)
 
 @shared_task(bind=True)
-def process_document_translation(self, history_id, temp_file_path, output_format):
+def process_document_translation(self, history_id=None, temp_file_path=None, output_format='txt'):
     """
-    Asynchronous Celery task that processes document translation using the OpenAI API.
+    Asynchronous Celery task / synchronous thread fallback that processes document translation using the OpenAI API.
     Updates the DocumentTranslationHistory model status and logs information.
     """
     from app.models import DocumentTranslationHistory
@@ -63,19 +63,39 @@ def process_document_translation(self, history_id, temp_file_path, output_format
     import traceback
     import json
 
+    # Auto-align parameters based on invocation mode (.delay, .run, or direct call)
+    task_instance = None
+    if hasattr(self, 'request') and getattr(self.request, 'id', None) is not None:
+        task_instance = self
+    elif not isinstance(self, (int, str)):
+        # Called via process_document_translation.run(history_id, temp_file_path, output_format)
+        task_instance = None
+    else:
+        # Direct function call process_document_translation(history_id, temp_file_path, output_format)
+        output_format = temp_file_path or 'txt'
+        temp_file_path = history_id
+        history_id = self
+        task_instance = None
+
+    def _set_progress(msg):
+        if task_instance:
+            try:
+                task_instance.update_state(state='PROGRESS', meta={'status': msg})
+            except Exception:
+                pass
+
     try:
         # Fetch the history record
-        history = DocumentTranslationHistory.objects.get(id=history_id)
-    except DocumentTranslationHistory.DoesNotExist:
-        logger.error(f"DocumentTranslationHistory with id {history_id} not found.")
+        history = DocumentTranslationHistory.objects.get(id=int(history_id))
+    except (DocumentTranslationHistory.DoesNotExist, ValueError, TypeError) as err:
+        logger.error(f"DocumentTranslationHistory with id {history_id} not found or invalid: {err}")
         return {'status': 'FAILURE', 'error': 'Translation history record not found.'}
 
     # Mark status as processing
     history.status = 'processing'
     history.save()
 
-    if self.request.id:
-        self.update_state(state='PROGRESS', meta={'status': 'Extracting document text...'})
+    _set_progress('Extracting document text...')
 
     # Parse multi-file path list if passed as JSON string
     file_paths_list = []
@@ -94,8 +114,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
     try:
         # 1. Text Extraction
         if len(file_paths_list) > 1:
-            if self.request.id:
-                self.update_state(state='PROGRESS', meta={'status': f'Extracting text from {len(file_paths_list)} images via AI Vision OCR...'})
+            _set_progress(f'Extracting text from {len(file_paths_list)} images via AI Vision OCR...')
             extracted_text = extract_text_from_multiple_images(file_paths_list)
         else:
             single_path = file_paths_list[0]
@@ -119,8 +138,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
         history.save()
 
         # 2. Translation
-        if self.request.id:
-            self.update_state(state='PROGRESS', meta={'status': 'Translating text with OpenAI...'})
+        _set_progress('Translating text with OpenAI...')
 
         translated_text = translate_text_with_openai(
             text=extracted_text,
@@ -141,8 +159,7 @@ def process_document_translation(self, history_id, temp_file_path, output_format
         history.save()
 
         # 3. Generate result file
-        if self.request.id:
-            self.update_state(state='PROGRESS', meta={'status': 'Generating translated document...'})
+        _set_progress('Generating translated document...')
 
         downloads_dir = os.path.join(settings.MEDIA_ROOT, 'downloads')
         os.makedirs(downloads_dir, exist_ok=True)

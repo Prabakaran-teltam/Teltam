@@ -58,6 +58,9 @@ def refund_policy_view(request):
 def pricing(request):
     """Renders the Pricing page."""
     populate_default_plans()
+    plans = PricingPlan.objects.filter(is_active=True).order_by('plan_order')
+    plans_by_slug = {p.slug: p for p in plans}
+    
     active_plan = None
     active_plan_order = 0
     if request.user.is_authenticated:
@@ -71,6 +74,8 @@ def pricing(request):
                 messages.info(request, "You are on the highest plan.")
 
     context = {
+        'plans': plans,
+        'plans_by_slug': plans_by_slug,
         'active_plan_slug': active_plan.slug if active_plan else None,
         'active_plan_order': active_plan_order,
         'allow_downgrade': getattr(settings, 'ALLOW_DOWNGRADE', False),
@@ -700,6 +705,7 @@ def validate_language_codes(source_lang, target_lang, allow_source_auto=True):
         return False, f"Unsupported or invalid target language: '{target_lang}'"
     return True, None
 
+@csrf_exempt
 @require_POST
 def translate_api(request):
     """
@@ -870,9 +876,10 @@ def translate_api(request):
         }, status=500)
 
 from celery.result import AsyncResult
-from django.conf import settings
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 @require_POST
 def upload_document(request):
     """
@@ -1004,15 +1011,21 @@ def upload_document(request):
     # Format temp_path argument (single path or JSON list string for multi-image batch)
     task_file_arg = json.dumps(saved_temp_paths) if len(saved_temp_paths) > 1 else saved_temp_paths[0]
 
-    # Check if Celery is active and running
+    # Check if Celery/Redis is active and reachable
     celery_active = False
     try:
-        from project.celery import app as celery_app
-        inspect = celery_app.control.inspect(timeout=0.15)
-        pings = inspect.ping() if inspect else None
-        celery_active = bool(pings)
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.15)
+        res_code = s.connect_ex(('127.0.0.1', 6379))
+        s.close()
+        if res_code == 0:
+            from project.celery import app as celery_app
+            inspect = celery_app.control.inspect(timeout=0.15)
+            pings = inspect.ping() if inspect else None
+            celery_active = bool(pings)
     except Exception as e:
-        logger.warning(f"Could not connect to Celery broker or ping workers: {str(e)}")
+        logger.info(f"Celery/Redis broker offline ({e}). Using background thread processing.")
         celery_active = False
 
     if celery_active:
@@ -1028,10 +1041,10 @@ def upload_document(request):
             logger.warning(f"Failed to queue task asynchronously: {str(task_err)}. Falling back to background thread.")
             celery_active = False
 
-    # Background Thread Fallback if Celery is down/inactive
-    task_id = str(uuid.uuid4())
+    # Background Thread Fallback if Celery/Redis is down/inactive
+    task_id = str(history.id)
     
-    # Store initial state in cache for task_status_api polling
+    # Store initial state in cache for document_task_status polling
     cache.set(f"sync_task_{task_id}", {
         'status': 'PROGRESS',
         'progress': 'Analyzing and translating document...'
@@ -1040,7 +1053,7 @@ def upload_document(request):
     def run_document_task_in_thread():
         try:
             from app.tasks import process_document_translation
-            sync_result = process_document_translation(history.id, task_file_arg, output_format)
+            sync_result = process_document_translation.run(history.id, task_file_arg, output_format)
             cache.set(f"sync_task_{task_id}", sync_result, timeout=1800)
         except Exception as sync_err:
             logger.exception("Background thread document translation failed")
@@ -1269,56 +1282,43 @@ def task_status_api(request, task_id):
         except Exception as hist_err:
             logger.warning(f"Error checking history status: {hist_err}")
 
-    # 3. Otherwise, check Celery AsyncResult (if Celery worker / Redis is online)
+    # 3. Otherwise, check Celery AsyncResult (ONLY if Redis port 6379 is reachable)
     try:
-        from celery.result import AsyncResult
-        result = AsyncResult(task_id)
-        if result.state == 'PENDING':
-            return JsonResponse({
-                'status': 'PENDING',
-                'progress': 'Waiting in task queue...'
-            })
-        elif result.state == 'PROGRESS':
-            info = result.info or {}
-            status_msg = info.get('status', 'Processing data...')
-            return JsonResponse({
-                'status': 'PROGRESS',
-                'progress': status_msg
-            })
-        elif result.state == 'SUCCESS':
-            cache.set(f"sync_task_{task_id}", result.result, timeout=600)
-            return JsonResponse({
-                'status': 'SUCCESS',
-                'result': result.result
-            })
-        elif result.state == 'FAILURE':
-            error_msg = str(result.result) or 'An error occurred during task execution.'
-            return JsonResponse({
-                'status': 'FAILURE',
-                'error': error_msg
-            })
-        else:
-            return JsonResponse({
-                'status': result.state,
-                'progress': 'Task state updated'
-            })
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.1)
+        res_code = s.connect_ex(('127.0.0.1', 6379))
+        s.close()
+        if res_code == 0:
+            from celery.result import AsyncResult
+            result = AsyncResult(task_id)
+            if result.state == 'PENDING':
+                return JsonResponse({'status': 'PENDING', 'progress': 'Waiting in task queue...'})
+            elif result.state == 'PROGRESS':
+                info = result.info or {}
+                return JsonResponse({'status': 'PROGRESS', 'progress': info.get('status', 'Processing data...')})
+            elif result.state == 'SUCCESS':
+                cache.set(f"sync_task_{task_id}", result.result, timeout=600)
+                return JsonResponse({'status': 'SUCCESS', 'result': result.result})
+            elif result.state == 'FAILURE':
+                return JsonResponse({'status': 'FAILURE', 'error': str(result.result) or 'An error occurred during task execution.'})
     except Exception as e:
-        logger.warning(f"Could not connect to Celery to fetch status: {str(e)}")
-        # Check cache one last time before returning fallback progress
-        sync_result = cache.get(f"sync_task_{task_id}")
-        if sync_result:
-            if sync_result.get('status') == 'SUCCESS':
-                return JsonResponse({'status': 'SUCCESS', 'result': sync_result})
-            elif sync_result.get('status') in ['PROGRESS', 'PENDING']:
-                return JsonResponse({'status': 'PROGRESS', 'progress': sync_result.get('progress', 'Processing translation task...')})
-            else:
-                return JsonResponse({'status': 'FAILURE', 'error': sync_result.get('error', 'Task execution failed.')})
-        
-        # When Celery is offline and task is still running in background thread, return PROGRESS so frontend polling continues!
-        return JsonResponse({
-            'status': 'PROGRESS',
-            'progress': 'Processing document in background thread...'
-        })
+        logger.info(f"Celery offline during status poll: {e}")
+
+    # Check cache one last time before returning fallback progress
+    sync_result = cache.get(f"sync_task_{task_id}")
+    if sync_result and isinstance(sync_result, dict):
+        if sync_result.get('status') == 'SUCCESS':
+            return JsonResponse({'status': 'SUCCESS', 'result': sync_result})
+        elif sync_result.get('status') in ['PROGRESS', 'PENDING']:
+            return JsonResponse({'status': 'PROGRESS', 'progress': sync_result.get('progress', 'Processing translation task...')})
+        elif sync_result.get('status') == 'FAILURE':
+            return JsonResponse({'status': 'FAILURE', 'error': sync_result.get('error', 'Task execution failed.')})
+    
+    return JsonResponse({
+        'status': 'PROGRESS',
+        'progress': 'Processing document translation...'
+    })
 
 @csrf_exempt
 @require_POST
@@ -1910,25 +1910,25 @@ def user_change_password(request):
 def user_tool_text(request):
     """Renders the text translation tool workspace."""
     from app.constants import LANGUAGES
-    return render(request, 'user/tool_text.html', {'languages': LANGUAGES})
+    return render(request, 'user/tool_text.html', {'languages': LANGUAGES, 'active_tool': 'text'})
 
 @login_required(login_url='login')
 def user_tool_file(request):
     """Renders the document upload translation workspace."""
     from app.constants import LANGUAGES
-    return render(request, 'user/tool_file.html', {'languages': LANGUAGES})
+    return render(request, 'user/tool_file.html', {'languages': LANGUAGES, 'active_tool': 'file'})
 
 @login_required(login_url='login')
 def user_tool_voice(request):
     """Renders the voice recording/audio upload translation workspace."""
     from app.constants import LANGUAGES
-    return render(request, 'user/tool_voice.html', {'languages': LANGUAGES})
+    return render(request, 'user/tool_voice.html', {'languages': LANGUAGES, 'active_tool': 'voice'})
 
 @login_required(login_url='login')
 def user_tool_camera(request):
     """Renders the live camera real-time OCR translation tool workspace."""
     from app.constants import LANGUAGES
-    return render(request, 'user/tool_camera.html', {'languages': LANGUAGES})
+    return render(request, 'user/tool_camera.html', {'languages': LANGUAGES, 'active_tool': 'camera'})
 
 @login_required(login_url='login')
 def user_history_list(request):
@@ -1974,21 +1974,21 @@ def populate_default_plans():
             'slug': 'basic',
             'price': 97.00,
             'plan_order': 1,
-            'features': 'Text Translation Tool\n50,000 words per month\n30 supported languages\nStandard voice output\nBasic transliteration guides'
+            'features': 'Text Translation Tool\n50,000 words per month\n30 supported languages\nAI Chatbots: 100 queries/day\nStandard voice output\nBasic transliteration guides'
         },
         {
             'name': 'Pro Plan',
             'slug': 'pro',
             'price': 699.00,
             'plan_order': 2,
-            'features': 'Everything in Basic\n500,000 words per month\n120+ supported languages\nHigh-fidelity voice synthesis\nAdvanced phonetic transliteration\nTranslate PDFs, DOCX (100 files/mo)'
+            'features': 'Everything in Basic\n500,000 words per month\n120+ supported languages\nAI Chatbots: 500 queries/day\nHigh-fidelity voice synthesis\nAdvanced phonetic transliteration\nTranslate PDFs, DOCX (100 files/mo)'
         },
         {
             'name': 'Business Plan',
             'slug': 'business',
             'price': 1999.00,
             'plan_order': 3,
-            'features': 'Everything in Pro\nUnlimited words translation\nAll supported languages\nDedicated GPU priority speed\nUnlimited document translation\nREST API keys (20 req/sec)\n24/7 Priority support channel'
+            'features': 'Everything in Pro\nUnlimited words translation\nAll supported languages\nUnlimited AI Chatbots Access\nDedicated GPU priority speed\nUnlimited document translation\nREST API keys (20 req/sec)\n24/7 Priority support channel'
         }
     ]
     for p in plans:
@@ -2369,6 +2369,48 @@ def dashboard_subscription_list(request):
     return render(request, 'dashboard/subscription_list.html', context)
 
 
+@staff_member_required(login_url='dashboard_login')
+def dashboard_plan_list(request):
+    """Lists pricing plans in admin dashboard with direct edit actions."""
+    populate_default_plans()
+    plans = PricingPlan.objects.all().order_by('plan_order')
+    context = {
+        'plans': plans,
+    }
+    return render(request, 'dashboard/plan_list.html', context)
+
+
+@staff_member_required(login_url='dashboard_login')
+def dashboard_plan_edit(request, pk):
+    """Allows admin to update pricing plan amount only."""
+    plan = get_object_or_404(PricingPlan, pk=pk)
+    
+    if request.method == 'POST':
+        price_str = request.POST.get('price', '').strip()
+        
+        if not price_str:
+            messages.error(request, "Plan price is required.")
+            return render(request, 'dashboard/plan_form.html', {'plan': plan})
+            
+        try:
+            from decimal import Decimal
+            price = Decimal(price_str)
+            if price < 0:
+                raise ValueError
+        except Exception:
+            messages.error(request, "Please enter a valid price amount.")
+            return render(request, 'dashboard/plan_form.html', {'plan': plan})
+            
+        plan.price = price
+        plan.save()
+        
+        messages.success(request, f"Updated price for '{plan.name}' to ₹{plan.price} successfully!")
+        return redirect('dashboard_plan_list')
+        
+    return render(request, 'dashboard/plan_form.html', {'plan': plan})
+
+
+
 @require_GET
 def document_task_status(request, task_id):
     """
@@ -2393,36 +2435,28 @@ def document_task_status(request, task_id):
                 'error': sync_result.get('error', 'An error occurred during task execution.')
             })
 
-    # 2. Check Celery AsyncResult
+    # 2. Check Celery AsyncResult (ONLY if Redis port 6379 is reachable)
     try:
-        from celery.result import AsyncResult
-        result = AsyncResult(task_id)
-        if result.state == 'PENDING':
-            return JsonResponse({
-                'status': 'PENDING',
-                'progress': 'Processing document layout and translating...'
-            })
-        elif result.state == 'PROGRESS':
-            info = result.info or {}
-            status_msg = info.get('status', 'Processing document layout...')
-            return JsonResponse({
-                'status': 'PROGRESS',
-                'progress': status_msg
-            })
-        elif result.state == 'SUCCESS':
-            cache.set(f"sync_task_{task_id}", result.result, timeout=1800)
-            return JsonResponse({
-                'status': 'SUCCESS',
-                'result': result.result
-            })
-        elif result.state == 'FAILURE':
-            error_msg = str(result.result) or 'An error occurred during task execution.'
-            return JsonResponse({
-                'status': 'FAILURE',
-                'error': error_msg
-            })
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.1)
+        res_code = s.connect_ex(('127.0.0.1', 6379))
+        s.close()
+        if res_code == 0:
+            from celery.result import AsyncResult
+            result = AsyncResult(task_id)
+            if result.state == 'PENDING':
+                return JsonResponse({'status': 'PENDING', 'progress': 'Processing document layout and translating...'})
+            elif result.state == 'PROGRESS':
+                info = result.info or {}
+                return JsonResponse({'status': 'PROGRESS', 'progress': info.get('status', 'Processing document layout...')})
+            elif result.state == 'SUCCESS':
+                cache.set(f"sync_task_{task_id}", result.result, timeout=1800)
+                return JsonResponse({'status': 'SUCCESS', 'result': result.result})
+            elif result.state == 'FAILURE':
+                return JsonResponse({'status': 'FAILURE', 'error': str(result.result) or 'An error occurred during task execution.'})
     except Exception as e:
-        logger.warning(f"Could not connect to Celery to fetch status: {str(e)}")
+        logger.info(f"Celery offline during task_status_api poll: {e}")
 
     return JsonResponse({'status': 'PENDING', 'progress': 'Processing document layout and translating...'})
 

@@ -205,8 +205,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 4. Inject AI Class Enquiry Floater & Modal if not present on page
-    if (!document.getElementById("joinAiClassesFloater")) {
+    // 4. Inject AI Class Enquiry Floater & Modal ONLY on Index / Homepage
+    const isHomePage = window.location.pathname === '/' || window.location.pathname === '/index' || window.location.pathname === '/index.html' || window.location.pathname.endsWith('/index');
+    if (isHomePage && !document.getElementById("joinAiClassesFloater")) {
         const container = document.createElement("div");
         container.id = "aiClassEnquiryComponentContainer";
         container.innerHTML = `

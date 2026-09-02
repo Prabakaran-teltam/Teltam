@@ -6,7 +6,7 @@ import hashlib
 import logging
 from django.conf import settings
 from django.core.cache import cache
-from openai import OpenAI, RateLimitError, APIConnectionError, APIStatusError
+from openai import OpenAI, RateLimitError, APIConnectionError, APIStatusError, APITimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -46,43 +46,56 @@ def extract_text_from_image_with_openai(image_path):
     elif ext == "png":
         mime_type = "image/png"
 
-    response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are an ultra-high precision Optical Character Recognition (OCR) model.\n"
-                    "Your task is to extract EVERY SINGLE piece of text visible in the document image with 100% completeness and verbatim accuracy.\n\n"
-                    "STRICT OCR RULES:\n"
-                    "1. EXTRACT ALL VISIBLE TEXT: Include main body text, headers, subheadings, footers, page numbers, captions, table contents, cell text, bullet points, numbered lists, sidebars, logos/stamps with text, badge labels, and fine print.\n"
-                    "2. DO NOT SUMMARIZE, SKIP, OR OMIT: Transcribe every single word, letter, number, punctuation mark, and symbol. Never skip text just because it is small, rotated, repeated, or formatted in columns/tables.\n"
-                    "3. DO NOT TRANSLATE: Output the extracted text in its exact original language and script (e.g. Tamil, Hindi, English, Spanish, Chinese, Arabic, etc.).\n"
-                    "4. PRESERVE LAYOUT: Preserve paragraphs, table grid structures (using pipe | separators), line breaks, and indentation as much as possible.\n"
-                    "5. OUTPUT ONLY EXTRACTED TEXT: Do not add intro greetings, notes, explanations, markdown quotes, or metadata tags. Return strictly the transcribed text."
-                )
-            },
-            {
-                "role": "user",
-                "content": [
+    max_retries = 3
+    backoff = 2
+
+    for attempt in range(max_retries):
+        try:
+            response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
                     {
-                        "type": "text", 
-                        "text": "Perform exhaustive 100% full-text OCR on this image. Extract every single word, header, footer, table entry, number, and note with absolute precision."
+                        "role": "system",
+                        "content": (
+                            "You are an ultra-high precision Optical Character Recognition (OCR) model.\n"
+                            "Your task is to extract EVERY SINGLE piece of text visible in the document image with 100% completeness and verbatim accuracy.\n\n"
+                            "STRICT OCR RULES:\n"
+                            "1. EXTRACT ALL VISIBLE TEXT: Include main body text, headers, subheadings, footers, page numbers, captions, table contents, cell text, bullet points, numbered lists, sidebars, logos/stamps with text, badge labels, and fine print.\n"
+                            "2. DO NOT SUMMARIZE, SKIP, OR OMIT: Transcribe every single word, letter, number, punctuation mark, and symbol. Never skip text just because it is small, rotated, repeated, or formatted in columns/tables.\n"
+                            "3. DO NOT TRANSLATE: Output the extracted text in its exact original language and script (e.g. Tamil, Hindi, English, Spanish, Chinese, Arabic, etc.).\n"
+                            "4. PRESERVE LAYOUT: Preserve paragraphs, table grid structures (using pipe | separators), line breaks, and indentation as much as possible.\n"
+                            "5. OUTPUT ONLY EXTRACTED TEXT: Do not add intro greetings, notes, explanations, markdown quotes, or metadata tags. Return strictly the transcribed text."
+                        )
                     },
                     {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:{mime_type};base64,{base64_image}",
-                            "detail": "high"
-                        }
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text", 
+                                "text": "Perform exhaustive 100% full-text OCR on this image. Extract every single word, header, footer, table entry, number, and note with absolute precision."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime_type};base64,{base64_image}",
+                                    "detail": "high"
+                                }
+                            }
+                        ]
                     }
-                ]
-            }
-        ],
-        max_tokens=4096,
-        temperature=0.0
-    )
-    return response.choices[0].message.content.strip()
+                ],
+                max_tokens=4096,
+                temperature=0.0,
+                timeout=120 # 120 seconds timeout
+            )
+            return response.choices[0].message.content.strip()
+        except (APITimeoutError, APIConnectionError, APIStatusError, RateLimitError) as e:
+            if attempt == max_retries - 1:
+                logger.error(f"OpenAI Vision OCR failed after {max_retries} attempts: {str(e)}")
+                raise
+            wait_time = backoff ** (attempt + 1)
+            logger.warning(f"OpenAI Vision OCR timeout/connection issue ({type(e).__name__}: {str(e)}). Retrying attempt {attempt+1}/{max_retries} in {wait_time}s...")
+            time.sleep(wait_time)
 
 def extract_text_from_multiple_images(image_paths):
     """
@@ -356,24 +369,19 @@ def translate_text_with_openai(text, target_lang, source_lang="auto"):
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.3,
-                    timeout=45 # 45 seconds timeout
+                    timeout=120 # 120 seconds timeout
                 )
                 translated_text = response.choices[0].message.content.strip()
                 # Cache the successful chunk translation for 1 day
                 cache.set(cache_key, translated_text, timeout=86400)
                 break
-            except RateLimitError as e:
+            except (APITimeoutError, APIConnectionError, APIStatusError, RateLimitError) as e:
                 if attempt == max_retries - 1:
-                    logger.error(f"OpenAI RateLimit reached max retries: {str(e)}")
+                    logger.error(f"OpenAI translation request failed after {max_retries} attempts: {str(e)}")
                     raise
-                logger.warning(f"OpenAI RateLimit hit. Retrying in {backoff ** attempt} seconds...")
-                time.sleep(backoff ** attempt)
-            except (APIConnectionError, APIStatusError) as e:
-                if attempt == max_retries - 1:
-                    logger.error(f"OpenAI API connection/status failure reached max retries: {str(e)}")
-                    raise
-                logger.warning(f"OpenAI connection error: {str(e)}. Retrying in {backoff ** attempt} seconds...")
-                time.sleep(backoff ** attempt)
+                wait_time = backoff ** (attempt + 1)
+                logger.warning(f"OpenAI translation issue ({type(e).__name__}: {str(e)}). Retrying attempt {attempt+1}/{max_retries} in {wait_time}s...")
+                time.sleep(wait_time)
             except Exception as e:
                 logger.error(f"Unexpected error calling OpenAI API: {str(e)}")
                 raise

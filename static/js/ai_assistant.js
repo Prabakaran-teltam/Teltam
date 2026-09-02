@@ -47,6 +47,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Helper: Show Subscription Required Upgrade Prompt inside chatbot window
+    function showSubscriptionLimitPrompt(containerId, inputId, sendBtnId, customMsg) {
+        const container = document.getElementById(containerId);
+        if (container && !container.querySelector('.subscription-limit-box')) {
+            const card = document.createElement('div');
+            card.className = 'subscription-limit-box p-4 my-3 text-center rounded-4 shadow border';
+            card.style.cssText = 'background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #ffffff; border: 1.5px solid rgba(124, 58, 237, 0.4) !important;';
+            card.innerHTML = `
+                <div class="mb-2 fs-2">🔒</div>
+                <h5 class="fw-bold text-white mb-2">Free Trial Limit Reached (3/3 Queries)</h5>
+                <p class="small text-indigo-200 mb-3">${escapeHtml(customMsg || 'You have used your 3 free AI queries. Subscribe to a Teltam AI plan to unlock unlimited access to all AI Chatbots!')}</p>
+                <a href="/pricing/" class="btn btn-warning rounded-pill px-4 py-2 font-bold shadow text-slate-950">
+                    <i class="fas fa-crown me-1.5"></i> Choose a Subscription Plan
+                </a>
+            `;
+            container.appendChild(card);
+            scrollToBottom(containerId);
+        }
+
+        const inputEl = document.getElementById(inputId);
+        if (inputEl) {
+            inputEl.value = '';
+            inputEl.disabled = true;
+            inputEl.placeholder = 'Subscription required to continue chatting...';
+        }
+
+        const sendBtnEl = document.getElementById(sendBtnId);
+        if (sendBtnEl) {
+            sendBtnEl.disabled = true;
+            sendBtnEl.classList.add('opacity-50');
+        }
+    }
+
+    // Check limit state on load for Career Chatbot
+    fetch('/api/ai/career/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.limit_reached) {
+                showSubscriptionLimitPrompt('careerChatMessages', 'careerInput', 'careerSendBtn', data.error);
+            }
+        }).catch(() => {});
+
+    // Check limit state on load for Personal Assistant Chatbot
+    fetch('/api/ai/assistant/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.limit_reached) {
+                showSubscriptionLimitPrompt('assistantChatMessages', 'assistantInput', 'assistantSendBtn', data.error);
+            }
+        }).catch(() => {});
+
     // =========================================================================
     // 1. AI CAREER CHATBOT LOGIC
     // =========================================================================
@@ -67,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         } else {
             msgDiv.innerHTML = `
-                <div class="d-flex gap-2">
-                    <div class="msg-avatar">🎯</div>
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="msg-avatar me-2" style="margin-right: 8px !important;">🎯</div>
                     <div class="msg-content-box shadow-sm">${formatMessageContent(content)}</div>
                 </div>
             `;
@@ -96,7 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (careerTypingIndicator) careerTypingIndicator.classList.add('d-none');
-            if (data.success) {
+            if (data.limit_reached) {
+                showSubscriptionLimitPrompt('careerChatMessages', 'careerInput', 'careerSendBtn', data.error);
+            } else if (data.success) {
                 appendCareerMessage('assistant', data.response);
             } else {
                 appendCareerMessage('assistant', '⚠️ ' + (data.error || 'Failed to get career advice.'));
@@ -140,8 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success && careerChatMessages) {
                     careerChatMessages.innerHTML = `
                         <div class="chat-message-item assistant mb-3">
-                            <div class="d-flex gap-2">
-                                <div class="msg-avatar">🎯</div>
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="msg-avatar me-2" style="margin-right: 8px !important;">🎯</div>
                                 <div class="msg-content-box shadow-sm">
                                     <p class="mb-2">Hi! 👋 I'm your AI Career Advisor.</p>
                                     <p class="mb-2">I can help you explore AI career opportunities and create a learning roadmap.</p>
@@ -264,7 +317,21 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if (resumeLoadingState) resumeLoadingState.classList.add('d-none');
-                if (data.success) {
+                if (data.limit_reached) {
+                    if (resumeUploadSection) {
+                        resumeUploadSection.innerHTML = `
+                            <div class="subscription-limit-box p-4 my-3 text-center rounded-4 shadow border" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #ffffff; border: 1.5px solid rgba(124, 58, 237, 0.4) !important;">
+                                <div class="mb-2 fs-2">📄</div>
+                                <h5 class="fw-bold text-white mb-2">Free Resume Evaluation Limit Reached</h5>
+                                <p class="small text-indigo-200 mb-3">${escapeHtml(data.error || 'You have used your 3 free AI queries. Subscribe to a plan to evaluate unlimited resumes.')}</p>
+                                <a href="/pricing/" class="btn btn-warning rounded-pill px-4 py-2 font-bold shadow text-slate-950">
+                                    <i class="fas fa-crown me-1.5"></i> Choose a Subscription Plan
+                                </a>
+                            </div>
+                        `;
+                        resumeUploadSection.classList.remove('d-none');
+                    }
+                } else if (data.success) {
                     renderResumeResults(data);
                     if (resumeResultsSection) resumeResultsSection.classList.remove('d-none');
                 } else {
@@ -386,8 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         } else {
             msgDiv.innerHTML = `
-                <div class="d-flex gap-2">
-                    <div class="msg-avatar">🤖</div>
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="msg-avatar me-2" style="margin-right: 8px !important;">🤖</div>
                     <div class="msg-content-box shadow-sm">${formatMessageContent(content)}</div>
                 </div>
             `;
@@ -415,7 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (assistantTypingIndicator) assistantTypingIndicator.classList.add('d-none');
-            if (data.success) {
+            if (data.limit_reached) {
+                showSubscriptionLimitPrompt('assistantChatMessages', 'assistantInput', 'assistantSendBtn', data.error);
+            } else if (data.success) {
                 appendAssistantMessage('assistant', data.response);
             } else {
                 appendAssistantMessage('assistant', '⚠️ ' + (data.error || 'Failed to process request.'));
@@ -459,8 +528,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success && assistantChatMessages) {
                     assistantChatMessages.innerHTML = `
                         <div class="chat-message-item assistant mb-3">
-                            <div class="d-flex gap-2">
-                                <div class="msg-avatar">🤖</div>
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="msg-avatar me-2" style="margin-right: 8px !important;">🤖</div>
                                 <div class="msg-content-box shadow-sm">
                                     <p class="mb-2">Hello! 👋 I'm your AI Personal Assistant.</p>
                                     <p class="mb-0">How can I assist you today? I can help write emails, answer general questions, summarize articles, explain concepts, or brainstorm ideas.</p>

@@ -1,7 +1,7 @@
 import os
 import time
 import logging
-from openai import RateLimitError, APIConnectionError, APIStatusError
+from openai import RateLimitError, APIConnectionError, APIStatusError, APITimeoutError
 from django.conf import settings
 from app.services.openai_document_service import get_openai_client
 from app.constants import LANGUAGES
@@ -59,7 +59,7 @@ def translate_text_with_openai_semantic(text, target_lang, source_lang="auto"):
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.0,  # 0.0 forces exact deterministic translation
-                timeout=10
+                timeout=45
             )
             return response.choices[0].message.content.strip()
         except RateLimitError as e:
@@ -67,10 +67,10 @@ def translate_text_with_openai_semantic(text, target_lang, source_lang="auto"):
                 raise
             logger.warning(f"OpenAI rate limit in text translation. Retrying in {backoff ** attempt}s...")
             time.sleep(backoff ** attempt)
-        except (APIConnectionError, APIStatusError) as e:
+        except (APITimeoutError, APIConnectionError, APIStatusError) as e:
             if attempt == max_retries - 1:
                 raise
-            logger.warning(f"OpenAI API error in text translation: {str(e)}. Retrying in {backoff ** attempt}s...")
+            logger.warning(f"OpenAI API issue ({type(e).__name__}: {str(e)}) in text translation. Retrying in {backoff ** attempt}s...")
             time.sleep(backoff ** attempt)
 
 
@@ -85,6 +85,11 @@ def generate_transliteration_with_openai(translated_text, target_lang="auto"):
 
     target_name = get_language_name(target_lang)
 
+    # Truncate text for transliteration to prevent API timeout on long documents
+    sample_text = translated_text.strip()
+    if len(sample_text) > 1500:
+        sample_text = sample_text[:1500] + "..."
+
     system_prompt = (
         "You are an expert linguistic transliterator.\n"
         "Your task is to convert the given text into a phonetic transliteration (pronunciation guide in standard Latin/English alphabet).\n"
@@ -94,9 +99,10 @@ def generate_transliteration_with_openai(translated_text, target_lang="auto"):
         "3. Return ONLY the transliterated phonetic text. Do not add quotes, notes, explanations, or language labels."
     )
 
-    user_prompt = f"Target Language: {target_name}\nText:\n{translated_text}"
+    user_prompt = f"Target Language: {target_name}\nText:\n{sample_text}"
 
-    max_retries = 2
+    max_retries = 3
+    backoff = 2
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
@@ -106,12 +112,15 @@ def generate_transliteration_with_openai(translated_text, target_lang="auto"):
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.0,
-                timeout=10
+                timeout=45
             )
             return response.choices[0].message.content.strip()
-        except Exception as e:
-            logger.warning(f"OpenAI transliteration failed: {str(e)}")
+        except (APITimeoutError, APIConnectionError, APIStatusError, RateLimitError) as e:
+            logger.warning(f"OpenAI transliteration issue ({type(e).__name__}: {str(e)}), attempt {attempt+1}/{max_retries}...")
             if attempt == max_retries - 1:
                 return ""
-            time.sleep(1)
+            time.sleep(backoff ** attempt)
+        except Exception as e:
+            logger.warning(f"Unexpected OpenAI transliteration error: {str(e)}")
+            return ""
     return ""

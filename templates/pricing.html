@@ -134,7 +134,7 @@
                             <p class="text-muted small">For casual translation and learning</p>
                             <div class="my-4 price-wrapper">
                                 <div class="monthly-price-block">
-                                    <span class="display-5 fw-bold text-slate-900">₹97</span>
+                                    <span class="display-5 fw-bold text-slate-900">₹{{ plans_by_slug.basic.price|default:"97"|floatformat:0 }}</span>
                                     <span class="text-muted">/month</span>
                                 </div>
                                 <div class="yearly-price-block d-none">
@@ -148,6 +148,7 @@
                             <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-3 border-top pt-4">
                                 <li><i class="fas fa-check"></i> 50,000 words per month</li>
                                 <li><i class="fas fa-check"></i> 30 supported languages</li>
+                                <li><i class="fas fa-robot text-indigo-600"></i> AI Chatbots: 100 queries/day</li>
                                 <li><i class="fas fa-check"></i> Standard voice output</li>
                                 <li><i class="fas fa-check"></i> Basic transliteration guides</li>
                                 <li class="text-muted"><i class="fas fa-times"></i> Document upload processing</li>
@@ -185,7 +186,7 @@
                             <p class="text-muted small">For creators, professionals, and writers</p>
                             <div class="my-4 price-wrapper">
                                 <div class="monthly-price-block">
-                                    <span class="display-5 fw-bold text-slate-900">₹699</span>
+                                    <span class="display-5 fw-bold text-slate-900">₹{{ plans_by_slug.pro.price|default:"699"|floatformat:0 }}</span>
                                     <span class="text-muted">/month</span>
                                 </div>
                                 <div class="yearly-price-block d-none">
@@ -199,6 +200,7 @@
                             <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-3 border-top pt-4">
                                 <li><i class="fas fa-check"></i> 500,000 words per month</li>
                                 <li><i class="fas fa-check"></i> 120+ supported languages</li>
+                                <li><i class="fas fa-robot text-purple-600"></i> AI Chatbots: 500 queries/day</li>
                                 <li><i class="fas fa-check"></i> High-fidelity voice synthesis</li>
                                 <li><i class="fas fa-check"></i> Advanced phonetic transliteration</li>
                                 <li><i class="fas fa-check"></i> Translate PDFs, DOCX (100 files/mo)</li>
@@ -237,7 +239,7 @@
                             <p class="text-muted small">For business teams and API usage</p>
                             <div class="my-4 price-wrapper">
                                 <div class="monthly-price-block">
-                                    <span class="display-5 fw-bold text-slate-900">₹1999</span>
+                                    <span class="display-5 fw-bold text-slate-900">₹{{ plans_by_slug.business.price|default:"1999"|floatformat:0 }}</span>
                                     <span class="text-muted">/month</span>
                                 </div>
                                 <div class="yearly-price-block d-none">
@@ -251,6 +253,7 @@
                             <ul class="list-unstyled text-start my-4 pricing-card-features d-flex flex-column gap-3 border-top pt-4">
                                 <li><i class="fas fa-check"></i> Unlimited words translation</li>
                                 <li><i class="fas fa-check"></i> All supported languages</li>
+                                <li><i class="fas fa-robot text-emerald-600"></i> Unlimited AI Chatbots Access</li>
                                 <li><i class="fas fa-check"></i> Dedicated GPU priority speed</li>
                                 <li><i class="fas fa-check"></i> Unlimited document translation</li>
                                 <li><i class="fas fa-check"></i> REST API keys (20 req/sec)</li>
@@ -445,6 +448,15 @@
                                 <td>50,000</td>
                                 <td class="highlight-popular">500,000</td>
                                 <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-semibold sticky-col">
+                                    <div><i class="fas fa-robot text-indigo-500 me-1.5"></i> AI Chatbots (Career, Resume &amp; Assistant)</div>
+                                    <small class="text-muted d-block font-normal" style="font-size: 0.78rem;">AI Career Advisor, Resume Evaluator &amp; Personal Assistant</small>
+                                </td>
+                                <td>100 Queries / day</td>
+                                <td class="highlight-popular"><span class="premium-icon-check"><i class="fas fa-check"></i></span> 500 Queries / day</td>
+                                <td><span class="premium-icon-check"><i class="fas fa-check"></i></span> Unlimited Access</td>
                             </tr>
                             <tr>
                                 <td class="text-start fw-semibold sticky-col">LLM Context Accuracy</td>

@@ -71,6 +71,8 @@ urlpatterns = [
     path('dashboard/users/', views.dashboard_user_list, name='dashboard_user_list'),
     path('dashboard/payments/', views.dashboard_payment_list, name='dashboard_payment_list'),
     path('dashboard/subscriptions/', views.dashboard_subscription_list, name='dashboard_subscription_list'),
+    path('dashboard/plans/', views.dashboard_plan_list, name='dashboard_plan_list'),
+    path('dashboard/plans/edit/<int:pk>/', views.dashboard_plan_edit, name='dashboard_plan_edit'),
     path('dashboard/ai-class-enquiries/', views.dashboard_ai_class_enquiries, name='dashboard_ai_class_enquiry_list'),
 
     # =====================================================================

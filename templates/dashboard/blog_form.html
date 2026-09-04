@@ -1,81 +1,320 @@
 {% extends 'dashboard/base.html' %}
 
-{% block title %}{{ action }} Blog{% endblock %}
+{% block title %}{{ action }} Blog Article - Admin Dashboard{% endblock %}
 {% block header_title %}{{ action }} Blog Article{% endblock %}
 {% block nav_blogs %}active{% endblock %}
 
 {% block extra_css %}
 {{ form.media }}
+<style>
+    /* User-Friendly Admin Editor Custom Styles */
+    .sticky-action-bar {
+        position: sticky;
+        top: 70px;
+        z-index: 1020;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .editor-section-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.2s ease;
+    }
+    .editor-section-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-title-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    
+    /* Drag & Drop Banner Upload Box */
+    .image-dropzone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 14px;
+        background: #f8fafc;
+        padding: 2.25rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .image-dropzone:hover, .image-dropzone.dragover {
+        border-color: #6366f1;
+        background: rgba(99, 102, 241, 0.04);
+    }
+    
+    /* Live Google Search Preview Box */
+    .google-serp-preview {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        font-family: arial, sans-serif;
+    }
+    .serp-url {
+        font-size: 0.85rem;
+        color: #202124;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .serp-title {
+        font-size: 1.2rem;
+        color: #1a0dab;
+        font-weight: 400;
+        line-height: 1.3;
+        margin-top: 4px;
+        margin-bottom: 4px;
+        cursor: pointer;
+    }
+    .serp-title:hover {
+        text-decoration: underline;
+    }
+    .serp-snippet {
+        font-size: 0.88rem;
+        color: #4d5156;
+        line-height: 1.58;
+    }
+    
+    /* Character Count Indicators */
+    .char-count-badge {
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    .char-count-badge.warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    .char-count-badge.success {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    /* Custom Right Side Box Form Switch & Layout Fixes */
+    .publishing-subcard {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.15rem;
+        transition: all 0.15s ease;
+    }
+    .publishing-subcard:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    }
+    .custom-switch-wrapper .form-check-input {
+        width: 2.6rem !important;
+        height: 1.45rem !important;
+        cursor: pointer;
+        margin-left: 0 !important;
+        float: none !important;
+        border-color: #cbd5e1;
+    }
+    .custom-switch-wrapper .form-check-input:checked {
+        background-color: #6366f1;
+        border-color: #6366f1;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <a href="{% url 'dashboard_blog_list' %}" class="btn btn-link text-slate-600 text-decoration-none ps-0 mb-4">
-            <i class="fas fa-arrow-left me-1"></i> Back to Blog List
-        </a>
-    </div>
-</div>
-
-<form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+<form method="POST" enctype="multipart/form-data" id="blogPostForm" class="needs-validation" novalidate>
     {% csrf_token %}
+    
+    <!-- Sticky Top Action Bar -->
+    <div class="sticky-action-bar p-3 mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'dashboard_blog_list' %}" class="btn btn-sm btn-outline-slate rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1.5"></i> Back
+                </a>
+                <div class="vr opacity-25 d-none d-sm-block"></div>
+                <div>
+                    <h5 class="fw-bold text-slate-900 mb-0" style="letter-spacing: -0.3px;">
+                        {% if action == 'Edit' %}Editing: "{{ form.instance.title|truncatechars:35 }}"{% else %}Write New Article{% endif %}
+                    </h5>
+                    <small class="text-slate-500">Craft, optimize, and schedule your blog posts</small>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button type="button" id="autoFillSeoBtn" class="btn btn-sm btn-light border rounded-pill px-3 shadow-2xs text-slate-700">
+                    <i class="fas fa-magic text-indigo-600 me-1.5"></i> Auto-Fill SEO
+                </button>
+                <button type="submit" name="save_draft" value="1" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="far fa-file-lines me-1.5"></i> Save Draft
+                </button>
+                <button type="submit" class="btn btn-sm btn-brand-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                    <i class="fas fa-paper-plane me-1.5"></i> {% if action == 'Edit' %}Update Article{% else %}Publish / Save Post{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Editor Grid -->
     <div class="row g-4">
-        <!-- Main Form Elements (Left Column) -->
+        <!-- Left Main Column: Content, Media & Editor -->
         <div class="col-lg-8">
-            <div class="dashboard-card p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-slate-800">Article Content</h5>
-                
-                <div class="mb-3">
-                    <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">Blog Title <span class="text-danger">*</span></label>
+            <!-- 1. Article Content & Body -->
+            <div class="editor-section-card p-4 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="section-title-icon"><i class="fas fa-pen-nib"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-slate-800 mb-0">1. Article Content &amp; Body</h5>
+                        <small class="text-slate-500">Title, URL slug, summary teaser, and full content editor</small>
+                    </div>
+                </div>
+
+                <!-- Blog Title -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="{{ form.title.id_for_label }}" class="form-label fw-bold text-slate-800 mb-0">Article Title <span class="text-danger">*</span></label>
+                        <span class="char-count-badge" id="titleCharCount">0 / 60 chars</span>
+                    </div>
                     {{ form.title }}
                     {% if form.title.errors %}
                         <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
-                <div class="mb-3">
-                    <label for="{{ form.slug.id_for_label }}" class="form-label fw-semibold">Slug <small class="text-muted">(Optional - will auto-generate if blank)</small></label>
-                    {{ form.slug }}
+
+                <!-- URL Slug -->
+                <div class="mb-4">
+                    <label for="{{ form.slug.id_for_label }}" class="form-label fw-semibold text-slate-700 mb-1">
+                        URL Slug <small class="text-muted fw-normal">(Auto-generated from title if left blank)</small>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-slate-500 small" style="font-size: 0.85rem;">https://teltam.ai/blog/</span>
+                        {{ form.slug }}
+                    </div>
                     {% if form.slug.errors %}
                         <div class="invalid-feedback d-block">{{ form.slug.errors.0 }}</div>
                     {% endif %}
                 </div>
 
-                <div class="mb-3">
-                    <label for="{{ form.short_description.id_for_label }}" class="form-label fw-semibold">Short Summary / Description <span class="text-danger">*</span></label>
+                <!-- Short Teaser Summary -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="{{ form.short_description.id_for_label }}" class="form-label fw-semibold text-slate-800 mb-0">Short Teaser Summary <span class="text-danger">*</span></label>
+                        <span class="char-count-badge" id="teaserCharCount">0 / 160 chars</span>
+                    </div>
                     {{ form.short_description }}
-                    <div class="form-text">A brief paragraph summarizing the article, shown on listing pages.</div>
+                    <div class="form-text text-slate-500 mt-1" style="font-size: 0.8rem;">
+                        <i class="fas fa-info-circle me-1"></i> Summarize the article in 1-2 sentences. Appears on blog listing cards and social previews.
+                    </div>
                     {% if form.short_description.errors %}
                         <div class="invalid-feedback d-block">{{ form.short_description.errors.0 }}</div>
                     {% endif %}
                 </div>
 
-                <div class="mb-3">
-                    <label for="{{ form.full_content.id_for_label }}" class="form-label fw-semibold">Full Article Body <span class="text-danger">*</span></label>
+                <!-- Full Article Content Editor -->
+                <div class="mb-2">
+                    <label for="{{ form.full_content.id_for_label }}" class="form-label fw-bold text-slate-800 mb-2">Full Article Body <span class="text-danger">*</span></label>
                     {{ form.full_content }}
                     {% if form.full_content.errors %}
                         <div class="invalid-feedback d-block">{{ form.full_content.errors.0 }}</div>
                     {% endif %}
                 </div>
             </div>
-            
-            <!-- SEO Settings -->
-            <div class="dashboard-card p-4">
-                <h5 class="fw-bold mb-3 text-slate-800"><i class="fas fa-search me-2 text-primary"></i> Search Engine Optimization (SEO)</h5>
-                
+
+            <!-- 2. Interactive Drag & Drop Featured Banner -->
+            <div class="editor-section-card p-4 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="section-title-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fas fa-image"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-slate-800 mb-0">2. Featured Cover Image</h5>
+                        <small class="text-slate-500">Upload a high-resolution banner image for your article</small>
+                    </div>
+                </div>
+
+                <div class="image-dropzone" id="featuredImageDropzone" onclick="document.getElementById('featuredImageInput').click();">
+                    <input type="file" name="featured_image" id="featuredImageInput" class="d-none" accept="image/*" onchange="previewFeaturedImage(this);">
+                    
+                    <!-- Preview Container -->
+                    <div id="imagePreviewWrapper" class="{% if not form.instance.featured_image %}d-none{% endif %} mb-3">
+                        <img id="imagePreviewImg" src="{% if form.instance.featured_image %}{{ form.instance.featured_image.url }}{% endif %}" alt="Featured Banner Preview" class="rounded-3 img-fluid shadow-sm" style="max-height: 240px; width: 100%; object-fit: cover;">
+                    </div>
+
+                    <!-- Dropzone Placeholder Content -->
+                    <div id="dropzonePlaceholder" class="{% if form.instance.featured_image %}d-none{% endif %}">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-indigo-50 text-indigo-600 mb-3" style="width: 56px; height: 56px;">
+                            <i class="fas fa-cloud-arrow-up fa-xl"></i>
+                        </div>
+                        <h6 class="fw-bold text-slate-800 mb-1">Click or drag &amp; drop to upload banner</h6>
+                        <p class="text-slate-500 small mb-0">Recommended resolution: <strong>1200 x 630 px</strong> (PNG, JPG, WEBP max 5MB)</p>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-sm btn-outline-indigo rounded-pill px-3" onclick="event.stopPropagation(); document.getElementById('featuredImageInput').click();">
+                            <i class="fas fa-folder-open me-1"></i> {% if form.instance.featured_image %}Change Image{% else %}Browse Files{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. SEO Optimizer & Google SERP Preview -->
+            <div class="editor-section-card p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="section-title-icon" style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9;"><i class="fas fa-magnifying-glass-chart"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-slate-800 mb-0">3. Search Engine Optimization (SEO)</h5>
+                            <small class="text-slate-500">Optimize how your article appears on Google &amp; Search Engines</small>
+                        </div>
+                    </div>
+                    <button type="button" id="copyContentToSeoBtn" class="btn btn-sm btn-light border rounded-pill px-3 text-slate-700" style="font-size: 0.8rem;">
+                        <i class="fas fa-copy me-1 text-info"></i> Auto-Fill SEO
+                    </button>
+                </div>
+
+                <!-- Google SERP Live Preview Box -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-slate-800 small mb-2"><i class="fab fa-google text-primary me-1"></i> Live Google Search Result Preview</label>
+                    <div class="google-serp-preview">
+                        <div class="serp-url">
+                            <i class="fas fa-globe text-slate-400"></i> https://teltam.ai › blog › <span id="serpSlugPreview">article-slug</span>
+                        </div>
+                        <div class="serp-title" id="serpTitlePreview">Article Meta Title - Teltam.ai</div>
+                        <div class="serp-snippet" id="serpSnippetPreview">Write your meta description or short article summary to see how searchers view your post on Google...</div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
-                    <label for="{{ form.meta_title.id_for_label }}" class="form-label fw-semibold">Meta Title</label>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="{{ form.meta_title.id_for_label }}" class="form-label fw-semibold text-slate-700 mb-0">Meta Title</label>
+                        <span class="char-count-badge" id="metaTitleCharCount">0 / 60 chars</span>
+                    </div>
                     {{ form.meta_title }}
-                    <div class="form-text">Overrides the window title. Defaults to blog title if empty.</div>
                     {% if form.meta_title.errors %}
                         <div class="invalid-feedback d-block">{{ form.meta_title.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="mb-0">
-                    <label for="{{ form.meta_description.id_for_label }}" class="form-label fw-semibold">Meta Description</label>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="{{ form.meta_description.id_for_label }}" class="form-label fw-semibold text-slate-700 mb-0">Meta Description</label>
+                        <span class="char-count-badge" id="metaDescCharCount">0 / 160 chars</span>
+                    </div>
                     {{ form.meta_description }}
-                    <div class="form-text">Summary indexed by search engines. Defaults to short description if empty.</div>
                     {% if form.meta_description.errors %}
                         <div class="invalid-feedback d-block">{{ form.meta_description.errors.0 }}</div>
                     {% endif %}
@@ -83,86 +322,108 @@
             </div>
         </div>
 
-        <!-- Meta Settings (Right Column) -->
+        <!-- Right Side Column: Publishing Controls & Attributes -->
         <div class="col-lg-4">
-            <!-- Publishing Actions -->
-            <div class="dashboard-card p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-slate-800">Status &amp; Actions</h5>
-                
-                <div class="form-check form-switch mb-3">
-                    {{ form.is_published }}
-                    <label class="form-check-label fw-semibold" for="{{ form.is_published.id_for_label }}">Publish this Article</label>
-                    <div class="form-text">Check to make it live instantly on the public website. Uncheck to save as draft.</div>
+            <!-- Publishing & Schedule Controls -->
+            <div class="editor-section-card p-4 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                    <div class="section-title-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-slate-800 mb-0">Publishing Controls</h5>
+                        <small class="text-slate-500">Status, scheduler &amp; notifications</small>
+                    </div>
                 </div>
 
-                <div class="p-3 bg-light rounded-3 border mb-4">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="form-check form-switch mb-0 ps-4">
-                            {{ form.send_email_notification }}
-                            <label class="form-check-label fw-bold text-slate-800" for="{{ form.send_email_notification.id_for_label }}">
-                                Send Email to Users
-                            </label>
+                <!-- Instant Publish Switch -->
+                <div class="publishing-subcard mb-3">
+                    <div class="d-flex align-items-center justify-content-between custom-switch-wrapper mb-1">
+                        <label class="form-check-label fw-bold text-slate-800 mb-0 cursor-pointer" for="{{ form.is_published.id_for_label }}">
+                            <i class="fas fa-globe text-emerald-600 me-2"></i>Publish Article Live
+                        </label>
+                        <div class="form-check form-switch p-0 m-0 d-flex align-items-center">
+                            {{ form.is_published }}
                         </div>
-                        <span id="emailNotificationBadge" class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 rounded-pill small" style="font-size: 0.75rem;">
-                            <i class="fas fa-paper-plane me-1"></i> Email Enabled
-                        </span>
                     </div>
-                    <div class="form-text text-slate-600 mb-0" style="font-size: 0.78rem;">
-                        Turn OFF if you do not want to send email notifications to users for this post.
+                    <div class="form-text text-slate-500 mt-1 mb-0" style="font-size: 0.78rem;">
+                        Turn ON to make article public on website. Turn OFF to save as Draft.
+                    </div>
+                </div>
+
+                <!-- Schedule Publishing Date-Time Picker -->
+                <div class="publishing-subcard mb-3">
+                    <label for="{{ form.scheduled_publish_date.id_for_label }}" class="form-label fw-bold text-slate-800 small mb-2 d-flex align-items-center">
+                        <i class="far fa-calendar-alt text-indigo-600 me-2"></i>Schedule Publish Date &amp; Time
+                    </label>
+                    {{ form.scheduled_publish_date }}
+                    {% if form.scheduled_publish_date.errors %}
+                        <div class="invalid-feedback d-block">{{ form.scheduled_publish_date.errors.0 }}</div>
+                    {% endif %}
+                    <div class="form-text text-slate-500 mt-1.5 mb-0" style="font-size: 0.78rem;">
+                        Leave empty to publish instantly. Set a future date/time for automatic scheduled launch.
+                    </div>
+                </div>
+
+                <!-- Email Notification Broadcast Switch -->
+                <div class="publishing-subcard mb-4">
+                    <div class="d-flex align-items-center justify-content-between custom-switch-wrapper mb-1">
+                        <label class="form-check-label fw-bold text-slate-800 mb-0 cursor-pointer d-flex align-items-center" for="{{ form.send_email_notification.id_for_label }}">
+                            <i class="fas fa-paper-plane text-indigo-600 me-2"></i>Email Broadcast
+                            <span id="emailNotificationBadge" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5 rounded-pill ms-2" style="font-size: 0.7rem;">
+                                Active
+                            </span>
+                        </label>
+                        <div class="form-check form-switch p-0 m-0 d-flex align-items-center">
+                            {{ form.send_email_notification }}
+                        </div>
+                    </div>
+                    <div class="form-text text-slate-500 mt-1 mb-0" style="font-size: 0.78rem;">
+                        Sends automated email notification to registered users when published.
                     </div>
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-brand-primary py-2"><i class="fas fa-floppy-disk me-1"></i> Save Changes</button>
+                    <button type="submit" class="btn btn-brand-primary py-2.5 fw-semibold shadow-sm">
+                        <i class="fas fa-floppy-disk me-1.5"></i> Save Changes
+                    </button>
                     <a href="{% url 'dashboard_blog_list' %}" class="btn btn-outline-secondary py-2">Cancel</a>
                 </div>
             </div>
 
-            <!-- Categories and Tags -->
-            <div class="dashboard-card p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-slate-800">Attributes</h5>
-                
+            <!-- Categories, Author & Tags -->
+            <div class="editor-section-card p-4 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                    <div class="section-title-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fas fa-tags"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-slate-800 mb-0">Attributes &amp; Metadata</h5>
+                        <small class="text-slate-500">Category, author &amp; tags</small>
+                    </div>
+                </div>
+
+                <!-- Category -->
                 <div class="mb-3">
-                    <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                    <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold text-slate-800">Category <span class="text-danger">*</span></label>
                     {{ form.category }}
                     {% if form.category.errors %}
                         <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
                     {% endif %}
                 </div>
 
+                <!-- Author Name -->
                 <div class="mb-3">
-                    <label for="{{ form.author.id_for_label }}" class="form-label fw-semibold">Author Name</label>
+                    <label for="{{ form.author.id_for_label }}" class="form-label fw-semibold text-slate-800">Author Name</label>
                     {{ form.author }}
                     {% if form.author.errors %}
                         <div class="invalid-feedback d-block">{{ form.author.errors.0 }}</div>
                     {% endif %}
                 </div>
 
+                <!-- Tags -->
                 <div class="mb-0">
-                    <label for="{{ form.tags.id_for_label }}" class="form-label fw-semibold">Tags</label>
+                    <label for="{{ form.tags.id_for_label }}" class="form-label fw-semibold text-slate-800">Tags</label>
                     {{ form.tags }}
-                    <div class="form-text">Comma-separated keywords.</div>
+                    <div class="form-text text-slate-500 mt-1" style="font-size: 0.78rem;">Separate tags with commas (e.g. AI, Neural Engine, Guide).</div>
                     {% if form.tags.errors %}
                         <div class="invalid-feedback d-block">{{ form.tags.errors.0 }}</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Media Attachments -->
-            <div class="dashboard-card p-4">
-                <h5 class="fw-bold mb-3 text-slate-800">Featured Image</h5>
-                
-                <div class="mb-0">
-                    {% if blog.featured_image %}
-                        <div class="mb-3 text-center border p-2 rounded bg-light">
-                            <img src="{{ blog.featured_image.url }}" alt="Current Featured Image" class="img-fluid rounded" style="max-height: 150px;">
-                            <div class="small text-muted mt-1">Current Image</div>
-                        </div>
-                    {% endif %}
-                    <label for="{{ form.featured_image.id_for_label }}" class="form-label fw-semibold">Upload Banner Image</label>
-                    {{ form.featured_image }}
-                    {% if form.featured_image.errors %}
-                        <div class="invalid-feedback d-block">{{ form.featured_image.errors.0 }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -174,24 +435,149 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const emailToggle = document.getElementById('{{ form.send_email_notification.id_for_label }}');
-        const emailBadge = document.getElementById('emailNotificationBadge');
+        // Elements
+        const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+        const slugInput = document.getElementById('{{ form.slug.id_for_label }}');
+        const teaserInput = document.getElementById('{{ form.short_description.id_for_label }}');
+        const metaTitleInput = document.getElementById('{{ form.meta_title.id_for_label }}');
+        const metaDescInput = document.getElementById('{{ form.meta_description.id_for_label }}');
         
-        function updateEmailBadge() {
-            if (!emailToggle || !emailBadge) return;
-            if (emailToggle.checked) {
-                emailBadge.className = "badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 rounded-pill small";
-                emailBadge.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Email Enabled';
+        const serpTitlePreview = document.getElementById('serpTitlePreview');
+        const serpSlugPreview = document.getElementById('serpSlugPreview');
+        const serpSnippetPreview = document.getElementById('serpSnippetPreview');
+        
+        const titleCountEl = document.getElementById('titleCharCount');
+        const teaserCountEl = document.getElementById('teaserCharCount');
+        const metaTitleCountEl = document.getElementById('metaTitleCharCount');
+        const metaDescCountEl = document.getElementById('metaDescCharCount');
+
+        const autoFillBtn = document.getElementById('autoFillSeoBtn');
+        const copySeoBtn = document.getElementById('copyContentToSeoBtn');
+
+        // Character counter update helper
+        function updateCounter(inputEl, counterEl, maxRecommended) {
+            if (!inputEl || !counterEl) return;
+            const len = inputEl.value.length;
+            counterEl.innerText = `${len} / ${maxRecommended} chars`;
+            if (len > maxRecommended) {
+                counterEl.className = "char-count-badge warning";
+            } else if (len > 0) {
+                counterEl.className = "char-count-badge success";
             } else {
-                emailBadge.className = "badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1 rounded-pill small";
-                emailBadge.innerHTML = '<i class="fas fa-bell-slash me-1"></i> Email Disabled';
+                counterEl.className = "char-count-badge";
             }
         }
-        
-        if (emailToggle) {
+
+        // SERP Live Preview Update Helper
+        function updateSerpPreview() {
+            const titleVal = (metaTitleInput && metaTitleInput.value.trim()) || (titleInput && titleInput.value.trim()) || "Article Title";
+            const slugVal = (slugInput && slugInput.value.trim()) || "article-url-slug";
+            const snippetVal = (metaDescInput && metaDescInput.value.trim()) || (teaserInput && teaserInput.value.trim()) || "Write a teaser summary to see how searchers view your article on Google.";
+
+            if (serpTitlePreview) serpTitlePreview.innerText = titleVal.length > 60 ? titleVal.substring(0, 57) + '...' : titleVal;
+            if (serpSlugPreview) serpSlugPreview.innerText = slugVal.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+            if (serpSnippetPreview) serpSnippetPreview.innerText = snippetVal.length > 160 ? snippetVal.substring(0, 157) + '...' : snippetVal;
+        }
+
+        // Auto-fill SEO metadata from title & teaser
+        function autoFillSeo() {
+            if (titleInput && metaTitleInput && !metaTitleInput.value.trim()) {
+                metaTitleInput.value = titleInput.value.trim();
+            }
+            if (teaserInput && metaDescInput && !metaDescInput.value.trim()) {
+                metaDescInput.value = teaserInput.value.trim();
+            }
+            updateCounter(metaTitleInput, metaTitleCountEl, 60);
+            updateCounter(metaDescInput, metaDescCountEl, 160);
+            updateSerpPreview();
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'SEO Title & Description Auto-Filled!',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        }
+
+        if (autoFillBtn) autoFillBtn.addEventListener('click', autoFillSeo);
+        if (copySeoBtn) copySeoBtn.addEventListener('click', autoFillSeo);
+
+        // Attach Live Listeners
+        if (titleInput) {
+            titleInput.addEventListener('input', function() {
+                updateCounter(titleInput, titleCountEl, 60);
+                updateSerpPreview();
+            });
+            updateCounter(titleInput, titleCountEl, 60);
+        }
+
+        if (slugInput) {
+            slugInput.addEventListener('input', updateSerpPreview);
+        }
+
+        if (teaserInput) {
+            teaserInput.addEventListener('input', function() {
+                updateCounter(teaserInput, teaserCharCount, 160);
+                updateSerpPreview();
+            });
+            updateCounter(teaserInput, teaserCharCount, 160);
+        }
+
+        if (metaTitleInput) {
+            metaTitleInput.addEventListener('input', function() {
+                updateCounter(metaTitleInput, metaTitleCountEl, 60);
+                updateSerpPreview();
+            });
+            updateCounter(metaTitleInput, metaTitleCountEl, 60);
+        }
+
+        if (metaDescInput) {
+            metaDescInput.addEventListener('input', function() {
+                updateCounter(metaDescInput, metaDescCountEl, 160);
+                updateSerpPreview();
+            });
+            updateCounter(metaDescInput, metaDescCountEl, 160);
+        }
+
+        updateSerpPreview();
+
+        // Email Toggle Badge Update
+        const emailToggle = document.getElementById('{{ form.send_email_notification.id_for_label }}');
+        const emailBadge = document.getElementById('emailNotificationBadge');
+        if (emailToggle && emailBadge) {
+            function updateEmailBadge() {
+                if (emailToggle.checked) {
+                    emailBadge.className = "badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small";
+                    emailBadge.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Active';
+                } else {
+                    emailBadge.className = "badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill small";
+                    emailBadge.innerHTML = '<i class="fas fa-bell-slash me-1"></i> Off';
+                }
+            }
             emailToggle.addEventListener('change', updateEmailBadge);
             updateEmailBadge();
         }
     });
+
+    // Preview Featured Banner Image
+    function previewFeaturedImage(input) {
+        const previewWrapper = document.getElementById('imagePreviewWrapper');
+        const previewImg = document.getElementById('imagePreviewImg');
+        const placeholder = document.getElementById('dropzonePlaceholder');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (previewImg) previewImg.src = e.target.result;
+                if (previewWrapper) previewWrapper.classList.remove('d-none');
+                if (placeholder) placeholder.classList.add('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 </script>
 {% endblock %}

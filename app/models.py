@@ -34,10 +34,23 @@ class Blog(models.Model):
     meta_title = models.CharField(max_length=255, blank=True)
     meta_description = models.TextField(blank=True)
     is_published = models.BooleanField(default=False)
+    scheduled_publish_date = models.DateTimeField(blank=True, null=True, help_text="Set a future date and time to schedule automatic publishing.")
     send_email_notification = models.BooleanField(default=True, help_text="Designates whether email notification should be sent to registered users upon publishing.")
     is_notification_sent = models.BooleanField(default=False, help_text="Designates whether email notification has been sent to registered users.")
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+    @property
+    def is_live(self):
+        """
+        Returns True if the article is marked as published AND its scheduled publish date (if set) has arrived.
+        """
+        from django.utils import timezone
+        if not self.is_published:
+            return False
+        if self.scheduled_publish_date and self.scheduled_publish_date > timezone.now():
+            return False
+        return True
 
     def save(self, *args, **kwargs):
         if not self.slug:

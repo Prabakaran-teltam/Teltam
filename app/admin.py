@@ -10,7 +10,8 @@ class AIClassEnquiryAdmin(admin.ModelAdmin):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'is_published', 'created_date')
+    list_display = ('title', 'category', 'is_published', 'scheduled_publish_date', 'created_date')
+    list_filter = ('is_published', 'category', 'scheduled_publish_date')
     prepopulated_fields = {'slug': ('title',)}
 
 @admin.register(YoutubeVideo)

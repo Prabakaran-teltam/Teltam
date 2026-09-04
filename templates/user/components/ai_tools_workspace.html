@@ -1307,6 +1307,13 @@
 <script>
         (function() {
             // Utility: Get CSRF Token from cookies
+            // Guest Device Fingerprint & LocalStorage Limit Setup
+            if (!localStorage.getItem('teltam_guest_id')) {
+                localStorage.setItem('teltam_guest_id', 'g_' + Math.random().toString(36).substring(2) + Date.now().toString(36));
+            }
+            window.GUEST_FINGERPRINT = localStorage.getItem('teltam_guest_id');
+            window.IS_USER_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
+
             function getCookie(name) {
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
@@ -1322,9 +1329,11 @@
                 return cookieValue;
             }
 
-            // Utility: Fetch with timeout support (default 120s timeout)
+            // Utility: Fetch with timeout support and Guest Fingerprint header
             function fetchWithTimeout(resource, options = {}) {
                 const { timeout = 120000 } = options;
+                options.headers = options.headers || {};
+                options.headers['X-Guest-Fingerprint'] = window.GUEST_FINGERPRINT;
                 
                 const controller = new AbortController();
                 const id = setTimeout(() => controller.abort(), timeout);
@@ -2672,7 +2681,7 @@
                             const secs = (recordingSecs % 60).toString().padStart(2, '0');
                             voiceTimer.innerText = `${mins}:${secs}`;
                             
-                            if (recordingSecs >= 15) {
+                            if (recordingSecs >= 60) {
                                 stopVoiceRecording();
                             }
                         }, 1000);

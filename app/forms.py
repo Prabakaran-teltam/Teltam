@@ -7,21 +7,23 @@ class BlogForm(forms.ModelForm):
     class Meta:
         model = Blog
         fields = [
-            'title', 'category', 'short_description', 'full_content', 
+            'title', 'slug', 'category', 'short_description', 'full_content', 
             'featured_image', 'author', 'tags', 'meta_title', 'meta_description', 
-            'is_published', 'send_email_notification'
+            'is_published', 'scheduled_publish_date', 'send_email_notification'
         ]
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter blog title'}),
-            'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. AI Translation'}),
-            'short_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Enter short teaser description'}),
+            'title': forms.TextInput(attrs={'class': 'form-control form-control-lg fw-bold', 'placeholder': 'Enter a catchy article title...'}),
+            'slug': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'custom-url-slug (auto-generated if empty)'}),
+            'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. AI Translation, Technology, Guides'}),
+            'short_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Write a compelling short summary that appears on blog listing cards...'}),
             'full_content': CKEditorUploadingWidget(config_name='default', attrs={'class': 'form-control'}),
-            'featured_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'featured_image': forms.ClearableFileInput(attrs={'class': 'form-control', 'id': 'featuredImageInput'}),
             'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Author name'}),
-            'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Comma-separated tags, e.g. AI, Translation, Tech'}),
-            'meta_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'SEO Meta Title (defaults to title)'}),
-            'meta_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'SEO Meta Description'}),
+            'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. AI, Machine Translation, Neural Network'}),
+            'meta_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'SEO Meta Title (recommended 50-60 characters)'}),
+            'meta_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'SEO Meta Description (recommended 120-160 characters)'}),
             'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
+            'scheduled_publish_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'send_email_notification': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
         }
 

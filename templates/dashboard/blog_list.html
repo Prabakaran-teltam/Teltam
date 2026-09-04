@@ -60,9 +60,19 @@
                     <td><span class="text-slate-700 font-medium">{{ blog.author }}</span></td>
                     <td>
                         {% if blog.is_published %}
-                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Published</span>
+                            {% if blog.scheduled_publish_date and blog.scheduled_publish_date > now %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1" title="Scheduled for {{ blog.scheduled_publish_date|date:'M d, Y H:i' }}">
+                                    <i class="far fa-clock me-1"></i> Scheduled ({{ blog.scheduled_publish_date|date:"M d, H:i" }})
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
+                                    <i class="fas fa-check-circle me-1"></i> Published
+                                </span>
+                            {% endif %}
                         {% else %}
-                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2">Draft</span>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1">
+                                <i class="far fa-file-lines me-1"></i> Draft
+                            </span>
                         {% endif %}
                     </td>
                     <td><small class="text-muted">{{ blog.created_date|date:"M d, Y" }}</small></td>

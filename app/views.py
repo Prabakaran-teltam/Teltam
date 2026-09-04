@@ -23,10 +23,20 @@ from .models import Blog, YoutubeVideo
 
 logger = logging.getLogger(__name__)
 
+def get_public_live_blogs():
+    """
+    Returns QuerySet of blogs that are published AND whose scheduled publish date (if set) has arrived.
+    """
+    from django.utils import timezone
+    now = timezone.now()
+    return Blog.objects.filter(is_published=True).filter(
+        Q(scheduled_publish_date__isnull=True) | Q(scheduled_publish_date__lte=now)
+    )
+
 @ensure_csrf_cookie
 def home(request):
     """Renders the Home page with the single most recently published blog and video."""
-    latest_blogs = Blog.objects.filter(is_published=True).order_by('-created_date')[:1]
+    latest_blogs = get_public_live_blogs().order_by('-created_date')[:1]
     latest_videos = YoutubeVideo.objects.filter(is_published=True).order_by('-created_date')[:1]
 
     context = {
@@ -110,7 +120,7 @@ from .phonepe_service import PhonePeService
 
 def blog_list(request):
     """Renders the Blog listing page with dynamic DB search, category filter, and pagination."""
-    blogs_query = Blog.objects.filter(is_published=True)
+    blogs_query = get_public_live_blogs()
     
     # 1. Category filter
     category = request.GET.get('category', '').strip()
@@ -133,8 +143,8 @@ def blog_list(request):
     page_obj = paginator.get_page(page_number)
     
     # 4. Sidebar components
-    recent_blogs = Blog.objects.filter(is_published=True).order_by('-created_date')[:3]
-    categories = Blog.objects.filter(is_published=True).values_list('category', flat=True).distinct()
+    recent_blogs = get_public_live_blogs().order_by('-created_date')[:3]
+    categories = get_public_live_blogs().values_list('category', flat=True).distinct()
     
     context = {
         'page_obj': page_obj,
@@ -147,8 +157,9 @@ def blog_list(request):
 
 def blog_view(request, slug):
     """Renders the detailed Blog article view page using slug lookup."""
-    blog = get_object_or_404(Blog, slug=slug, is_published=True)
-    recent_blogs = Blog.objects.filter(is_published=True).exclude(id=blog.id).order_by('-created_date')[:3]
+    live_blogs = get_public_live_blogs()
+    blog = get_object_or_404(live_blogs, slug=slug)
+    recent_blogs = live_blogs.exclude(id=blog.id).order_by('-created_date')[:3]
     
     context = {
         'blog': blog,
@@ -748,6 +759,24 @@ def translate_api(request):
     if len(text) > 5000:
         return JsonResponse({'error': 'Text exceeds the maximum limit of 5000 characters.'}, status=400)
 
+    # Enforce 500-word limit & 3 daily text translations for unregistered users (Module 1)
+    if not request.user.is_authenticated:
+        guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+        guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
+        guest_text_key = f"guest_text_limit_{guest_id}"
+
+        guest_text_count = cache.get(guest_text_key, 0)
+        if guest_text_count >= 3:
+            return JsonResponse({
+                'error': 'Daily text translation limit reached for unregistered users (3 translations per day). Please sign up or log in for unlimited text translation.'
+            }, status=403)
+
+        word_count = len(text.split())
+        if word_count > 500:
+            return JsonResponse({
+                'error': f'Text translation is limited to 500 words for unregistered users (submitted: {word_count} words). Please sign up or log in to translate longer text.'
+            }, status=403)
+
     # Validate language codes
     is_valid, err_msg = validate_language_codes(source_lang, target_lang, allow_source_auto=True)
     if not is_valid:
@@ -847,7 +876,7 @@ def translate_api(request):
         # Save to cache for 24 hours (86400 seconds)
         cache.set(cache_key, response_data, timeout=86400)
         
-        # Save translation history
+        # Save translation history or increment guest count
         if request.user.is_authenticated:
             try:
                 UserTranslationHistory.objects.create(
@@ -861,6 +890,11 @@ def translate_api(request):
                 )
             except Exception as e:
                 logger.warning(f"Failed to log text translation: {str(e)}")
+        else:
+            guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+            guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
+            guest_text_key = f"guest_text_limit_{guest_id}"
+            cache.set(guest_text_key, cache.get(guest_text_key, 0) + 1, timeout=86400)
         
         return JsonResponse(response_data)
         
@@ -926,6 +960,32 @@ def upload_document(request):
                 'error': f"Multi-Image batch translation is limited to {max_batch} image(s) per batch on {plan_info['name']}. Upgrade to Pro (10 images/batch) or Business (Unlimited)."
             }, status=403)
     else:
+        # Enforce 1 page document limit & 1 document per day limit for unregistered users
+        if not request.user.is_authenticated:
+            guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+            guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
+            guest_doc_key = f"guest_doc_limit_{guest_id}"
+
+            if cache.get(guest_doc_key, 0) >= 1:
+                return JsonResponse({
+                    'error': 'Document translation limit reached (1 document allowed per day for unregistered users). Please sign up or log in to translate more documents.'
+                }, status=403)
+
+            try:
+                import fitz
+                for f in uploaded_files:
+                    ext = os.path.splitext(f.name)[1].lower()
+                    if ext == '.pdf':
+                        content = f.read()
+                        f.seek(0)
+                        pdf_doc = fitz.open(stream=content, filetype="pdf")
+                        if len(pdf_doc) > 1:
+                            return JsonResponse({
+                                'error': f'Document translation is limited to 1 page for unregistered users (uploaded file "{f.name}" has {len(pdf_doc)} pages). Please sign up or log in to translate multi-page documents.'
+                            }, status=403)
+            except Exception as pdf_err:
+                logger.warning(f"Failed to inspect PDF page count for guest upload: {str(pdf_err)}")
+
         # Document limit check (PDF, DOCX, TXT)
         doc_limit = limits['doc_files_monthly']
         if doc_limit == 0:
@@ -999,6 +1059,12 @@ def upload_document(request):
         target_language=target_lang,
         status='pending'
     )
+
+    # Record guest document upload in cache (24h expiration)
+    if not request.user.is_authenticated:
+        guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+        guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
+        cache.set(f"guest_doc_limit_{guest_id}", 1, timeout=86400)
     
     # Save original file (first file in batch) to history model
     from django.core.files import File
@@ -1099,6 +1165,18 @@ def upload_voice_api(request):
 
     uploaded_file = request.FILES['file']
     target_lang = request.POST.get('target_lang', 'es').strip()
+
+    # Enforce 1 minute (1 recording) voice limit for unregistered users
+    if not request.user.is_authenticated:
+        guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+        guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
+        guest_voice_key = f"rate_limit_guest_voice_{guest_id}"
+        guest_voice_count = cache.get(guest_voice_key, 0)
+        if guest_voice_count >= 1:
+            return JsonResponse({
+                'error': 'Voice translation limit reached (1 voice recording allowed per day for unregistered users). Please sign up or log in to translate more voice recordings.'
+            }, status=403)
+        cache.set(guest_voice_key, guest_voice_count + 1, timeout=86400)
 
     # Enforce Compare Features Plan Matrix limits for Voice Translation (Module 7)
     plan_info, limits = get_user_plan_info(request.user)
@@ -1349,6 +1427,22 @@ def api_translate_camera(request):
             return JsonResponse({
                 'error': f"Live Camera AR Translation is not available on {plan_info['name']}. Please upgrade to Pro (15 mins/session) or Business (Unlimited)."
             }, status=403)
+
+        # Enforce 1 minute session limit for Live Camera AR for unregistered users
+        if not request.user.is_authenticated:
+            import time
+            ip = get_client_ip(request)
+            guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+            guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
+            camera_session_key = f"camera_session_start_{guest_id}"
+            session_start = cache.get(camera_session_key)
+            now_ts = time.time()
+            if not session_start:
+                cache.set(camera_session_key, now_ts, timeout=86400)
+            elif now_ts - session_start > 60: # 60 seconds limit
+                return JsonResponse({
+                    'error': 'Live Camera AR translation is limited to 1 minute (60 seconds) for unregistered users per day. Please sign up or log in for unlimited camera AR translation.'
+                }, status=403)
 
         if not image_data and 'file' in request.FILES:
             uploaded_file = request.FILES['file']
@@ -1641,9 +1735,11 @@ def dashboard_blog_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    from django.utils import timezone
     context = {
         'page_obj': page_obj,
         'search_query': q,
+        'now': timezone.now(),
     }
     return render(request, 'dashboard/blog_list.html', context)
 

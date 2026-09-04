@@ -235,17 +235,50 @@ def video_view(request, slug):
     }
     return render(request, 'video-view.html', context)
 
+def verify_cloudflare_turnstile(token, remote_ip=None):
+    """Verifies Cloudflare Turnstile CAPTCHA response token with Cloudflare Siteverify API."""
+    secret_key = getattr(settings, 'CLOUDFLARE_TURNSTILE_SECRET_KEY', '1x000000000000000000000000000000AA')
+    if not token:
+        return False
+    try:
+        import requests
+        url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+        payload = {
+            'secret': secret_key,
+            'response': token,
+        }
+        if remote_ip:
+            payload['remoteip'] = remote_ip
+        resp = requests.post(url, data=payload, timeout=5)
+        if resp.status_code == 200:
+            result = resp.json()
+            return result.get('success', False)
+    except Exception as e:
+        logger.exception(f"Cloudflare Turnstile verification error: {e}")
+        if secret_key.startswith('1x000000'):
+            return True
+    return False
+
 def contact(request):
-    """Saves Contact Us form submissions to DB and displays validation alerts."""
+    """Saves Contact Us form submissions to DB with Cloudflare Turnstile bot verification."""
+    site_key = getattr(settings, 'CLOUDFLARE_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+    
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
         subject = request.POST.get('subject', '').strip()
         message = request.POST.get('message', '').strip()
+        turnstile_response = request.POST.get('cf-turnstile-response', '').strip()
+        
+        # Verify Cloudflare Turnstile
+        client_ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
+        is_turnstile_valid = verify_cloudflare_turnstile(turnstile_response, client_ip)
         
         # Validation checks
-        if not name or len(name) < 2:
+        if not turnstile_response or not is_turnstile_valid:
+            messages.error(request, "Cloudflare security verification failed. Please complete the captcha check.")
+        elif not name or len(name) < 2:
             messages.error(request, "Please enter a valid name (min 2 characters).")
         elif not email or '@' not in email:
             messages.error(request, "Please enter a valid email address.")
@@ -264,7 +297,10 @@ def contact(request):
                 logger.exception("Failed to save contact message")
                 messages.error(request, "An error occurred while sending your message. Please try again.")
                 
-    return render(request, 'contact.html')
+    context = {
+        'turnstile_site_key': site_key,
+    }
+    return render(request, 'contact.html', context)
 
 def login_view(request):
     """Handles standard user Sign In authentication."""

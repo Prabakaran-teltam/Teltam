@@ -244,3 +244,8 @@ SITE_URL = os.environ.get('SITE_URL', 'https://teltam.in')
 AZURE_SPEECH_KEY = os.environ.get('AZURE_SPEECH_KEY', '')
 AZURE_SPEECH_REGION = os.environ.get('AZURE_SPEECH_REGION', 'eastus')
 
+# Cloudflare Turnstile Bot Verification Keys
+CLOUDFLARE_TURNSTILE_SITE_KEY = os.environ.get('CLOUDFLARE_TURNSTILE_SITE_KEY', '0x4AAAAAAEnAtwNhKzlH9PAk')
+CLOUDFLARE_TURNSTILE_SECRET_KEY = os.environ.get('CLOUDFLARE_TURNSTILE_SECRET_KEY', '0x4AAAAAAEnAt2WgKa_zky40JokmoIGFxCs')
+
+

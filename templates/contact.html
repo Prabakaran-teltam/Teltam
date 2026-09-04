@@ -16,6 +16,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Custom Style Sheet -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <!-- Cloudflare Turnstile API Script -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="bg-soft-gradient" style="padding-top: 85px;">
 
@@ -117,8 +119,20 @@
                                     <label for="contactMessage" class="form-label fw-bold text-slate-700">Message</label>
                                     <textarea id="contactMessage" name="message" class="form-control py-2 shadow-none" rows="5" placeholder="Enter message guidelines..."></textarea>
                                 </div>
-                                <div class="col-12 mt-4 text-end">
-                                    <button type="submit" class="btn btn-primary-gradient px-5 py-3">Send Message</button>
+                                <!-- Cloudflare Turnstile & Submit Button Action Row -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+                                        <!-- Cloudflare Turnstile Bot Verification Widget (Left Side) -->
+                                        <div>
+                                            <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key|default:'1x00000000000000000000AA' }}" data-theme="light"></div>
+                                        </div>
+                                        <!-- Send Message Button (Right Side) -->
+                                        <div>
+                                            <button type="submit" class="btn btn-primary-gradient text-nowrap px-4 py-2.5 shadow-sm font-semibold d-inline-flex align-items-center justify-content-center" style="white-space: nowrap;">
+                                                Send Message <i class="fas fa-paper-plane ms-2"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </form>

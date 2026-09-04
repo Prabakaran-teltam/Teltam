@@ -23,12 +23,40 @@ from .models import Blog, YoutubeVideo
 
 logger = logging.getLogger(__name__)
 
+def process_due_scheduled_blog_notifications():
+    """
+    Checks for published blogs whose scheduled publish date has arrived and dispatches pending notifications.
+    """
+    try:
+        from django.utils import timezone
+        now = timezone.now()
+        due_blogs = Blog.objects.filter(
+            is_published=True,
+            send_email_notification=True,
+            is_notification_sent=False,
+            scheduled_publish_date__isnull=False,
+            scheduled_publish_date__lte=now
+        )
+        if due_blogs.exists():
+            import threading
+            from app.tasks import check_and_dispatch_scheduled_blogs_task
+            def run_check():
+                try:
+                    check_and_dispatch_scheduled_blogs_task()
+                except Exception as err:
+                    logger.exception(f"Error in scheduled blog dispatcher thread: {err}")
+            t = threading.Thread(target=run_check, daemon=True)
+            t.start()
+    except Exception as e:
+        logger.exception(f"Error processing due scheduled blog notifications: {e}")
+
 def get_public_live_blogs():
     """
     Returns QuerySet of blogs that are published AND whose scheduled publish date (if set) has arrived.
     """
     from django.utils import timezone
     now = timezone.now()
+    process_due_scheduled_blog_notifications()
     return Blog.objects.filter(is_published=True).filter(
         Q(scheduled_publish_date__isnull=True) | Q(scheduled_publish_date__lte=now)
     )
@@ -1811,6 +1839,9 @@ def dashboard_blog_add(request):
             # Default author if blank
             if not blog.author:
                 blog.author = request.user.first_name or request.user.username
+            # If a scheduled publish date is set, ensure is_published is True so it enters the scheduled queue
+            if blog.scheduled_publish_date:
+                blog.is_published = True
             blog.save()
             messages.success(request, f"Blog '{blog.title}' created successfully!")
             return redirect('dashboard_blog_list')
@@ -1832,7 +1863,10 @@ def dashboard_blog_edit(request, pk):
     if request.method == 'POST':
         form = BlogForm(request.POST, request.FILES, instance=blog)
         if form.is_valid():
-            form.save()
+            blog_obj = form.save(commit=False)
+            if blog_obj.scheduled_publish_date:
+                blog_obj.is_published = True
+            blog_obj.save()
             messages.success(request, f"Blog '{blog.title}' updated successfully!")
             return redirect('dashboard_blog_list')
         else:

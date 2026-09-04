@@ -321,7 +321,7 @@ def on_blog_post_saved(sender, instance, created, **kwargs):
     when a Blog post is published (is_published=True), send_email_notification is enabled,
     and notifications haven't been sent yet.
     """
-    if instance.is_published and instance.send_email_notification and not instance.is_notification_sent:
+    if instance.is_live and instance.send_email_notification and not instance.is_notification_sent:
         try:
             from app.tasks import send_new_blog_notifications_task
             

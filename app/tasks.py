@@ -414,3 +414,34 @@ def send_new_blog_notifications_task(self, blog_id):
         return {'status': 'FAILURE', 'error': str(e)}
 
 
+@shared_task
+def check_and_dispatch_scheduled_blogs_task():
+    """
+    Periodic task / helper to check for published blogs whose scheduled date/time has arrived
+    and send their email notifications if not yet sent.
+    """
+    from app.models import Blog
+    from django.utils import timezone
+
+    now = timezone.now()
+    due_blogs = Blog.objects.filter(
+        is_published=True,
+        send_email_notification=True,
+        is_notification_sent=False,
+        scheduled_publish_date__isnull=False,
+        scheduled_publish_date__lte=now
+    )
+
+    dispatched_count = 0
+    for blog in due_blogs:
+        try:
+            logger.info(f"Dispatching scheduled blog notification for blog ID {blog.id} ('{blog.title}').")
+            send_new_blog_notifications_task(blog.id)
+            dispatched_count += 1
+        except Exception as err:
+            logger.exception(f"Failed to dispatch scheduled notification for blog ID {blog.id}: {err}")
+
+    return {'status': 'SUCCESS', 'dispatched_count': dispatched_count}
+
+
+

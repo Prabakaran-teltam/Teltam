@@ -16,6 +16,41 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Custom Style Sheet -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        /* CKEditor Table Border Display Fixes */
+        .blog-full-content table,
+        .blog-full-content table.table,
+        .blog-full-content figure.table table {
+            width: 100% !important;
+            margin-top: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+            border-collapse: collapse !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+        }
+        .blog-full-content table th,
+        .blog-full-content table td,
+        .blog-full-content table.table th,
+        .blog-full-content table.table td,
+        .blog-full-content figure.table table th,
+        .blog-full-content figure.table table td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 0.75rem 1rem !important;
+            vertical-align: middle !important;
+        }
+        .blog-full-content table th,
+        .blog-full-content table.table th,
+        .blog-full-content figure.table table th {
+            background-color: #f8fafc !important;
+            font-weight: 700 !important;
+            color: #1e293b !important;
+            border-bottom: 2px solid #94a3b8 !important;
+        }
+        .blog-full-content table tr:nth-child(even) td {
+            background-color: #f8fafc !important;
+        }
+    </style>
 </head>
 <body class="bg-soft-gradient" style="padding-top: 85px;">
 

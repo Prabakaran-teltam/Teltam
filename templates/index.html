@@ -1435,44 +1435,6 @@
         </div>
     </section>
 
-    <!-- Platform Overview Demo Video Showcase Section -->
-    <section class="py-5 bg-gradient-to-b from-slate-900 to-slate-950 text-white position-relative overflow-hidden" id="demo-video-section" style="background: linear-gradient(180deg, #0f172a 0%, #020617 100%);">
-        <div class="container py-4 position-relative" style="z-index: 2;">
-            <div class="text-center max-w-3xl mx-auto mb-4 mb-md-5">
-                <span class="badge px-3 py-2 rounded-pill bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 fw-bold mb-3 d-inline-flex align-items-center gap-2" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8;">
-                    <i class="fas fa-play-circle text-indigo-400"></i> Official Platform Walkthrough
-                </span>
-                <h2 class="display-5 fw-bold text-white mb-3" style="letter-spacing: -0.5px;">See Teltam.ai in Action</h2>
-                <p class="text-slate-300 lead fs-6 mx-auto" style="max-width: 720px;">Watch our comprehensive demo video to see how Teltam.ai seamlessly powers contextual text translation, scanned document OCR, real-time voice speech, and live camera AR.</p>
-            </div>
-
-            <div class="row justify-content-center">
-                <div class="col-lg-10 col-xl-9">
-                    <div class="position-relative rounded-4 overflow-hidden shadow-2xl border border-slate-800" style="background: #090d16; border: 2px solid rgba(255, 255, 255, 0.1) !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
-                        <video id="teltamMainDemoVideo" controls controlsList="nodownload" preload="metadata" class="w-100 rounded-top-4 d-block" style="max-height: 520px; object-fit: contain; background: #000;">
-                            <source src="{% static 'videos/Explanation.mp4' %}" type="video/mp4">
-                            Your browser does not support HTML5 video playback. Please upgrade your browser.
-                        </video>
-                        <!-- Fast Forward & Playback Speed Controls -->
-                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-3 border-top border-slate-800 text-white" style="background: #0f172a;">
-                            <div class="d-flex align-items-center gap-2 text-slate-300 small">
-                                <i class="fas fa-gauge-high text-indigo-400"></i>
-                                <span class="fw-semibold">Playback Speed / Fast Forward:</span>
-                            </div>
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Inline Video Speed">
-                                <button type="button" class="btn btn-outline-light main-speed-btn" data-speed="0.75">0.75x</button>
-                                <button type="button" class="btn btn-primary main-speed-btn active" data-speed="1.0" style="background: #6366f1; border-color: #6366f1;">1.0x (Normal)</button>
-                                <button type="button" class="btn btn-outline-light main-speed-btn" data-speed="1.25">1.25x</button>
-                                <button type="button" class="btn btn-outline-light main-speed-btn" data-speed="1.5">1.5x</button>
-                                <button type="button" class="btn btn-outline-light main-speed-btn" data-speed="2.0"><i class="fas fa-forward me-1"></i>2.0x Fast</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Section 2: Teltam Tube Section -->
     <section class="py-5 bg-light-soft border-top border-bottom">
         <div class="container py-4">
@@ -1540,7 +1502,7 @@
             <div class="text-center mb-5">
                 <span class="text-indigo-600 fw-bold text-uppercase">FAQs</span>
                 <h2 class="display-5 fw-bold mt-2">Frequently Asked Questions</h2>
-                <p class="text-slate-700">Find answers to common questions about Teltam.</p>
+                <p class="text-slate-700">Find answers to common questions about Teltam.ai.</p>
             </div>
 
             <div class="row justify-content-center">
@@ -1548,11 +1510,11 @@
                     <!-- FAQ 1 -->
                     <div class="accordion-item-custom">
                         <button class="accordion-button-custom" aria-controls="faqCollapse1">
-                            What makes Teltam different from other translation tools?
+                            What makes Teltam.ai different from other translation tools?
                         </button>
                         <div id="faqCollapse1" class="accordion-collapse-custom">
                             <div class="accordion-body-custom">
-                                Teltam utilizes custom-trained Large Language Models (LLMs) rather than traditional phrase-based machine translations. This allows our system to capture slang, formatting rules, cultural contexts, and technical vocabularies with significantly higher accuracy.
+                                Teltam.ai utilizes custom-trained Large Language Models (LLMs) and neural translation pipelines rather than simple word replacement dictionaries. This allows our system to preserve formatting, capture regional slang, adapt cultural context, and provide accurate Romanized pronunciation guides.
                             </div>
                         </div>
                     </div>
@@ -1560,11 +1522,11 @@
                     <!-- FAQ 2 -->
                     <div class="accordion-item-custom">
                         <button class="accordion-button-custom" aria-controls="faqCollapse2">
-                            What is transliteration, and how is it used?
+                            What translation services and AI tools does Teltam.ai offer?
                         </button>
                         <div id="faqCollapse2" class="accordion-collapse-custom">
                             <div class="accordion-body-custom">
-                                Transliteration maps text from one character set to another (e.g., converting Tamil characters into Romanized phonetics). This helps non-native speakers read and speak phrases correctly even if they cannot read the local script.
+                                Teltam.ai provides 4 primary translation services: Contextual Text Translation, Scanned Document &amp; PDF Layout OCR Translation, Real-Time Voice &amp; Speech Translation, and Live Camera AR Overlay Translation. In addition, we offer AI Career Advisor, Resume Evaluator, and Personal Assistant chatbots.
                             </div>
                         </div>
                     </div>
@@ -1572,11 +1534,47 @@
                     <!-- FAQ 3 -->
                     <div class="accordion-item-custom">
                         <button class="accordion-button-custom" aria-controls="faqCollapse3">
-                            Can I translate scanned PDF documents?
+                            What is Phonetic Transliteration (Pronunciation Guide), and how does it work?
                         </button>
                         <div id="faqCollapse3" class="accordion-collapse-custom">
                             <div class="accordion-body-custom">
-                                Yes. Teltam Pro supports uploading standard and scanned PDFs. Our backend performs intelligent OCR to read the text and then reconstructs the original document structure in the target language.
+                                Phonetic Transliteration maps non-Latin text (e.g., Tamil, Hindi, Arabic, Japanese, Korean) into readable Romanized English characters. This allows users to speak and read foreign phrases accurately without needing to read the local script, complete with high-definition Text-to-Speech audio playback.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="accordion-item-custom">
+                        <button class="accordion-button-custom" aria-controls="faqCollapse4">
+                            Can I translate scanned PDF documents and image files?
+                        </button>
+                        <div id="faqCollapse4" class="accordion-collapse-custom">
+                            <div class="accordion-body-custom">
+                                Yes. Teltam.ai supports uploading standard PDFs, scanned document files, PNGs, and JPGs. Our backend performs 300 DPI High-Detail Optical Character Recognition (OCR) to extract 100% of visible text and recreate the translated output while preserving original document layout structure.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 5 -->
+                    <div class="accordion-item-custom">
+                        <button class="accordion-button-custom" aria-controls="faqCollapse5">
+                            Is Teltam.ai free to use, and what are the subscription limits?
+                        </button>
+                        <div id="faqCollapse5" class="accordion-collapse-custom">
+                            <div class="accordion-body-custom">
+                                Yes, guest users can try Teltam.ai without registering (up to 500 words for text, 1 page for documents, 1 minute for voice, and 1 minute for camera AR per day). Registered users can upgrade to Basic, Pro, or Business subscription plans for high-volume limits, multi-image batch OCR, and Developer API access.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 6 -->
+                    <div class="accordion-item-custom">
+                        <button class="accordion-button-custom" aria-controls="faqCollapse6">
+                            Does Teltam.ai provide APIs for developers and enterprise software?
+                        </button>
+                        <div id="faqCollapse6" class="accordion-collapse-custom">
+                            <div class="accordion-body-custom">
+                                Yes, Teltam.ai offers RESTful Developer APIs for high-speed text translation, document processing, and batch translation. Business Plan subscribers can generate API keys directly from their user dashboard console for seamless app integration.
                             </div>
                         </div>
                     </div>

@@ -35,9 +35,9 @@ def get_public_live_blogs():
 
 @ensure_csrf_cookie
 def home(request):
-    """Renders the Home page with the single most recently published blog and video."""
-    latest_blogs = get_public_live_blogs().order_by('-created_date')[:1]
-    latest_videos = YoutubeVideo.objects.filter(is_published=True).order_by('-created_date')[:1]
+    """Renders the Home page with the 3 most recently published blogs and 3 videos."""
+    latest_blogs = get_public_live_blogs().order_by('-created_date')[:3]
+    latest_videos = YoutubeVideo.objects.filter(is_published=True).order_by('-created_date')[:3]
 
     context = {
         'latest_blogs': latest_blogs,

@@ -297,6 +297,21 @@ class AIClassEnquiry(models.Model):
 
 
 from django.db.models.signals import post_save
+class BlogComment(models.Model):
+    """Stores user comments posted on blog articles."""
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_comments')
+    comment = models.TextField()
+    is_approved = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.blog.title}"
+
+
 from django.dispatch import receiver
 
 @receiver(post_save, sender=Blog)

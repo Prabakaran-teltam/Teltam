@@ -113,7 +113,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import timedelta
 import base64
 
-from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory, AIClassEnquiry, PageViewLog
+from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory, AIClassEnquiry, PageViewLog, BlogComment
 from .forms import BlogForm, YoutubeVideoForm, ContactForm, UserProfileForm
 from .phonepe_service import PhonePeService
 
@@ -156,14 +156,36 @@ def blog_list(request):
     return render(request, 'blog-list.html', context)
 
 def blog_view(request, slug):
-    """Renders the detailed Blog article view page using slug lookup."""
+    """Renders the detailed Blog article view page, displaying real comments and allowing logged-in users to post comments."""
     live_blogs = get_public_live_blogs()
     blog = get_object_or_404(live_blogs, slug=slug)
     recent_blogs = live_blogs.exclude(id=blog.id).order_by('-created_date')[:3]
     
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, "You must be logged in to post a comment.")
+            return redirect(f"/login/?next={request.path}")
+        
+        comment_text = request.POST.get('comment', '').strip()
+        if comment_text:
+            BlogComment.objects.create(
+                blog=blog,
+                user=request.user,
+                comment=comment_text,
+                is_approved=True
+            )
+            messages.success(request, "Your comment has been posted successfully!")
+            return redirect('blog_view', slug=slug)
+        else:
+            messages.error(request, "Comment text cannot be empty.")
+    
+    comments = blog.comments.filter(is_approved=True).select_related('user').order_by('-created_at')
+    
     context = {
         'blog': blog,
         'recent_blogs': recent_blogs,
+        'comments': comments,
+        'comments_count': comments.count(),
     }
     return render(request, 'blog-view.html', context)
 

@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory, AIClassEnquiry
+from .models import Blog, YoutubeVideo, Contact, UserTranslationHistory, PricingPlan, UserSubscription, PaymentTransaction, DocumentTranslationHistory, AIClassEnquiry, BlogComment
+
+@admin.register(BlogComment)
+class BlogCommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'blog', 'is_approved', 'created_at')
+    list_filter = ('is_approved', 'created_at')
+    search_fields = ('user__username', 'user__email', 'blog__title', 'comment')
 
 @admin.register(AIClassEnquiry)
 class AIClassEnquiryAdmin(admin.ModelAdmin):

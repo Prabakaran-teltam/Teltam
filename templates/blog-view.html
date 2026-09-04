@@ -81,42 +81,66 @@
                             </div>
                         </article>
 
-                        <!-- Comments Section -->
-                        <div class="comments-section mt-5">
-                            <h4 class="fw-bold mb-4">Comments (2)</h4>
-                            <div class="d-flex align-items-start gap-3 mb-4">
-                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 40px; height: 40px;">JS</div>
-                                <div>
-                                    <h6 class="fw-bold mb-1">Jonah Smith <small class="text-muted fw-normal ms-2">2 days ago</small></h6>
-                                    <p class="text-slate-700 small mb-0">This explains why Teltam matches actual slang terms so much better than default web translators. Keep up the updates!</p>
+                        <!-- Real Dynamic Comments Section -->
+                        <div class="comments-section mt-5 border-top pt-4">
+                            <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                                <i class="far fa-comments text-indigo-600"></i>
+                                Comments ({{ comments_count }})
+                            </h4>
+
+                            <!-- Comments List -->
+                            <div class="comments-list mb-5">
+                                {% for comment in comments %}
+                                <div class="d-flex align-items-start gap-3 p-3 mb-3 bg-light rounded-3 border">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 42px; height: 42px; font-size: 0.95rem;">
+                                        {{ comment.user.first_name|default:comment.user.username|slice:":2"|upper }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="fw-bold mb-0 text-slate-800">{{ comment.user.get_full_name|default:comment.user.username }}</h6>
+                                            <small class="text-muted" style="font-size: 0.78rem;"><i class="far fa-clock me-1"></i>{{ comment.created_at|timesince }} ago</small>
+                                        </div>
+                                        <p class="text-slate-700 mb-0 small" style="line-height: 1.6; white-space: pre-line;">{{ comment.comment }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-flex align-items-start gap-3 mb-4">
-                                <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 40px; height: 40px;">AL</div>
-                                <div>
-                                    <h6 class="fw-bold mb-1">Amelia L. <small class="text-muted fw-normal ms-2">Yesterday</small></h6>
-                                    <p class="text-slate-700 small mb-0">Is the transliteration model open-source? Would love to read more details on the Tamil phonetic parser.</p>
+                                {% empty %}
+                                <div class="p-4 text-center text-muted bg-light rounded-3 border">
+                                    <i class="far fa-comment-dots display-4 opacity-50 mb-2 d-block"></i>
+                                    <p class="mb-0 font-medium">No comments yet. Be the first to share your thoughts!</p>
                                 </div>
+                                {% endfor %}
                             </div>
 
-                            <!-- Comment Post Form -->
-                            <form id="blogCommentForm" class="mt-4 border-top pt-4">
-                                <h5 class="fw-bold mb-3">Leave a Reply</h5>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <input type="text" id="commName" class="form-control" placeholder="Name" required>
+                            <!-- Comment Post Form or Login Callout -->
+                            {% if request.user.is_authenticated %}
+                                <form method="POST" action="{% url 'blog_view' blog.slug %}" class="bg-white p-4 rounded-3 border shadow-sm">
+                                    {% csrf_token %}
+                                    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2 text-slate-800">
+                                        <i class="fas fa-pen text-indigo-600"></i> Leave a Comment
+                                    </h5>
+                                    <div class="mb-3 d-flex align-items-center gap-2">
+                                        <div class="rounded-circle bg-indigo-600 text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                            {{ request.user.first_name|default:request.user.username|slice:":2"|upper }}
+                                        </div>
+                                        <span class="small text-muted">Posting as <strong class="text-slate-800">{{ request.user.get_full_name|default:request.user.username }}</strong></span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <input type="email" id="commEmail" class="form-control" placeholder="Email" required>
+                                    <div class="mb-3">
+                                        <textarea name="comment" class="form-control" rows="4" placeholder="Write your comment here..." required style="border-radius: 12px; font-size: 0.95rem;"></textarea>
                                     </div>
-                                    <div class="col-12">
-                                        <textarea id="commMessage" class="form-control" rows="4" placeholder="Your Comment" required></textarea>
-                                    </div>
-                                    <div class="col-12">
-                                        <button type="submit" class="btn btn-primary-gradient px-4">Post Comment</button>
-                                    </div>
+                                    <button type="submit" class="btn btn-primary-gradient px-4 py-2 fw-semibold">
+                                        <i class="fas fa-paper-plane me-1.5"></i> Post Comment
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div class="p-4 bg-light rounded-3 border text-center">
+                                    <i class="fas fa-user-lock text-indigo-600 display-5 mb-2"></i>
+                                    <h5 class="fw-bold text-slate-800 mb-1">Join the Conversation</h5>
+                                    <p class="text-slate-600 small mb-3">Please log in to your Teltam account to post a comment on this article.</p>
+                                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary-gradient px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                                        <i class="fas fa-right-to-bracket me-1.5"></i> Log In to Comment
+                                    </a>
                                 </div>
-                            </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -157,26 +181,5 @@
     <!-- Component and Main Scripts -->
     <script src="{% static 'js/components.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
-    
-    <script>
-        const commentForm = document.getElementById("blogCommentForm");
-        if (commentForm) {
-            commentForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const name = document.getElementById("commName").value;
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Comment Submitted',
-                    text: `Thank you, ${name}! Your comment has been submitted for moderation.`,
-                    confirmButtonColor: '#4f46e5',
-                    customClass: {
-                        confirmButton: 'btn btn-primary rounded-pill px-4'
-                    },
-                    buttonsStyling: false
-                });
-                commentForm.reset();
-            });
-        }
-    </script>
 </body>
 </html>

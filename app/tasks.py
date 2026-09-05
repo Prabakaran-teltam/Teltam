@@ -177,6 +177,24 @@ def process_document_translation(self, history_id=None, temp_file_path=None, out
         history.status = 'success'
         history.save()
 
+        # Record in UserTranslationHistory for user dashboard stats & activity log
+        if history.user:
+            try:
+                from app.models import UserTranslationHistory
+                fname = os.path.basename(history.original_file.name) if history.original_file else "document"
+                UserTranslationHistory.objects.create(
+                    user=history.user,
+                    tool_type='file',
+                    source_text=extracted_text[:500] if extracted_text else f"Document Translation ({fname})",
+                    translated_text=translated_text[:500] if translated_text else "Document Translation Completed",
+                    transliterated_text=transliteration[:500] if transliteration else "",
+                    source_lang=history.source_language or 'Auto',
+                    target_lang=history.target_language or 'En',
+                    file_name=fname
+                )
+            except Exception as hist_err:
+                logger.warning(f"Failed to create UserTranslationHistory record for document: {hist_err}")
+
         # Clean up temporary output file
         if os.path.exists(output_path):
             try:

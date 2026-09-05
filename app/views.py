@@ -2034,11 +2034,14 @@ def user_dashboard_home(request):
     history = UserTranslationHistory.objects.filter(user=request.user).order_by('-created_date')
     recent_history = history[:5]
     
-    total_translations = history.count()
     text_count = history.filter(tool_type='text').count()
-    file_count = history.filter(tool_type='file').count()
+    user_file_count = history.filter(tool_type='file').count()
+    doc_count = DocumentTranslationHistory.objects.filter(user=request.user).count()
+    file_count = max(doc_count, user_file_count)
     voice_count = history.filter(tool_type='voice').count()
     camera_count = history.filter(tool_type='camera').count()
+    
+    total_translations = text_count + file_count + voice_count + camera_count
     
     # Active subscription
     subscription = request.user.subscriptions.filter(status='active').first()

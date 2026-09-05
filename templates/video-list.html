@@ -57,7 +57,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="glass-card overflow-hidden h-100 bg-white d-flex flex-column justify-content-between shadow-sm border rounded-4">
                         <div>
-                            <div style="height: 200px; overflow: hidden; background: #0f172a;" class="position-relative">
+                            <a href="{% url 'video_view' video.slug %}" class="d-block position-relative overflow-hidden" style="height: 200px; background: #0f172a;" title="Click to view video details">
                                 {% if video.thumbnail_image %}
                                     <img src="{{ video.thumbnail_image.url }}" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
                                 {% elif video.youtube_video_id %}
@@ -68,25 +68,11 @@
                                     </div>
                                 {% endif %}
 
-                                <!-- Play Preview Trigger Overlay -->
-                                {% if video.youtube_video_id %}
-                                    <button type="button" 
-                                            class="position-absolute top-50 start-50 translate-middle border-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg hover-scale"
-                                            style="width: 54px; height: 54px; transition: transform 0.2s ease;"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#videoPreviewModal"
-                                            data-video-id="{{ video.youtube_video_id }}"
-                                            data-video-title="{{ video.title }}"
-                                            data-video-detail-url="{% url 'video_view' video.slug %}"
-                                            title="Click to preview video">
-                                        <i class="fas fa-play" style="margin-left: 3px; font-size: 1.2rem;"></i>
-                                    </button>
-                                {% else %}
-                                    <a href="{% url 'video_view' video.slug %}" class="position-absolute top-50 start-50 translate-middle border-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg" style="width: 54px; height: 54px;">
-                                        <i class="fas fa-play" style="margin-left: 3px; font-size: 1.2rem;"></i>
-                                    </a>
-                                {% endif %}
-                            </div>
+                                <!-- Play Icon Overlay -->
+                                <div class="position-absolute top-50 start-50 translate-middle border-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg hover-scale" style="width: 54px; height: 54px; transition: transform 0.2s ease;">
+                                    <i class="fas fa-play" style="margin-left: 3px; font-size: 1.2rem;"></i>
+                                </div>
+                            </a>
 
                             <div class="p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -103,20 +89,9 @@
                         </div>
 
                         <div class="px-4 pb-4 pt-0 d-flex justify-content-between align-items-center">
-                            {% if video.youtube_video_id %}
-                                <button type="button" 
-                                        class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#videoPreviewModal"
-                                        data-video-id="{{ video.youtube_video_id }}"
-                                        data-video-title="{{ video.title }}"
-                                        data-video-category="{{ video.category }}"
-                                        data-video-detail-url="{% url 'video_view' video.slug %}">
-                                    <i class="fas fa-play me-1"></i> Quick Preview
-                                </button>
-                            {% else %}
-                                <span></span>
-                            {% endif %}
+                            <a href="{% url 'video_view' video.slug %}" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+                                <i class="fas fa-play me-1"></i> Watch Video
+                            </a>
                             <a href="{% url 'video_view' video.slug %}" class="btn btn-sm btn-primary-gradient rounded-pill px-3 fw-semibold">
                                 Details &rarr;
                             </a>

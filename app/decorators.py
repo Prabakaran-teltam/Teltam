@@ -23,6 +23,7 @@ def developer_api_key_required(view_func):
             if auth_header.startswith('Bearer '):
                 api_key = auth_header.split('Bearer ', 1)[1].strip()
 
+
         # 2. Extract API Key from GET parameters
         if not api_key:
             api_key = request.GET.get('api_key')

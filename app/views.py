@@ -760,6 +760,75 @@ PLAN_MATRIX_LIMITS = {
     }
 }
 
+def is_paid_subscriber(user):
+    """
+    Returns True if user is authenticated and has an active paid subscription plan (Pro or Business), or is staff/superuser.
+    Returns False for anonymous (guest) users and free/unpaid registered users.
+    """
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+
+    active_sub = user.subscriptions.filter(status='active').select_related('plan').first()
+    if not active_sub or not active_sub.plan:
+        return False
+
+    plan = active_sub.plan
+    plan_name = (plan.name or '').lower()
+    plan_slug = (getattr(plan, 'slug', '') or '').lower()
+    tier_order = getattr(plan, 'plan_order', 1)
+
+    if 'pro' in plan_name or 'business' in plan_name or 'pro' in plan_slug or 'business' in plan_slug or tier_order >= 2:
+        return True
+    return False
+
+def get_unpaid_doc_usage_keys(request):
+    ip = get_client_ip(request)
+    guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
+    ip_key_id = f"{ip}_{guest_fp}" if guest_fp else ip
+    ip_key = f"unpaid_doc_limit_ip_{ip_key_id}"
+    user_key = f"unpaid_doc_limit_user_{request.user.id}" if (request.user and request.user.is_authenticated) else None
+    return ip_key, user_key
+
+def get_current_unpaid_doc_usage(request):
+    ip_key, user_key = get_unpaid_doc_usage_keys(request)
+    ip_val = cache.get(ip_key, 0)
+    user_val = cache.get(user_key, 0) if user_key else 0
+    return max(ip_val, user_val)
+
+def add_unpaid_doc_usage(request, delta):
+    if is_paid_subscriber(request.user):
+        return
+    ip_key, user_key = get_unpaid_doc_usage_keys(request)
+    current = get_current_unpaid_doc_usage(request)
+    new_val = current + delta
+    cache.set(ip_key, new_val, timeout=31536000) # 1 year persistence
+    if user_key:
+        cache.set(user_key, new_val, timeout=31536000)
+
+def check_unpaid_doc_limit(request, delta_request=1):
+    """
+    Enforces Document Translation maximum limit of 3 files total for unpaid registered users and anonymous users based on browser IP.
+    """
+    if is_paid_subscriber(request.user):
+        return True, None
+
+    current_usage = get_current_unpaid_doc_usage(request)
+    max_limit = 3
+
+    if current_usage + delta_request > max_limit:
+        err_msg = f"Document translation limit reached for unpaid/guest users ({current_usage} / {max_limit} files uploaded). Maximum limit is 3 files total based on browser IP. Please choose a plan to continue."
+        return False, {
+            'error': err_msg,
+            'limit_reached': True,
+            'tool_type': 'file',
+            'current_usage': current_usage,
+            'max_limit': max_limit,
+            'redirect_url': '/pricing/'
+        }
+    return True, None
+
 def get_user_plan_info(user):
     """
     Resolves the user's plan tier info (tier_order, name, slug) and limits based on Compare Features Plan Matrix.
@@ -1030,6 +1099,12 @@ def upload_document(request):
     if not uploaded_files:
         return JsonResponse({'error': 'No file uploaded'}, status=400)
 
+    # Enforce Maximum 3 files total limit for unpaid registered users and anonymous users based on browser IP
+    num_files = len(uploaded_files)
+    is_allowed, err_dict = check_unpaid_doc_limit(request, num_files)
+    if not is_allowed:
+        return JsonResponse(err_dict, status=403)
+
     # Resolve plan limits
     plan_info, limits = get_user_plan_info(request.user)
 
@@ -1046,53 +1121,28 @@ def upload_document(request):
                 'error': f"Multi-Image batch translation is limited to {max_batch} image(s) per batch on {plan_info['name']}. Upgrade to Pro (10 images/batch) or Business (Unlimited)."
             }, status=403)
     else:
-        # Enforce 1 page document limit & 1 document per day limit for unregistered users
-        if not request.user.is_authenticated:
-            guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
-            guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
-            guest_doc_key = f"guest_doc_limit_{guest_id}"
-
-            if cache.get(guest_doc_key, 0) >= 1:
-                return JsonResponse({
-                    'error': 'Document translation limit reached (1 document allowed per day for unregistered users). Please sign up or log in to translate more documents.'
-                }, status=403)
-
-            try:
-                import fitz
-                for f in uploaded_files:
-                    ext = os.path.splitext(f.name)[1].lower()
-                    if ext == '.pdf':
-                        content = f.read()
-                        f.seek(0)
-                        pdf_doc = fitz.open(stream=content, filetype="pdf")
-                        if len(pdf_doc) > 1:
-                            return JsonResponse({
-                                'error': f'Document translation is limited to 1 page for unregistered users (uploaded file "{f.name}" has {len(pdf_doc)} pages). Please sign up or log in to translate multi-page documents.'
-                            }, status=403)
-            except Exception as pdf_err:
-                logger.warning(f"Failed to inspect PDF page count for guest upload: {str(pdf_err)}")
-
-        # Document limit check (PDF, DOCX, TXT)
+        # Paid Subscriber Plan Document limit check (PDF, DOCX, TXT)
         doc_limit = limits['doc_files_monthly']
-        if doc_limit == 0:
-            return JsonResponse({
-                'error': f"Document Translation is not available on {plan_info['name']}. Please upgrade to Pro (100 files/mo) or Business (Unlimited)."
-            }, status=403)
-
-        if request.user.is_authenticated and doc_limit < 999999999:
-            from django.utils import timezone
-            now = timezone.now()
-            start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-            docs_used = DocumentTranslationHistory.objects.filter(
-                user=request.user,
-                created_at__gte=start_of_month
-            ).count()
-
-            if docs_used + len(uploaded_files) > doc_limit:
+        if is_paid_subscriber(request.user):
+            if doc_limit == 0:
                 return JsonResponse({
-                    'error': f"Monthly document limit reached ({docs_used} / {doc_limit} files on {plan_info['name']}). Upgrade to Business Plan for unlimited document translation."
+                    'error': f"Document Translation is not available on {plan_info['name']}. Please upgrade to Pro (100 files/mo) or Business (Unlimited)."
                 }, status=403)
+
+            if doc_limit < 999999999:
+                from django.utils import timezone
+                now = timezone.now()
+                start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+                docs_used = DocumentTranslationHistory.objects.filter(
+                    user=request.user,
+                    created_at__gte=start_of_month
+                ).count()
+
+                if docs_used + len(uploaded_files) > doc_limit:
+                    return JsonResponse({
+                        'error': f"Monthly document limit reached ({docs_used} / {doc_limit} files on {plan_info['name']}). Upgrade to Business Plan for unlimited document translation."
+                    }, status=403)
 
     source_lang = request.POST.get('source_lang', 'auto').strip()
     target_lang = request.POST.get('target_lang', '').strip()
@@ -1146,11 +1196,8 @@ def upload_document(request):
         status='pending'
     )
 
-    # Record guest document upload in cache (24h expiration)
-    if not request.user.is_authenticated:
-        guest_fp = request.headers.get('X-Guest-Fingerprint', '').strip()
-        guest_id = f"{ip}_{guest_fp}" if guest_fp else ip
-        cache.set(f"guest_doc_limit_{guest_id}", 1, timeout=86400)
+    # Record unpaid document upload usage (tracks maximum 3 files limit)
+    add_unpaid_doc_usage(request, num_files)
     
     # Save original file (first file in batch) to history model
     from django.core.files import File

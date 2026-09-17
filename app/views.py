@@ -809,16 +809,16 @@ def add_unpaid_doc_usage(request, delta):
 
 def check_unpaid_doc_limit(request, delta_request=1):
     """
-    Enforces Document Translation maximum limit of 3 files total for unpaid registered users and anonymous users based on browser IP.
+    Enforces Document Translation maximum limit of 7 files total for unpaid registered users and anonymous users based on browser IP.
     """
     if is_paid_subscriber(request.user):
         return True, None
 
     current_usage = get_current_unpaid_doc_usage(request)
-    max_limit = 3
+    max_limit = 7
 
     if current_usage + delta_request > max_limit:
-        err_msg = f"Document translation limit reached for unpaid/guest users ({current_usage} / {max_limit} files uploaded). Maximum limit is 3 files total based on browser IP. Please choose a plan to continue."
+        err_msg = f"Document translation limit reached for unpaid/guest users ({current_usage} / {max_limit} files uploaded). Maximum limit is 7 files total based on browser IP. Please choose a plan to continue."
         return False, {
             'error': err_msg,
             'limit_reached': True,
@@ -1346,10 +1346,16 @@ def upload_voice_api(request):
         return JsonResponse({'error': err_msg}, status=400)
 
     # Audio type and size validations
-    allowed_exts = ['.wav', '.mp3', '.m4a', '.webm', '.ogg', '.caf']
+    allowed_exts = [
+        '.wav', '.mp3', '.m4a', '.webm', '.ogg', '.caf',
+        '.flac', '.aac', '.opus', '.wma', '.aiff', '.aif',
+        '.amr', '.mp4', '.3gp', '.3gpp', '.m4b', '.mkv',
+        '.avi', '.mov', '.wmv', '.mpg', '.mpeg', '.ogv',
+        '.ts', '.m2ts', '.flv'
+    ]
     ext = os.path.splitext(uploaded_file.name)[1].lower()
+    content_type = getattr(uploaded_file, 'content_type', '') or ''
     if not ext:
-        content_type = getattr(uploaded_file, 'content_type', '') or ''
         if 'webm' in content_type:
             ext = '.webm'
         elif 'ogg' in content_type or 'opus' in content_type:
@@ -1360,12 +1366,23 @@ def upload_voice_api(request):
             ext = '.mp3'
         elif 'm4a' in content_type or 'mp4' in content_type:
             ext = '.m4a'
+        elif 'flac' in content_type:
+            ext = '.flac'
+        elif 'aac' in content_type:
+            ext = '.aac'
+        elif 'wma' in content_type:
+            ext = '.wma'
+        elif 'aiff' in content_type or 'aif' in content_type:
+            ext = '.aiff'
+        elif 'amr' in content_type:
+            ext = '.amr'
         elif 'caf' in content_type:
             ext = '.caf'
         else:
             # Fallback default
             ext = '.wav'
-    if ext not in allowed_exts:
+    is_audio_video_type = content_type.startswith('audio/') or content_type.startswith('video/')
+    if ext not in allowed_exts and not is_audio_video_type:
         return JsonResponse({'error': f'Unsupported audio format {ext}'}, status=400)
 
     # Max size: 10MB

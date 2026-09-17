@@ -1056,7 +1056,10 @@
                                             <h4 class="fw-bold mb-1 text-slate-900">AI Voice Translator</h4>
                                             <p class="text-slate-600 small mb-0">Record speech tokens, view instant transcriptions, and hear translated voice guides.</p>
                                         </div>
-                                        <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(239, 68, 68, 0.06); color: #ef4444; font-weight: 500;"><i class="fas fa-microphone me-1"></i> Live voice audio</span>
+                                         <div class="d-flex align-items-center gap-2">
+                                             <button type="button" id="voiceHeaderClearBtn" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 shadow-2xs fw-semibold" title="Clear all voice input and results" style="font-size: 0.8rem;"><i class="fas fa-trash-alt me-1"></i> Clear All</button>
+                                             <span class="badge px-3 py-2 rounded-pill small" style="background-color: rgba(239, 68, 68, 0.06); color: #ef4444; font-weight: 500;"><i class="fas fa-microphone me-1"></i> Live voice audio</span>
+                                         </div>
                                     </div>
 
                                     <!-- Voice selectors row -->
@@ -1147,51 +1150,55 @@
                                                     <!-- Right: Upload Audio File & Preview -->
                                                     <div class="col-md-6 text-center pl-md-4">
                                                         <h6 class="fw-bold text-slate-800 mb-1"><i class="fas fa-file-audio text-indigo-600 me-1.5"></i> Upload Audio File</h6>
-                                                        <p class="text-muted small mb-3" style="font-size: 0.78rem;">Upload pre-recorded audio file (.wav, .mp3, .m4a)</p>
+                                                        <p class="text-muted small mb-3" style="font-size: 0.78rem;">Upload pre-recorded audio/video file (.wav, .mp3, .m4a, .webm, .ogg, .flac, .aac, .opus, etc.)</p>
 
                                                         <label class="btn btn-outline-indigo btn-sm px-4 rounded-pill shadow-2xs fw-semibold" style="cursor: pointer; border-color: #6366f1; color: #4f46e5;">
                                                             <i class="fas fa-upload me-1.5"></i> Upload Audio File
-                                                            <input type="file" id="voiceFileInput" accept=".wav,.mp3,.m4a,.webm,.ogg,.caf" style="display: none;">
+                                                            <input type="file" id="voiceFileInput" accept="audio/*,video/*,.wav,.mp3,.m4a,.webm,.ogg,.caf,.flac,.aac,.opus,.wma,.aiff,.aif,.amr,.mp4,.3gp,.3gpp,.m4b,.mkv,.avi,.mov,.wmv,.mpg,.mpeg,.ogv" style="display: none;">
                                                         </label>
                                                         <div id="voiceSelectedFileDisplay" class="small text-success mt-2 d-none" style="font-weight: 500;"></div>
                                                         
-                                                        <!-- Audio Preview Player -->
-                                                        <div class="audio-player-wrapper mt-3 d-none" id="voiceAudioWrapper">
-                                                            <div class="d-flex justify-content-between align-items-center mb-1" style="max-width: 300px; margin: 0 auto;">
-                                                                <label class="small fw-bold text-slate-600 mb-0" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1 text-success"></i> Recorded Audio Preview</label>
-                                                                <span id="voiceAudioDurationBadge" class="badge bg-indigo-50 text-indigo-700 font-monospace border border-indigo-200" style="font-size: 0.75rem;">0:00</span>
-                                                            </div>
-                                                            <audio id="recordedAudioPlayer" controls class="w-100" style="max-width: 300px; margin: 0 auto; outline: none; height: 36px;"></audio>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                         <!-- Audio Preview Player -->
+                                                         <div class="audio-player-wrapper mt-3 d-none" id="voiceAudioWrapper">
+                                                             <div class="d-flex justify-content-between align-items-center mb-1" style="max-width: 300px; margin: 0 auto;">
+                                                                 <label class="small fw-bold text-slate-600 mb-0" style="font-size: 0.75rem;"><i class="fas fa-volume-up me-1 text-success"></i> Recorded Audio Preview</label>
+                                                                 <div class="d-flex align-items-center gap-2">
+                                                                     <span id="voiceAudioDurationBadge" class="badge bg-indigo-50 text-indigo-700 font-monospace border border-indigo-200" style="font-size: 0.75rem;">0:00</span>
+                                                                     <button type="button" class="btn btn-link text-danger p-0 text-decoration-none small fw-semibold" id="clearVoiceAudioBtn" title="Remove audio" style="font-size: 0.75rem;"><i class="fas fa-trash-alt me-1"></i>Clear</button>
+                                                                 </div>
+                                                             </div>
+                                                             <audio id="recordedAudioPlayer" controls class="w-100" style="max-width: 300px; margin: 0 auto; outline: none; height: 36px;"></audio>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         </div>
 
-                                        <!-- Voice Outputs Row: Column 1 Transcript, Column 2 Translation -->
-                                        <div class="col-lg-6 col-12">
-                                            <div>
-                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-closed-captioning me-1.5 text-indigo-500"></i> VOICE TRANSCRIPT</label>
-                                                <div class="output-container p-3 bg-light border border-slate-200 rounded-3 text-slate-700" style="min-height: 110px; font-size: 0.95rem; line-height: 1.6;" id="voiceTranscriptText">
-                                                    Spoken transcript will appear here...
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-lg-6 col-12">
-                                            <div>
-                                                <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-sparkles me-1.5 text-indigo-500"></i> AI CONTEXT TRANSLATION</label>
-                                                <div class="output-container p-3 border border-slate-200 rounded-3 text-slate-900 bg-white" style="min-height: 110px; position: relative; font-size: 0.95rem; line-height: 1.6;">
-                                                    <div id="voiceTranslationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="background: rgba(255,255,255,0.95); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: 8px;">
-                                                        <div class="spinner-border text-indigo-600 spinner-border-sm" role="status"></div>
-                                                        <span class="small text-indigo-600 fw-semibold ms-2" style="font-size:0.8rem;">Processing speech context...</span>
-                                                    </div>
-                                                    <div id="voiceTranslationOutput">Translation will appear here...</div>
-                                                </div>
-                                                <div class="d-flex justify-content-end gap-2 mt-2">
-                                                    <button type="button" id="voiceSpeakBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-volume-up me-1"></i> Speak</button>
-                                                    <button type="button" id="voiceCopyBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-copy me-1"></i> Copy</button>
-                                                </div>
+                                         <!-- Voice Outputs Row: Column 1 Transcript, Column 2 Translation -->
+                                         <div class="col-lg-6 col-12">
+                                             <div>
+                                                 <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-closed-captioning me-1.5 text-indigo-500"></i> VOICE TRANSCRIPT</label>
+                                                 <div class="output-container p-3 bg-light border border-slate-200 rounded-3 text-slate-700" style="min-height: 110px; font-size: 0.95rem; line-height: 1.6;" id="voiceTranscriptText">
+                                                     Spoken transcript will appear here...
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         
+                                         <div class="col-lg-6 col-12">
+                                             <div>
+                                                 <label class="small fw-bold text-slate-700 mb-1.5" style="font-size: 0.82rem;"><i class="fas fa-sparkles me-1.5 text-indigo-500"></i> AI CONTEXT TRANSLATION</label>
+                                                 <div class="output-container p-3 border border-slate-200 rounded-3 text-slate-900 bg-white" style="min-height: 110px; position: relative; font-size: 0.95rem; line-height: 1.6;">
+                                                     <div id="voiceTranslationSpinner" class="position-absolute top-50 start-50 translate-middle d-none text-center" style="background: rgba(255,255,255,0.95); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: 8px;">
+                                                         <div class="spinner-border text-indigo-600 spinner-border-sm" role="status"></div>
+                                                         <span class="small text-indigo-600 fw-semibold ms-2" style="font-size:0.8rem;">Processing speech context...</span>
+                                                     </div>
+                                                     <div id="voiceTranslationOutput">Translation will appear here...</div>
+                                                 </div>
+                                                 <div class="d-flex justify-content-end gap-2 mt-2">
+                                                     <button type="button" id="voiceClearBtn" class="btn btn-light-custom btn-sm text-slate-700" title="Clear voice translation"><i class="fas fa-trash-alt me-1 text-danger"></i> Clear</button>
+                                                     <button type="button" id="voiceSpeakBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-volume-up me-1"></i> Speak</button>
+                                                     <button type="button" id="voiceCopyBtn" class="btn btn-light-custom btn-sm text-slate-700" disabled><i class="fas fa-copy me-1"></i> Copy</button>
+                                                 </div>
                                             </div>
                                         </div>
 
@@ -2424,14 +2431,21 @@
                 if (!file) return;
 
                 // Client-side Validation
-                const allowedExtensions = ['.wav', '.mp3', '.m4a', '.webm', '.ogg', '.caf'];
+                const allowedExtensions = [
+                    '.wav', '.mp3', '.m4a', '.webm', '.ogg', '.caf',
+                    '.flac', '.aac', '.opus', '.wma', '.aiff', '.aif',
+                    '.amr', '.mp4', '.3gp', '.3gpp', '.m4b', '.mkv',
+                    '.avi', '.mov', '.wmv', '.mpg', '.mpeg', '.ogv',
+                    '.ts', '.m2ts', '.flv'
+                ];
                 const fileName = file.name || "recorded_audio.wav";
                 const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
-                if (!allowedExtensions.includes(ext)) {
+                const isAudioVideo = file.type && (file.type.startsWith('audio/') || file.type.startsWith('video/'));
+                if (!allowedExtensions.includes(ext) && !isAudioVideo) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Unsupported Format',
-                        text: `Unsupported audio format "${ext}". Allowed: WAV, MP3, M4A, WEBM, OGG, CAF`,
+                        text: `Unsupported format "${ext}". Please upload a valid audio or video recording file.`,
                         confirmButtonColor: '#fbbf24',
                         customClass: {
                             confirmButton: 'btn btn-warning text-white rounded-pill px-4'
@@ -2831,6 +2845,81 @@
                     }
                 });
             }
+
+            // ==========================================
+            // CLEAR / RESET VOICE TRANSLATOR MODULE
+            // ==========================================
+            function resetVoiceModule() {
+                // 1. Stop recording if actively recording
+                if (isRecording) {
+                    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                        try { mediaRecorder.stop(); } catch(e){}
+                    }
+                    if (mediaRecorder && mediaRecorder.stream) {
+                        try { mediaRecorder.stream.getTracks().forEach(track => track.stop()); } catch(e){}
+                    }
+                    isRecording = false;
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                    if (micRecordBtn) micRecordBtn.classList.remove('recording');
+                    if (stopRecordBtn) stopRecordBtn.classList.add('d-none');
+                }
+                audioChunks = [];
+                recordingSecs = 0;
+
+                // 2. Reset Status, Timer & Spinner
+                if (voiceStatusText) voiceStatusText.innerText = "Click microphone to start recording";
+                if (voiceTimer) {
+                    voiceTimer.innerText = "00:00";
+                    voiceTimer.classList.add('d-none');
+                }
+                if (voiceTranslationSpinner) voiceTranslationSpinner.classList.add('d-none');
+
+                // 3. Clear File Inputs & Selected File Display
+                if (voiceFileInput) voiceFileInput.value = "";
+                if (voiceSelectedFileDisplay) {
+                    voiceSelectedFileDisplay.innerText = "";
+                    voiceSelectedFileDisplay.classList.add('d-none');
+                }
+
+                // 4. Reset Audio Preview Player
+                if (recordedAudioPlayer) {
+                    try { recordedAudioPlayer.pause(); } catch(e){}
+                    recordedAudioPlayer.src = "";
+                }
+                if (voiceAudioWrapper) voiceAudioWrapper.classList.add('d-none');
+
+                // 5. Reset Transcripts & Translations
+                if (voiceTranscriptText) voiceTranscriptText.innerText = "Spoken transcript will appear here...";
+                if (voiceTranslationOutput) voiceTranslationOutput.innerText = "Translation will appear here...";
+
+                const voiceTranslitEl = document.getElementById("voiceTransliterationOutput");
+                if (voiceTranslitEl) {
+                    if (voiceTranslitEl.tagName === 'TEXTAREA' || voiceTranslitEl.tagName === 'INPUT') {
+                        voiceTranslitEl.value = "";
+                    } else {
+                        voiceTranslitEl.innerText = "Phonetic pronunciation guide will appear here...";
+                    }
+                }
+
+                // 6. Reset Action Button States
+                if (voiceSpeakBtn) voiceSpeakBtn.disabled = true;
+                if (voiceCopyBtn) voiceCopyBtn.disabled = true;
+                const voiceTranslitSpeakBtn = document.getElementById("voiceTranslitSpeakBtn");
+                const voiceTranslitCopyBtn = document.getElementById("voiceTranslitCopyBtn");
+                if (voiceTranslitSpeakBtn) voiceTranslitSpeakBtn.disabled = true;
+                if (voiceTranslitCopyBtn) voiceTranslitCopyBtn.disabled = true;
+            }
+
+            const voiceHeaderClearBtn = document.getElementById('voiceHeaderClearBtn');
+            const voiceClearBtn = document.getElementById('voiceClearBtn');
+            const clearVoiceAudioBtn = document.getElementById('clearVoiceAudioBtn');
+
+            if (voiceHeaderClearBtn) voiceHeaderClearBtn.addEventListener('click', resetVoiceModule);
+            if (voiceClearBtn) voiceClearBtn.addEventListener('click', resetVoiceModule);
+            if (clearVoiceAudioBtn) clearVoiceAudioBtn.addEventListener('click', resetVoiceModule);
 
             // Speak camera transliteration
             const pubCamTranslitSpeakBtn = document.getElementById('pubCamTranslitSpeakBtn');

@@ -8,27 +8,62 @@ from app.services.openai_document_service import get_openai_client
 
 logger = logging.getLogger(__name__)
 
+import subprocess
+
 def convert_audio_to_wav(input_path, output_path):
     """
-    Converts any input audio file (WEBM, OGG, MP3, M4A, etc.) to a standard PCM WAV format.
-    Requires ffmpeg to be installed on the system.
+    Converts any input audio/video recording file (WAV, MP3, M4A, WEBM, OGG, FLAC, AAC, OPUS, WMA, AIFF, AMR, MP4, 3GP, etc.)
+    to a standard PCM WAV format (16kHz, 1 channel).
+    Uses multi-stage fallback (Pydub auto-detect -> Pydub format hint -> direct FFmpeg subprocess).
     """
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input audio file not found at: {input_path}")
         
     ext = os.path.splitext(input_path)[1].lower().replace('.', '')
-    if not ext:
-        ext = 'webm' # Fallback default
-        
-    logger.info(f"Converting audio file {input_path} (format: {ext}) to WAV...")
-    
-    # AudioSegment from_file dynamically determines format and delegates decoding to ffmpeg
-    audio = AudioSegment.from_file(input_path, format=ext)
-    
-    # Export standard mono WAV at 16kHz sample rate (Whisper standard)
-    audio = audio.set_frame_rate(16000).set_channels(1)
-    audio.export(output_path, format="wav")
-    logger.info(f"Exported WAV successfully to {output_path}")
+    logger.info(f"Converting audio file {input_path} (format extension: '{ext}') to WAV...")
+
+    # Method 1: Pydub auto-detecting format without forcing format string parameter
+    try:
+        audio = AudioSegment.from_file(input_path)
+        audio = audio.set_frame_rate(16000).set_channels(1)
+        audio.export(output_path, format="wav")
+        logger.info(f"Exported WAV successfully via Pydub auto-detect to {output_path}")
+        return
+    except Exception as err1:
+        logger.warning(f"Pydub auto-detect failed for {input_path}: {err1}")
+
+    # Method 2: Pydub with explicit format hint
+    if ext:
+        try:
+            audio = AudioSegment.from_file(input_path, format=ext)
+            audio = audio.set_frame_rate(16000).set_channels(1)
+            audio.export(output_path, format="wav")
+            logger.info(f"Exported WAV successfully via Pydub format hint '{ext}' to {output_path}")
+            return
+        except Exception as err2:
+            logger.warning(f"Pydub format hint '{ext}' failed for {input_path}: {err2}")
+
+    # Method 3: Direct FFmpeg subprocess execution fallback
+    try:
+        cmd = [
+            'ffmpeg',
+            '-y',
+            '-i', input_path,
+            '-ar', '16000',
+            '-ac', '1',
+            '-f', 'wav',
+            output_path
+        ]
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30)
+        if result.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            logger.info(f"Exported WAV successfully via direct FFmpeg subprocess to {output_path}")
+            return
+        else:
+            logger.warning(f"Direct FFmpeg subprocess returned code {result.returncode}: {result.stderr}")
+    except Exception as ffmpeg_err:
+        logger.warning(f"Direct FFmpeg subprocess execution failed for {input_path}: {ffmpeg_err}")
+
+    raise ValueError(f"Could not convert audio file '{input_path}' to WAV format using Pydub or FFmpeg.")
 
 def transcribe_audio_with_whisper(audio_path):
     """
